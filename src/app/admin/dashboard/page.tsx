@@ -40,7 +40,7 @@ function RecentList({
   items,
 }: {
   title: string;
-  items: { id: number; name: string; status: string; assignee: string | null }[];
+  items: { id: string | number; name: string; status: string; assignee: string | null }[];
 }) {
   return (
     <div className="rounded-xl bg-white p-4 shadow-[0_1px_2px_rgba(16,24,64,0.06)]">

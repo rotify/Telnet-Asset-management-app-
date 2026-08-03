@@ -29,8 +29,7 @@ export default function DashboardPage() {
           You&apos;re signed in
         </h1>
         <p className="mt-2 text-sm text-slate-500">
-          This is a placeholder staff view. Next up: assigned equipment and
-          vehicles, and the document module.
+          Just  a placeholder staff view for now. Still waiting for assigned equipment and vehicles, and the document module.
         </p>
       </div>
     </div>
