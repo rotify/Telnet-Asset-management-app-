@@ -1,0 +1,58 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8" />
+<title>Login preview · Telnet Asset Manager</title>
+<meta name="viewport" content="width=device-width, initial-scale=1.0" />
+<script src="https://cdn.tailwindcss.com"></script>
+</head>
+<body class="m-0 bg-[#EFF1F6]">
+  <header class="flex h-14 items-center justify-between bg-[#10245c] px-6 text-white">
+    <div class="flex items-center gap-3">
+      <span class="text-lg font-extrabold tracking-wide text-[#50A5DB]">TELNET</span>
+      <span class="hidden text-sm font-medium text-white/80 sm:inline">Telnet Assets Management System</span>
+    </div>
+    <div class="flex items-center gap-4">
+      <button type="button" class="flex h-8 w-8 items-center justify-center rounded-md bg-white/10 text-sm hover:bg-white/20">&#9789;</button>
+      <a href="#" class="text-sm font-semibold text-[#7ea9ff] hover:underline">Login</a>
+    </div>
+  </header>
+  <div class="flex min-h-[calc(100vh-56px)] w-full items-center justify-center px-4 py-12">
+    <div class="w-full max-w-[550px] rounded-2xl bg-white px-10 py-10 shadow-[0_1px_2px_rgba(16,24,64,0.06)] sm:px-12 sm:py-12">
+      <div class="text-center">
+        <h1 class="text-3xl font-extrabold tracking-wide text-[#50A5DB]">TELNET</h1>
+        <p class="mt-1 text-[11px] font-semibold uppercase tracking-[0.18em] text-slate-400">Technology enabled business solutions</p>
+      </div>
+      <div class="mt-8 text-center">
+        <h2 class="font-serif text-3xl font-bold text-[#121B3B]">Welcome back</h2>
+        <p class="mt-2 text-sm text-slate-500">Sign in to view the Asset Dashboard.</p>
+      </div>
+      <form class="mt-8 w-full" onsubmit="return false">
+        <div>
+          <label for="username" class="block text-sm font-semibold text-[#1c2333]">Username</label>
+          <input id="username" type="text" placeholder="e.g. ewallace"
+            class="mt-2 block w-full rounded-lg border border-slate-300 bg-white px-4 py-3 text-sm text-slate-900 placeholder:text-slate-400 focus:border-[#263EA8] focus:outline-none focus:ring-2 focus:ring-[#263EA8]/20" />
+        </div>
+        <div class="mt-5">
+          <label for="password" class="block text-sm font-semibold text-[#1c2333]">Password</label>
+          <div class="relative mt-2">
+            <input id="password" type="password" placeholder="Enter your password"
+              class="block w-full rounded-lg border border-slate-300 bg-white px-4 py-3 pr-16 text-sm text-slate-900 placeholder:text-slate-400 focus:border-[#263EA8] focus:outline-none focus:ring-2 focus:ring-[#263EA8]/20" />
+            <button type="button" class="absolute inset-y-0 right-0 flex items-center px-4 text-xs font-medium text-slate-500 hover:text-slate-700">Show</button>
+          </div>
+        </div>
+        <label class="mt-5 flex select-none items-center gap-2 text-sm text-slate-600">
+          <input type="checkbox" class="h-4 w-4 rounded border-slate-300 text-[#263EA8] focus:ring-[#263EA8]/30" />
+          Keep me logged in
+        </label>
+        <button type="submit"
+          class="mt-6 flex w-full items-center justify-center rounded-lg bg-[#263EA8] px-4 py-3 text-sm font-semibold text-white transition hover:bg-[#1e3288]">
+          Login
+        </button>
+        <a href="#" class="mt-4 block text-center text-sm font-medium text-[#263EA8] underline underline-offset-2 hover:text-[#1e3288]">Forgot password?</a>
+        <p class="mt-4 text-center text-sm text-slate-500">Don't have access? Contact system administrator.</p>
+      </form>
+    </div>
+  </div>
+</body>
+</html>
