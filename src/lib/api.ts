@@ -1,5 +1,6 @@
 import { getStoredToken } from "@/lib/auth";
 import type { Equipment, Vehicle } from "@/types/asset";
+import type { Staff } from "@/types/staff";
 
 async function authedFetch<T>(path: string): Promise<T> {
   const token = getStoredToken();
@@ -30,4 +31,8 @@ export function getEquipment(): Promise<Equipment[]> {
 
 export function getVehicles(): Promise<Vehicle[]> {
   return authedFetch<Vehicle[]>("/api/vehicles");
+}
+
+export function getStaff(): Promise<Staff[]> {
+  return authedFetch<Staff[]>("/api/staff");
 }
