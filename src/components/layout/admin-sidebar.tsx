@@ -15,8 +15,8 @@ const NAV_ITEMS: NavItem[] = [
   { label: "Dashboard", href: "/admin/dashboard", icon: "grid", live: true },
   { label: "Assets", href: "/admin/assets", icon: "box", live: false },
   { label: "Vehicles", href: "/admin/vehicles", icon: "truck", live: false },
-  { label: "Documents", href: "/admin/documents", icon: "doc", live: false },
-  { label: "Equipments", href: "/admin/equipment", icon: "wrench", live: false },
+  { label: "Documents", href: "/admin/documents", icon: "doc", live: true },
+  { label: "Equipments", href: "/admin/equipment", icon: "wrench", live: true },
   { label: "Maintenance", href: "/admin/maintenance", icon: "gauge", live: false },
   { label: "Reports", href: "/admin/reports", icon: "chart", live: false },
   { label: "Users & Roles", href: "/admin/staff", icon: "users", live: false },
@@ -165,8 +165,8 @@ export function AdminSidebar() {
               href={item.href}
               className={`${baseClasses} ${
                 isActive
-                  ? "bg-[#10245c] text-white"
-                  : "text-slate-600 hover:bg-slate-100"
+                  ? "bg-blue-50 font-semibold text-blue-600"
+                  : "text-blue-600 hover:bg-blue-50"
               }`}
             >
               <NavIcon name={item.icon} />

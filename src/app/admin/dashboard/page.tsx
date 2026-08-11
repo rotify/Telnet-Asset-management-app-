@@ -315,7 +315,7 @@ export default function AdminDashboardPage() {
                         </div>
                         <div className="mt-1 h-1.5 w-full rounded-full bg-slate-100">
                           <div
-                            className="h-1.5 rounded-full bg-[#10245c]"
+                            className="h-1.5 rounded-full bg-blue-600"
                             style={{
                               width: `${(s.count / maxStatusCount) * 100}%`,
                             }}

@@ -1,0 +1,275 @@
+"use client";
+
+import { useEffect, useMemo, useState } from "react";
+import { useRouter } from "next/navigation";
+import { getStoredToken, getStoredUsername, isSuperAdmin } from "@/lib/auth";
+import { getEquipment } from "@/lib/api";
+import { AdminSidebar } from "@/components/layout/admin-sidebar";
+import type { Equipment } from "@/types/asset";
+
+const STATUS_STYLES: Record<string, string> = {
+  available: "bg-green-50 text-green-700",
+  assigned: "bg-blue-50 text-blue-700",
+  maintenance: "bg-amber-50 text-amber-700",
+  expired: "bg-red-50 text-red-700",
+  inactive: "bg-slate-100 text-slate-500",
+};
+
+function titleCase(value: string | null | undefined): string {
+  if (!value) return "Unknown";
+  return value
+    .split(/[\s_-]+/)
+    .map((w) => w.charAt(0).toUpperCase() + w.slice(1).toLowerCase())
+    .join(" ");
+}
+
+function formatDate(dateStr: string | null): string {
+  if (!dateStr) return "—";
+  const d = new Date(dateStr);
+  if (Number.isNaN(d.getTime())) return dateStr;
+  return d.toLocaleDateString("en-GB");
+}
+
+function warrantyLabel(dateStr: string | null): { text: string; tone: string } {
+  if (!dateStr) return { text: "No warranty on file", tone: "text-slate-400" };
+  const target = new Date(dateStr).getTime();
+  if (Number.isNaN(target)) return { text: dateStr, tone: "text-slate-500" };
+  const days = Math.ceil((target - Date.now()) / 86400000);
+  const formatted = formatDate(dateStr);
+  if (days < 0) return { text: `Expired ${formatted}`, tone: "text-red-600" };
+  if (days <= 30)
+    return { text: `Active until ${formatted}`, tone: "text-amber-600" };
+  return { text: `Active until ${formatted}`, tone: "text-green-600" };
+}
+
+export default function EquipmentPage() {
+  const router = useRouter();
+  const [gateChecked, setGateChecked] = useState(false);
+  const [equipment, setEquipment] = useState<Equipment[]>([]);
+  const [isLoading, setIsLoading] = useState(true);
+  const [error, setError] = useState<string | null>(null);
+  const [search, setSearch] = useState("");
+  const [statusFilter, setStatusFilter] = useState("All");
+
+  useEffect(() => {
+    const token = getStoredToken();
+    const storedUsername = getStoredUsername();
+    if (!token) {
+      router.replace("/login");
+      return;
+    }
+    if (!isSuperAdmin(storedUsername)) {
+      router.replace("/dashboard");
+      return;
+    }
+    setGateChecked(true);
+  }, [router]);
+
+  useEffect(() => {
+    if (!gateChecked) return;
+    let cancelled = false;
+
+    async function load() {
+      setIsLoading(true);
+      setError(null);
+      try {
+        const data = await getEquipment();
+        if (!cancelled) setEquipment(data);
+      } catch (err) {
+        if (!cancelled) {
+          setError(
+            err instanceof Error ? err.message : "Couldn't load equipment."
+          );
+        }
+      } finally {
+        if (!cancelled) setIsLoading(false);
+      }
+    }
+
+    load();
+    return () => {
+      cancelled = true;
+    };
+  }, [gateChecked]);
+
+  const statusOptions = useMemo(() => {
+    const set = new Set<string>();
+    equipment.forEach((e) => {
+      if (e.status) set.add(titleCase(e.status));
+    });
+    return ["All", ...Array.from(set)];
+  }, [equipment]);
+
+  const filtered = useMemo(() => {
+    return equipment.filter((e) => {
+      const matchesStatus =
+        statusFilter === "All" || titleCase(e.status) === statusFilter;
+      const q = search.trim().toLowerCase();
+      const matchesSearch =
+        !q ||
+        e.name?.toLowerCase().includes(q) ||
+        e.serial_number?.toLowerCase().includes(q) ||
+        e.tag_number?.toLowerCase().includes(q) ||
+        (e.assigned_staff ?? e.assigned_user ?? "").toLowerCase().includes(q);
+      return matchesStatus && matchesSearch;
+    });
+  }, [equipment, search, statusFilter]);
+
+  if (!gateChecked) return null;
+
+  return (
+    <div className="flex min-h-[calc(100vh-0px)] bg-[#EFF1F6]">
+      <AdminSidebar />
+
+      <div className="flex-1 px-6 py-8">
+        <div className="mx-auto max-w-6xl">
+          <header>
+            <h1 className="text-2xl font-bold text-[#121B3B]">Equipments</h1>
+            <p className="mt-1 text-sm text-slate-500">
+              Live equipment records from the backend.
+            </p>
+          </header>
+
+          <div className="mt-4 rounded-lg border border-amber-200 bg-amber-50 px-4 py-2 text-xs text-amber-800">
+            Two columns are approximated: &quot;Department&quot; shows
+            regional office / subsidiary since the API has no literal
+            department field, and &quot;Status&quot; shows the real
+            operational status (Available, Assigned, Maintenance, etc.) —
+            the API doesn&apos;t have a condition rating like
+            Excellent/Good/Fair yet.
+          </div>
+
+          {error && (
+            <div className="mt-6 flex items-center justify-between rounded-lg border border-red-200 bg-red-50 px-4 py-3 text-sm text-red-700">
+              <span>{error}</span>
+              <button
+                type="button"
+                onClick={() => {
+                  setGateChecked(false);
+                  setGateChecked(true);
+                }}
+                className="font-semibold underline"
+              >
+                Retry
+              </button>
+            </div>
+          )}
+
+          <div className="mt-6 flex flex-col gap-3 sm:flex-row sm:items-center">
+            <div className="relative flex-1">
+              <span className="pointer-events-none absolute left-3 top-1/2 -translate-y-1/2 text-slate-400">
+                <svg
+                  width="16"
+                  height="16"
+                  viewBox="0 0 24 24"
+                  fill="none"
+                  stroke="currentColor"
+                  strokeWidth={2}
+                >
+                  <circle cx="11" cy="11" r="7" />
+                  <path d="m20 20-3.5-3.5" strokeLinecap="round" />
+                </svg>
+              </span>
+              <input
+                type="text"
+                value={search}
+                onChange={(e) => setSearch(e.target.value)}
+                placeholder="Search by name, serial number, or assignee…"
+                className="w-full rounded-lg border border-slate-200 bg-white py-2 pl-9 pr-3 text-sm text-slate-700 placeholder:text-slate-400 focus:border-blue-600 focus:outline-none"
+              />
+            </div>
+            <select
+              value={statusFilter}
+              onChange={(e) => setStatusFilter(e.target.value)}
+              className="rounded-lg border border-slate-200 bg-white px-3 py-2 text-sm text-slate-700 focus:border-blue-600 focus:outline-none"
+            >
+              {statusOptions.map((s) => (
+                <option key={s} value={s}>
+                  Status: {s}
+                </option>
+              ))}
+            </select>
+          </div>
+
+          {isLoading && !error && (
+            <p className="mt-6 text-sm text-slate-500">Loading equipment…</p>
+          )}
+
+          {!isLoading && !error && (
+            <div className="mt-6 overflow-x-auto rounded-xl bg-white shadow-[0_1px_2px_rgba(16,24,64,0.06)]">
+              <table className="w-full min-w-[900px] border-collapse text-left text-sm">
+                <thead>
+                  <tr className="border-b border-slate-100 bg-blue-50/60 text-xs font-semibold uppercase tracking-wide text-slate-500">
+                    <th className="px-4 py-3">Item Name</th>
+                    <th className="px-4 py-3">Category</th>
+                    <th className="px-4 py-3">Serial No</th>
+                    <th className="px-4 py-3">Assigned To</th>
+                    <th className="px-4 py-3">Department</th>
+                    <th className="px-4 py-3">Purchase Date</th>
+                    <th className="px-4 py-3">Status</th>
+                    <th className="px-4 py-3">Warranty</th>
+                  </tr>
+                </thead>
+                <tbody>
+                  {filtered.length === 0 ? (
+                    <tr>
+                      <td
+                        colSpan={8}
+                        className="px-4 py-8 text-center text-sm text-slate-400"
+                      >
+                        No equipment matches your search.
+                      </td>
+                    </tr>
+                  ) : (
+                    filtered.map((e) => {
+                      const statusKey = (e.status ?? "").toLowerCase();
+                      const warranty = warrantyLabel(e.warranty_expiry);
+                      return (
+                        <tr
+                          key={e.id}
+                          className="border-b border-slate-50 last:border-0 hover:bg-slate-50"
+                        >
+                          <td className="px-4 py-3 font-medium text-slate-800">
+                            {e.name}
+                          </td>
+                          <td className="px-4 py-3 text-slate-500">
+                            {e.equipment_type || "—"}
+                          </td>
+                          <td className="px-4 py-3 text-slate-500">
+                            {e.serial_number || e.tag_number || "—"}
+                          </td>
+                          <td className="px-4 py-3 text-slate-500">
+                            {e.assigned_staff || e.assigned_user || "Unassigned"}
+                          </td>
+                          <td className="px-4 py-3 text-slate-500">
+                            {e.regional_office || e.subsidiary || "—"}
+                          </td>
+                          <td className="px-4 py-3 text-slate-500">
+                            {formatDate(e.purchase_date)}
+                          </td>
+                          <td className="px-4 py-3">
+                            <span
+                              className={`rounded-md px-2 py-0.5 text-xs font-semibold ${
+                                STATUS_STYLES[statusKey] ??
+                                "bg-slate-100 text-slate-500"
+                              }`}
+                            >
+                              {titleCase(e.status)}
+                            </span>
+                          </td>
+                          <td className={`px-4 py-3 text-xs ${warranty.tone}`}>
+                            {warranty.text}
+                          </td>
+                        </tr>
+                      );
+                    })
+                  )}
+                </tbody>
+              </table>
+            </div>
+          )}
+        </div>
+      </div>
+    </div>
+  );
+}
