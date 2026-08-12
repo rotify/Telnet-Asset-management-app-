@@ -2,16 +2,37 @@
 
 import { useEffect, useState } from "react";
 import Link from "next/link";
+import { usePathname } from "next/navigation";
 import {
   getStoredToken,
   getStoredUsername,
   clearStoredSession,
   isSuperAdmin,
 } from "@/lib/auth";
+import { toggleSidebar } from "@/lib/sidebar-toggle";
+
+function MenuIcon() {
+  return (
+    <svg
+      width="18"
+      height="18"
+      viewBox="0 0 24 24"
+      fill="none"
+      stroke="currentColor"
+      strokeWidth={2}
+      strokeLinecap="round"
+      strokeLinejoin="round"
+    >
+      <path d="M4 6h16M4 12h16M4 18h16" />
+    </svg>
+  );
+}
 
 export function SiteHeader() {
   const [isDark, setIsDark] = useState(false);
   const [username, setUsername] = useState<string | null>(null);
+  const pathname = usePathname();
+  const isAdminSection = pathname?.startsWith("/admin") ?? false;
 
   useEffect(() => {
     const stored = window.localStorage.getItem("telnet_theme");
@@ -38,6 +59,16 @@ export function SiteHeader() {
   return (
     <header className="flex h-14 items-center justify-between bg-[#10245c] px-6 text-white">
       <div className="flex items-center gap-3">
+        {isAdminSection && (
+          <button
+            type="button"
+            onClick={toggleSidebar}
+            aria-label="Toggle navigation menu"
+            className="flex h-8 w-8 items-center justify-center rounded-md bg-white/10 hover:bg-white/20 lg:hidden"
+          >
+            <MenuIcon />
+          </button>
+        )}
         <span className="font-serif text-lg font-bold text-[#50A5DB]">
           TELNET
         </span>

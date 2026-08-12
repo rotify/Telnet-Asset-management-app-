@@ -1,8 +1,14 @@
 "use client";
 
+import { useSyncExternalStore } from "react";
 import Link from "next/link";
 import { usePathname, useRouter } from "next/navigation";
 import { clearStoredSession } from "@/lib/auth";
+import {
+  getSidebarOpen,
+  setSidebarOpen,
+  subscribeSidebar,
+} from "@/lib/sidebar-toggle";
 
 interface NavItem {
   label: string;
@@ -125,65 +131,89 @@ function NavIcon({ name }: { name: string }) {
 export function AdminSidebar() {
   const pathname = usePathname();
   const router = useRouter();
+  const isOpen = useSyncExternalStore(
+    subscribeSidebar,
+    getSidebarOpen,
+    () => false
+  );
 
   function handleLogout() {
+    setSidebarOpen(false);
     clearStoredSession();
     router.push("/login");
   }
 
+  function closeOnMobile() {
+    setSidebarOpen(false);
+  }
+
   return (
-    <aside className="hidden w-60 shrink-0 flex-col border-r border-slate-200 bg-white px-4 py-6 lg:flex">
-      <div
-        className="px-2 text-2xl font-bold text-[#10245c]"
-        style={{ fontFamily: 'Georgia, "Times New Roman", serif' }}
+    <>
+      {isOpen && (
+        <div
+          className="fixed inset-0 z-40 bg-black/30 lg:hidden"
+          onClick={closeOnMobile}
+        />
+      )}
+
+      <aside
+        className={`fixed inset-y-0 left-0 z-50 flex w-60 shrink-0 flex-col border-r border-slate-200 bg-white px-4 py-6 transition-transform duration-200 ease-in-out lg:static lg:z-auto lg:translate-x-0 ${
+          isOpen ? "translate-x-0" : "-translate-x-full"
+        }`}
       >
-        TELNET
-      </div>
+        <div
+          className="px-2 text-2xl font-bold text-[#10245c]"
+          style={{ fontFamily: 'Georgia, "Times New Roman", serif' }}
+        >
+          TELNET
+        </div>
 
-      <nav className="mt-8 flex flex-1 flex-col gap-1">
-        {NAV_ITEMS.map((item) => {
-          const isActive = pathname === item.href;
-          const baseClasses =
-            "flex items-center gap-3 rounded-lg px-3 py-2 text-sm font-medium transition-colors";
+        <nav className="mt-8 flex flex-1 flex-col gap-1">
+          {NAV_ITEMS.map((item) => {
+            const isActive = pathname === item.href;
+            const baseClasses =
+              "flex items-center gap-3 rounded-lg px-3 py-2 text-sm font-medium transition-colors";
 
-          if (!item.live) {
+            if (!item.live) {
+              return (
+                <div
+                  key={item.label}
+                  title="Not built yet — backend has no API for this section"
+                  className={`${baseClasses} cursor-not-allowed text-slate-300`}
+                >
+                  <NavIcon name={item.icon} />
+                  {item.label}
+                </div>
+              );
+            }
+
             return (
-              <div
+              <Link
                 key={item.label}
-                title="Not built yet — backend has no API for this section"
-                className={`${baseClasses} cursor-not-allowed text-slate-300`}
+                href={item.href}
+                onClick={closeOnMobile}
+                className={`${baseClasses} ${
+                  isActive
+                    ? "bg-blue-50 font-semibold text-blue-600"
+                    : "text-blue-600 hover:bg-blue-50"
+                }`}
               >
                 <NavIcon name={item.icon} />
                 {item.label}
-              </div>
+              </Link>
             );
-          }
+          })}
+        </nav>
 
-          return (
-            <Link
-              key={item.label}
-              href={item.href}
-              className={`${baseClasses} ${
-                isActive
-                  ? "bg-blue-50 font-semibold text-blue-600"
-                  : "text-blue-600 hover:bg-blue-50"
-              }`}
-            >
-              <NavIcon name={item.icon} />
-              {item.label}
-            </Link>
-          );
-        })}
-      </nav>
-
-      <button
-        type="button"
-        onClick={handleLogout}
-        className="mt-4 flex items-center gap-3 rounded-lg px-3 py-2 text-sm font-medium text-slate-500 hover:bg-slate-100"
-      >
-        <NavIcon name="logout" />
-        Log Out
-      </button>
-    </aside>
+        <button
+          type="button"
+          onClick={handleLogout}
+          className="mt-4 flex items-center gap-3 rounded-lg px-3 py-2 text-sm font-medium text-slate-500 hover:bg-slate-100"
+        >
+          <NavIcon name="logout" />
+          Log Out
+        </button>
+      </aside>
+    </>
   );
 }

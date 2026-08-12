@@ -382,11 +382,6 @@ export default function AdminDashboardPage() {
                     ))}
                   </div>
                 )}
-                <p className="mt-3 text-xs text-slate-400">
-                  Document expiry alerts (insurance, roadworthiness certificates
-                  filed as documents) aren&apos;t shown here yet — the backend
-                  doesn&apos;t expose a documents endpoint.
-                </p>
               </div>
             </>
           )}
