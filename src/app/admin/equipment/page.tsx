@@ -145,15 +145,6 @@ export default function EquipmentPage() {
             </p>
           </header>
 
-          <div className="mt-4 rounded-lg border border-amber-200 bg-amber-50 px-4 py-2 text-xs text-amber-800">
-            Two columns are approximated: &quot;Department&quot; shows
-            regional office / subsidiary since the API has no literal
-            department field, and &quot;Status&quot; shows the real
-            operational status (Available, Assigned, Maintenance, etc.) —
-            the API doesn&apos;t have a condition rating like
-            Excellent/Good/Fair yet.
-          </div>
-
           {error && (
             <div className="mt-6 flex items-center justify-between rounded-lg border border-red-200 bg-red-50 px-4 py-3 text-sm text-red-700">
               <span>{error}</span>

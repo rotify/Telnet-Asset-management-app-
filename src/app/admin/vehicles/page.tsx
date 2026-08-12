@@ -172,14 +172,6 @@ export default function VehiclesPage() {
             </p>
           </header>
 
-          <div className="mt-4 rounded-lg border border-amber-200 bg-amber-50 px-4 py-2 text-xs text-amber-800">
-            Columns are adapted for vehicles: there&apos;s no department or
-            purchase-date field on the API, so this table shows Make/Model in
-            that slot and skips purchase date. &quot;Warranty&quot; shows the
-            soonest of insurance, roadworthiness, or license expiry instead,
-            since vehicles track three separate expiry dates.
-          </div>
-
           {error && (
             <div className="mt-6 flex items-center justify-between rounded-lg border border-red-200 bg-red-50 px-4 py-3 text-sm text-red-700">
               <span>{error}</span>
