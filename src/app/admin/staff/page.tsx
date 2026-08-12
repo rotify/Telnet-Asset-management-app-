@@ -184,14 +184,6 @@ export default function StaffPage() {
             </button>
           </header>
 
-          <div className="mt-4 rounded-lg border border-blue-200 bg-blue-50 px-4 py-2 text-xs text-blue-800">
-            This screen isn&apos;t in the Figma set yet — it&apos;s built
-            directly against the live Staff API (create, edit, delete all
-            work for real) since that&apos;s the one module with full CRUD
-            already on the backend. There&apos;s no role/permission field on
-            the API yet, so &quot;Roles&quot; here just means staff records.
-          </div>
-
           {showAddForm && (
             <div className="mt-4 rounded-xl bg-white p-4 shadow-[0_1px_2px_rgba(16,24,64,0.06)]">
               <p className="text-sm font-semibold text-[#121B3B]">
