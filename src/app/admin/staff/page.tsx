@@ -280,8 +280,164 @@ export default function StaffPage() {
             <p className="mt-6 text-sm text-slate-500">Loading staff…</p>
           )}
 
-          {!isLoading && !error && (
-            <div className="mt-6 overflow-x-auto rounded-xl bg-white shadow-[0_1px_2px_rgba(16,24,64,0.06)]">
+          {!isLoading && !error && filtered.length === 0 && (
+            <p className="mt-6 rounded-xl bg-white p-6 text-center text-sm text-slate-400 shadow-[0_1px_2px_rgba(16,24,64,0.06)]">
+              No staff match your search.
+            </p>
+          )}
+
+          {!isLoading && !error && filtered.length > 0 && (
+            <div className="mt-6 space-y-3 md:hidden">
+              {filtered.map((s) => {
+                const isEditing = editingId === s.id;
+                const isBusy = busyId === s.id;
+                return (
+                  <div
+                    key={s.id}
+                    className="rounded-xl bg-white p-4 shadow-[0_1px_2px_rgba(16,24,64,0.06)]"
+                  >
+                    <div className="flex items-start justify-between gap-2">
+                      <div className="min-w-0">
+                        <p className="text-xs text-slate-400">{s.staff_id}</p>
+                        {isEditing && editValues ? (
+                          <div className="mt-1 flex gap-2">
+                            <input
+                              value={editValues.first_name}
+                              onChange={(e) =>
+                                setEditValues((v) =>
+                                  v ? { ...v, first_name: e.target.value } : v
+                                )
+                              }
+                              placeholder="First name"
+                              className="w-full min-w-0 rounded border border-slate-200 px-2 py-1 text-sm focus:border-blue-600 focus:outline-none"
+                            />
+                            <input
+                              value={editValues.last_name}
+                              onChange={(e) =>
+                                setEditValues((v) =>
+                                  v ? { ...v, last_name: e.target.value } : v
+                                )
+                              }
+                              placeholder="Last name"
+                              className="w-full min-w-0 rounded border border-slate-200 px-2 py-1 text-sm focus:border-blue-600 focus:outline-none"
+                            />
+                          </div>
+                        ) : (
+                          <p className="font-semibold text-slate-800">
+                            {s.first_name} {s.last_name}
+                          </p>
+                        )}
+                      </div>
+                      {isEditing && editValues ? (
+                        <label className="flex shrink-0 items-center gap-1.5 text-xs text-slate-500">
+                          <input
+                            type="checkbox"
+                            checked={editValues.is_active}
+                            onChange={(e) =>
+                              setEditValues((v) =>
+                                v ? { ...v, is_active: e.target.checked } : v
+                              )
+                            }
+                          />
+                          Active
+                        </label>
+                      ) : (
+                        <span
+                          className={`shrink-0 rounded-md px-2 py-0.5 text-xs font-semibold ${
+                            s.is_active
+                              ? "bg-green-50 text-green-700"
+                              : "bg-slate-100 text-slate-500"
+                          }`}
+                        >
+                          {s.is_active ? "Active" : "Inactive"}
+                        </span>
+                      )}
+                    </div>
+
+                    <div className="mt-3 grid grid-cols-2 gap-x-3 gap-y-2 text-xs">
+                      <div>
+                        <p className="text-slate-400">Department</p>
+                        {isEditing && editValues ? (
+                          <input
+                            value={editValues.department}
+                            onChange={(e) =>
+                              setEditValues((v) =>
+                                v ? { ...v, department: e.target.value } : v
+                              )
+                            }
+                            className="mt-0.5 w-full rounded border border-slate-200 px-2 py-1 text-sm focus:border-blue-600 focus:outline-none"
+                          />
+                        ) : (
+                          <p className="text-slate-700">
+                            {s.department || "—"}
+                          </p>
+                        )}
+                      </div>
+                      <div>
+                        <p className="text-slate-400">Branch</p>
+                        {isEditing && editValues ? (
+                          <input
+                            value={editValues.branch}
+                            onChange={(e) =>
+                              setEditValues((v) =>
+                                v ? { ...v, branch: e.target.value } : v
+                              )
+                            }
+                            className="mt-0.5 w-full rounded border border-slate-200 px-2 py-1 text-sm focus:border-blue-600 focus:outline-none"
+                          />
+                        ) : (
+                          <p className="text-slate-700">{s.branch || "—"}</p>
+                        )}
+                      </div>
+                    </div>
+
+                    <div className="mt-3 flex gap-4 border-t border-slate-100 pt-3">
+                      {isEditing ? (
+                        <>
+                          <button
+                            type="button"
+                            disabled={isBusy}
+                            onClick={() => saveEdit(s.id)}
+                            className="text-sm font-medium text-blue-600 hover:text-blue-700 disabled:opacity-60"
+                          >
+                            {isBusy ? "Saving…" : "Save"}
+                          </button>
+                          <button
+                            type="button"
+                            onClick={cancelEdit}
+                            className="text-sm font-medium text-slate-400 hover:text-slate-600"
+                          >
+                            Cancel
+                          </button>
+                        </>
+                      ) : (
+                        <>
+                          <button
+                            type="button"
+                            onClick={() => startEdit(s)}
+                            className="text-sm font-medium text-blue-600 hover:text-blue-700"
+                          >
+                            Edit
+                          </button>
+                          <button
+                            type="button"
+                            disabled={isBusy}
+                            onClick={() => handleDelete(s)}
+                            className="text-sm font-medium text-red-600 hover:text-red-700 disabled:opacity-60"
+                          >
+                            {isBusy ? "…" : "Delete"}
+                          </button>
+                        </>
+                      )}
+                    </div>
+                  </div>
+                );
+              })}
+            </div>
+          )}
+
+          {!isLoading && !error && filtered.length > 0 && (
+            <div className="mt-6 hidden overflow-x-auto rounded-xl bg-white shadow-[0_1px_2px_rgba(16,24,64,0.06)] md:block">
               <table className="w-full min-w-[800px] border-collapse text-left text-sm">
                 <thead>
                   <tr className="border-b border-slate-100 bg-blue-50/60 text-xs font-semibold uppercase tracking-wide text-slate-500">

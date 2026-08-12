@@ -228,8 +228,81 @@ export default function VehiclesPage() {
             <p className="mt-6 text-sm text-slate-500">Loading vehicles…</p>
           )}
 
-          {!isLoading && !error && (
-            <div className="mt-6 overflow-x-auto rounded-xl bg-white shadow-[0_1px_2px_rgba(16,24,64,0.06)]">
+          {!isLoading && !error && filtered.length === 0 && (
+            <p className="mt-6 rounded-xl bg-white p-6 text-center text-sm text-slate-400 shadow-[0_1px_2px_rgba(16,24,64,0.06)]">
+              No vehicles match your search.
+            </p>
+          )}
+
+          {!isLoading && !error && filtered.length > 0 && (
+            <div className="mt-6 space-y-3 md:hidden">
+              {filtered.map((v) => {
+                const statusKey = (v.status ?? "").toLowerCase();
+                const expiry = nearestExpiry(v);
+                return (
+                  <div
+                    key={v.id}
+                    className="rounded-xl bg-white p-4 shadow-[0_1px_2px_rgba(16,24,64,0.06)]"
+                  >
+                    <div className="flex items-start justify-between gap-2">
+                      <div>
+                        <p className="font-semibold text-slate-800">
+                          {v.name}
+                        </p>
+                        <p className="text-xs text-slate-400">
+                          {v.asset_type || "—"}
+                        </p>
+                      </div>
+                      <span
+                        className={`shrink-0 rounded-md px-2 py-0.5 text-xs font-semibold ${
+                          STATUS_STYLES[statusKey] ??
+                          "bg-slate-100 text-slate-500"
+                        }`}
+                      >
+                        {titleCase(v.status)}
+                      </span>
+                    </div>
+
+                    <div className="mt-3 grid grid-cols-2 gap-x-3 gap-y-2 text-xs">
+                      <div>
+                        <p className="text-slate-400">Plate / VIN</p>
+                        <p className="text-slate-700">
+                          {v.license_plate || v.vin_number || "—"}
+                        </p>
+                      </div>
+                      <div>
+                        <p className="text-slate-400">Assigned To</p>
+                        <p className="text-slate-700">
+                          {v.assigned_staff || "Unassigned"}
+                        </p>
+                      </div>
+                      <div>
+                        <p className="text-slate-400">Make / Model</p>
+                        <p className="text-slate-700">
+                          {[v.make, v.model].filter(Boolean).join(" ") || "—"}
+                        </p>
+                      </div>
+                    </div>
+
+                    <p className={`mt-3 text-xs ${expiry.tone}`}>
+                      {expiry.text}
+                    </p>
+
+                    <div className="mt-3 border-t border-slate-100 pt-3">
+                      <AssetActions
+                        assetId={v.asset}
+                        staffOptions={staffOptions}
+                        onChanged={() => setRefreshKey((k) => k + 1)}
+                      />
+                    </div>
+                  </div>
+                );
+              })}
+            </div>
+          )}
+
+          {!isLoading && !error && filtered.length > 0 && (
+            <div className="mt-6 hidden overflow-x-auto rounded-xl bg-white shadow-[0_1px_2px_rgba(16,24,64,0.06)] md:block">
               <table className="w-full min-w-[1050px] border-collapse text-left text-sm">
                 <thead>
                   <tr className="border-b border-slate-100 bg-blue-50/60 text-xs font-semibold uppercase tracking-wide text-slate-500">

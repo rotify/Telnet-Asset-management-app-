@@ -279,8 +279,66 @@ export default function MaintenancePage() {
             </p>
           )}
 
-          {!isLoading && !error && (
-            <div className="mt-6 overflow-x-auto rounded-xl bg-white shadow-[0_1px_2px_rgba(16,24,64,0.06)]">
+          {!isLoading && !error && filtered.length === 0 && (
+            <p className="mt-6 rounded-xl bg-white p-6 text-center text-sm text-slate-400 shadow-[0_1px_2px_rgba(16,24,64,0.06)]">
+              No maintenance records match your search.
+            </p>
+          )}
+
+          {!isLoading && !error && filtered.length > 0 && (
+            <div className="mt-6 space-y-3 md:hidden">
+              {filtered.map((r) => {
+                const status = dueStatus(r.due_date);
+                return (
+                  <div
+                    key={r.id}
+                    className="rounded-xl bg-white p-4 shadow-[0_1px_2px_rgba(16,24,64,0.06)]"
+                  >
+                    <div className="flex items-start justify-between gap-2">
+                      <div>
+                        <p className="font-semibold text-slate-800">
+                          {equipmentNameById.get(r.equipment) ??
+                            `Equipment #${r.equipment}`}
+                        </p>
+                        <p className="text-xs text-slate-400">
+                          {r.description}
+                        </p>
+                      </div>
+                      <span
+                        className={`shrink-0 rounded-md px-2 py-0.5 text-xs font-semibold ${status.tone}`}
+                      >
+                        {status.label}
+                      </span>
+                    </div>
+
+                    <div className="mt-3 grid grid-cols-2 gap-x-3 gap-y-2 text-xs">
+                      <div>
+                        <p className="text-slate-400">Due Date</p>
+                        <p className="text-slate-700">
+                          {formatDate(r.due_date)}
+                        </p>
+                      </div>
+                      <div>
+                        <p className="text-slate-400">Cost</p>
+                        <p className="text-slate-700">
+                          {r.cost ? `₦${r.cost}` : "—"}
+                        </p>
+                      </div>
+                      {r.notes && (
+                        <div className="col-span-2">
+                          <p className="text-slate-400">Notes</p>
+                          <p className="text-slate-700">{r.notes}</p>
+                        </div>
+                      )}
+                    </div>
+                  </div>
+                );
+              })}
+            </div>
+          )}
+
+          {!isLoading && !error && filtered.length > 0 && (
+            <div className="mt-6 hidden overflow-x-auto rounded-xl bg-white shadow-[0_1px_2px_rgba(16,24,64,0.06)] md:block">
               <table className="w-full min-w-[800px] border-collapse text-left text-sm">
                 <thead>
                   <tr className="border-b border-slate-100 bg-blue-50/60 text-xs font-semibold uppercase tracking-wide text-slate-500">
