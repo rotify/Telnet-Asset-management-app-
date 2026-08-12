@@ -3,78 +3,35 @@
 import { useEffect, useMemo, useState } from "react";
 import { useRouter } from "next/navigation";
 import { getStoredToken, getStoredUsername, isSuperAdmin } from "@/lib/auth";
+import { createDocument, getDocuments } from "@/lib/api";
 import { AdminSidebar } from "@/components/layout/admin-sidebar";
+import type { DocumentRecord } from "@/types/document";
 
-type DocStatus = "Valid" | "Expiring" | "Expired";
-
-interface DocRecord {
-  id: string;
-  title: string;
-  type: string;
-  status: DocStatus;
-  expiringDate: string;
-  uploadedBy: string;
-}
-
-// Sample data — there's no documents API yet, so this stands in for
-// GET /api/documents/ until the backend adds it. Shape mirrors the Figma
-// design: title, type, status, expiring date, uploaded by.
-const MOCK_DOCUMENTS: DocRecord[] = [
-  {
-    id: "doc-1",
-    title: "Road Worthiness _ ABJ - 118- XA",
-    type: "Certificate",
-    status: "Expiring",
-    expiringDate: "08/12/2026",
-    uploadedBy: "Grace Adeyemi",
-  },
-  {
-    id: "doc-2",
-    title: "Business Operating Licence",
-    type: "Licence",
-    status: "Expiring",
-    expiringDate: "08/12/2027",
-    uploadedBy: "John Okoro",
-  },
-  {
-    id: "doc-3",
-    title: "Insurance Certificate",
-    type: "Licence",
-    status: "Valid",
-    expiringDate: "18/10/2027",
-    uploadedBy: "John Okoro",
-  },
-  {
-    id: "doc-4",
-    title: "Forklift Warranty",
-    type: "Warranty",
-    status: "Expired",
-    expiringDate: "02/10/2026",
-    uploadedBy: "Adekanbi Moses",
-  },
-  {
-    id: "doc-5",
-    title: "Fire Safety Certificate",
-    type: "Certificate",
-    status: "Valid",
-    expiringDate: "14/03/2027",
-    uploadedBy: "Grace Adeyemi",
-  },
-  {
-    id: "doc-6",
-    title: "Generator Maintenance Warranty",
-    type: "Warranty",
-    status: "Expiring",
-    expiringDate: "30/08/2026",
-    uploadedBy: "John Okoro",
-  },
-];
+type DocStatus = "Valid" | "Expiring" | "Expired" | "Unknown";
 
 const STATUS_STYLES: Record<DocStatus, string> = {
   Valid: "bg-green-100 text-green-700",
   Expiring: "bg-amber-100 text-amber-700",
   Expired: "bg-red-100 text-red-700",
+  Unknown: "bg-slate-100 text-slate-500",
 };
+
+function formatDate(dateStr: string | null): string {
+  if (!dateStr) return "—";
+  const d = new Date(dateStr);
+  if (Number.isNaN(d.getTime())) return dateStr;
+  return d.toLocaleDateString("en-GB");
+}
+
+function statusFromExpiry(expiry: string | null): DocStatus {
+  if (!expiry) return "Unknown";
+  const target = new Date(expiry).getTime();
+  if (Number.isNaN(target)) return "Unknown";
+  const days = Math.ceil((target - Date.now()) / 86400000);
+  if (days < 0) return "Expired";
+  if (days <= 30) return "Expiring";
+  return "Valid";
+}
 
 function DocIcon() {
   return (
@@ -94,63 +51,29 @@ function DocIcon() {
   );
 }
 
-function ActionIcon({ name }: { name: "eye" | "pencil" | "download" }) {
-  const common = {
-    width: 15,
-    height: 15,
-    viewBox: "0 0 24 24",
-    fill: "none",
-    stroke: "currentColor",
-    strokeWidth: 1.8,
-    strokeLinecap: "round" as const,
-    strokeLinejoin: "round" as const,
-  };
-  if (name === "eye") {
-    return (
-      <svg {...common}>
-        <path d="M1.5 12S5 5 12 5s10.5 7 10.5 7-3.5 7-10.5 7S1.5 12 1.5 12Z" />
-        <circle cx="12" cy="12" r="3" />
-      </svg>
-    );
-  }
-  if (name === "pencil") {
-    return (
-      <svg {...common}>
-        <path d="M4 20h4L19.5 8.5a2.1 2.1 0 0 0-3-3L5 17v3Z" />
-      </svg>
-    );
-  }
-  return (
-    <svg {...common}>
-      <path d="M12 3v12M7 10l5 5 5-5M4 20h16" />
-    </svg>
-  );
-}
-
-function ActionButton({
-  icon,
-  label,
-}: {
-  icon: "eye" | "pencil" | "download";
-  label: string;
-}) {
-  return (
-    <button
-      type="button"
-      title="No documents API yet — this is a placeholder action"
-      className="flex items-center gap-1.5 text-sm font-medium text-slate-500 hover:text-blue-600"
-    >
-      <ActionIcon name={icon} />
-      {label}
-    </button>
-  );
-}
+const EMPTY_NEW_DOC = {
+  name: "",
+  document_type: "",
+  description: "",
+  issuing_authority: "",
+  issue_date: "",
+  expiry_date: "",
+};
 
 export default function DocumentsPage() {
   const router = useRouter();
   const [gateChecked, setGateChecked] = useState(false);
+  const [documents, setDocuments] = useState<DocumentRecord[]>([]);
+  const [isLoading, setIsLoading] = useState(true);
+  const [error, setError] = useState<string | null>(null);
   const [search, setSearch] = useState("");
   const [statusFilter, setStatusFilter] = useState<"All" | DocStatus>("All");
+  const [expandedId, setExpandedId] = useState<number | null>(null);
+
+  const [showAddForm, setShowAddForm] = useState(false);
+  const [newDoc, setNewDoc] = useState(EMPTY_NEW_DOC);
+  const [addError, setAddError] = useState<string | null>(null);
+  const [isAdding, setIsAdding] = useState(false);
 
   useEffect(() => {
     const token = getStoredToken();
@@ -166,15 +89,56 @@ export default function DocumentsPage() {
     setGateChecked(true);
   }, [router]);
 
+  async function loadDocuments() {
+    setIsLoading(true);
+    setError(null);
+    try {
+      const data = await getDocuments();
+      setDocuments(data);
+    } catch (err) {
+      setError(err instanceof Error ? err.message : "Couldn't load documents.");
+    } finally {
+      setIsLoading(false);
+    }
+  }
+
+  useEffect(() => {
+    if (!gateChecked) return;
+    loadDocuments();
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, [gateChecked]);
+
   const filtered = useMemo(() => {
-    return MOCK_DOCUMENTS.filter((doc) => {
-      const matchesStatus = statusFilter === "All" || doc.status === statusFilter;
-      const matchesSearch = doc.title
+    return documents.filter((doc) => {
+      const status = statusFromExpiry(doc.expiry_date);
+      const matchesStatus = statusFilter === "All" || status === statusFilter;
+      const matchesSearch = doc.name
         .toLowerCase()
         .includes(search.trim().toLowerCase());
       return matchesStatus && matchesSearch;
     });
-  }, [search, statusFilter]);
+  }, [documents, search, statusFilter]);
+
+  async function handleAddDocument() {
+    setAddError(null);
+    if (!newDoc.name.trim() || !newDoc.document_type.trim()) {
+      setAddError("Name and document type are required.");
+      return;
+    }
+    setIsAdding(true);
+    try {
+      const created = await createDocument(newDoc);
+      setDocuments((prev) => [created, ...prev]);
+      setNewDoc(EMPTY_NEW_DOC);
+      setShowAddForm(false);
+    } catch (err) {
+      setAddError(
+        err instanceof Error ? err.message : "Couldn't create document."
+      );
+    } finally {
+      setIsAdding(false);
+    }
+  }
 
   if (!gateChecked) return null;
 
@@ -184,19 +148,115 @@ export default function DocumentsPage() {
 
       <div className="flex-1 px-6 py-8">
         <div className="mx-auto max-w-6xl">
-          <header>
-            <h1 className="text-2xl font-bold text-[#121B3B]">Documents</h1>
-            <p className="mt-1 text-sm text-slate-500">
-              Certificates, licences, and warranties across the company.
-            </p>
+          <header className="flex flex-wrap items-center justify-between gap-3">
+            <div>
+              <h1 className="text-2xl font-bold text-[#121B3B]">Documents</h1>
+              <p className="mt-1 text-sm text-slate-500">
+                Live certificates, licences, and warranties from the backend.
+              </p>
+            </div>
+            <button
+              type="button"
+              onClick={() => {
+                setShowAddForm((v) => !v);
+                setAddError(null);
+              }}
+              className="rounded-lg bg-blue-600 px-4 py-2 text-sm font-semibold text-white hover:bg-blue-700"
+            >
+              {showAddForm ? "Cancel" : "+ Add Document"}
+            </button>
           </header>
 
-          <div className="mt-4 rounded-lg border border-amber-200 bg-amber-50 px-4 py-2 text-xs text-amber-800">
-            The backend hasnt given a documents endpoint yet so the
-            cards below are sample data matching the design so you can review
-            the layout. Search and the status filter work against this
-            sample set.
-          </div>
+          {showAddForm && (
+            <div className="mt-4 rounded-xl bg-white p-4 shadow-[0_1px_2px_rgba(16,24,64,0.06)]">
+              <p className="text-sm font-semibold text-[#121B3B]">
+                New document
+              </p>
+              <div className="mt-3 grid grid-cols-1 gap-3 sm:grid-cols-3">
+                <input
+                  type="text"
+                  placeholder="Document name"
+                  value={newDoc.name}
+                  onChange={(e) =>
+                    setNewDoc((v) => ({ ...v, name: e.target.value }))
+                  }
+                  className="rounded-lg border border-slate-200 px-3 py-2 text-sm focus:border-blue-600 focus:outline-none"
+                />
+                <input
+                  type="text"
+                  placeholder="Type (e.g. compliance, licence)"
+                  value={newDoc.document_type}
+                  onChange={(e) =>
+                    setNewDoc((v) => ({ ...v, document_type: e.target.value }))
+                  }
+                  className="rounded-lg border border-slate-200 px-3 py-2 text-sm focus:border-blue-600 focus:outline-none"
+                />
+                <input
+                  type="text"
+                  placeholder="Issuing authority"
+                  value={newDoc.issuing_authority}
+                  onChange={(e) =>
+                    setNewDoc((v) => ({
+                      ...v,
+                      issuing_authority: e.target.value,
+                    }))
+                  }
+                  className="rounded-lg border border-slate-200 px-3 py-2 text-sm focus:border-blue-600 focus:outline-none"
+                />
+                <input
+                  type="date"
+                  placeholder="Issue date"
+                  value={newDoc.issue_date}
+                  onChange={(e) =>
+                    setNewDoc((v) => ({ ...v, issue_date: e.target.value }))
+                  }
+                  className="rounded-lg border border-slate-200 px-3 py-2 text-sm focus:border-blue-600 focus:outline-none"
+                />
+                <input
+                  type="date"
+                  placeholder="Expiry date"
+                  value={newDoc.expiry_date}
+                  onChange={(e) =>
+                    setNewDoc((v) => ({ ...v, expiry_date: e.target.value }))
+                  }
+                  className="rounded-lg border border-slate-200 px-3 py-2 text-sm focus:border-blue-600 focus:outline-none"
+                />
+                <input
+                  type="text"
+                  placeholder="Description"
+                  value={newDoc.description}
+                  onChange={(e) =>
+                    setNewDoc((v) => ({ ...v, description: e.target.value }))
+                  }
+                  className="rounded-lg border border-slate-200 px-3 py-2 text-sm focus:border-blue-600 focus:outline-none"
+                />
+              </div>
+              {addError && (
+                <p className="mt-2 text-sm text-red-600">{addError}</p>
+              )}
+              <button
+                type="button"
+                onClick={handleAddDocument}
+                disabled={isAdding}
+                className="mt-3 rounded-lg bg-blue-600 px-4 py-2 text-sm font-semibold text-white hover:bg-blue-700 disabled:opacity-60"
+              >
+                {isAdding ? "Saving…" : "Save document"}
+              </button>
+            </div>
+          )}
+
+          {error && (
+            <div className="mt-6 flex items-center justify-between rounded-lg border border-red-200 bg-red-50 px-4 py-3 text-sm text-red-700">
+              <span>{error}</span>
+              <button
+                type="button"
+                onClick={loadDocuments}
+                className="font-semibold underline"
+              >
+                Retry
+              </button>
+            </div>
+          )}
 
           <div className="mt-6 flex flex-col gap-3 sm:flex-row sm:items-center">
             <div className="relative flex-1">
@@ -235,58 +295,129 @@ export default function DocumentsPage() {
             </select>
           </div>
 
-          {filtered.length === 0 ? (
+          {isLoading && !error && (
+            <p className="mt-6 text-sm text-slate-500">Loading documents…</p>
+          )}
+
+          {!isLoading && !error && filtered.length === 0 && (
             <p className="mt-8 text-sm text-slate-400">
               No documents match your search.
             </p>
-          ) : (
+          )}
+
+          {!isLoading && !error && filtered.length > 0 && (
             <div className="mt-6 grid grid-cols-1 gap-4 md:grid-cols-2">
-              {filtered.map((doc) => (
-                <div
-                  key={doc.id}
-                  className="rounded-xl border-t-4 border-t-blue-600 bg-white p-4 shadow-[0_1px_2px_rgba(16,24,64,0.06)]"
-                >
-                  <div className="flex items-start justify-between gap-3">
-                    <div className="flex items-start gap-3">
-                      <span className="flex h-9 w-9 shrink-0 items-center justify-center rounded-lg bg-blue-50 text-blue-600">
-                        <DocIcon />
+              {filtered.map((doc) => {
+                const status = statusFromExpiry(doc.expiry_date);
+                const isExpanded = expandedId === doc.id;
+                return (
+                  <div
+                    key={doc.id}
+                    className="rounded-xl border-t-4 border-t-blue-600 bg-white p-4 shadow-[0_1px_2px_rgba(16,24,64,0.06)]"
+                  >
+                    <div className="flex items-start justify-between gap-3">
+                      <div className="flex items-start gap-3">
+                        <span className="flex h-9 w-9 shrink-0 items-center justify-center rounded-lg bg-blue-50 text-blue-600">
+                          <DocIcon />
+                        </span>
+                        <div>
+                          <p className="font-semibold text-[#121B3B]">
+                            {doc.name}
+                          </p>
+                          <p className="text-sm text-slate-400">
+                            {doc.document_type}
+                          </p>
+                        </div>
+                      </div>
+                      <span
+                        className={`shrink-0 rounded-md px-2 py-0.5 text-xs font-semibold ${STATUS_STYLES[status]}`}
+                      >
+                        {status}
                       </span>
-                      <div>
-                        <p className="font-semibold text-[#121B3B]">
-                          {doc.title}
-                        </p>
-                        <p className="text-sm text-slate-400">{doc.type}</p>
+                    </div>
+
+                    <div className="mt-4 space-y-2 border-t border-slate-100 pt-3 text-sm">
+                      <div className="flex justify-between">
+                        <span className="text-slate-400">Expiry Date</span>
+                        <span className="font-medium text-slate-700">
+                          {formatDate(doc.expiry_date)}
+                        </span>
+                      </div>
+                      <div className="flex justify-between">
+                        <span className="text-slate-400">
+                          Responsible Person
+                        </span>
+                        <span className="font-medium text-slate-700">
+                          {doc.responsible_person || "—"}
+                        </span>
                       </div>
                     </div>
-                    <span
-                      className={`shrink-0 rounded-md px-2 py-0.5 text-xs font-semibold ${STATUS_STYLES[doc.status]}`}
-                    >
-                      {doc.status}
-                    </span>
-                  </div>
 
-                  <div className="mt-4 space-y-2 border-t border-slate-100 pt-3 text-sm">
-                    <div className="flex justify-between">
-                      <span className="text-slate-400">Expiring Date</span>
-                      <span className="font-medium text-slate-700">
-                        {doc.expiringDate}
+                    {isExpanded && (
+                      <div className="mt-3 space-y-2 border-t border-slate-100 pt-3 text-sm">
+                        <div className="flex justify-between">
+                          <span className="text-slate-400">
+                            Issuing Authority
+                          </span>
+                          <span className="font-medium text-slate-700">
+                            {doc.issuing_authority || "—"}
+                          </span>
+                        </div>
+                        <div className="flex justify-between">
+                          <span className="text-slate-400">Issue Date</span>
+                          <span className="font-medium text-slate-700">
+                            {formatDate(doc.issue_date)}
+                          </span>
+                        </div>
+                        <div className="flex justify-between">
+                          <span className="text-slate-400">
+                            Document Number
+                          </span>
+                          <span className="font-medium text-slate-700">
+                            {doc.document_number || "—"}
+                          </span>
+                        </div>
+                        <div className="flex justify-between">
+                          <span className="text-slate-400">Location</span>
+                          <span className="font-medium text-slate-700">
+                            {doc.location || "—"}
+                          </span>
+                        </div>
+                        {doc.description && (
+                          <p className="text-slate-500">{doc.description}</p>
+                        )}
+                        {doc.notes && (
+                          <p className="text-slate-400">Notes: {doc.notes}</p>
+                        )}
+                      </div>
+                    )}
+
+                    <div className="mt-4 flex items-center gap-5 border-t border-slate-100 pt-3">
+                      <button
+                        type="button"
+                        onClick={() =>
+                          setExpandedId(isExpanded ? null : doc.id)
+                        }
+                        className="text-sm font-medium text-slate-500 hover:text-blue-600"
+                      >
+                        {isExpanded ? "Hide Details" : "View Details"}
+                      </button>
+                      <span
+                        title="No update/export endpoint on the API yet"
+                        className="text-sm font-medium text-slate-300"
+                      >
+                        Edit
+                      </span>
+                      <span
+                        title="No update/export endpoint on the API yet"
+                        className="text-sm font-medium text-slate-300"
+                      >
+                        Export
                       </span>
                     </div>
-                    <div className="flex justify-between">
-                      <span className="text-slate-400">Uploaded By</span>
-                      <span className="font-medium text-slate-700">
-                        {doc.uploadedBy}
-                      </span>
-                    </div>
                   </div>
-
-                  <div className="mt-4 flex items-center gap-5 border-t border-slate-100 pt-3">
-                    <ActionButton icon="eye" label="View Details" />
-                    <ActionButton icon="pencil" label="Edit" />
-                    <ActionButton icon="download" label="Export" />
-                  </div>
-                </div>
-              ))}
+                );
+              })}
             </div>
           )}
         </div>

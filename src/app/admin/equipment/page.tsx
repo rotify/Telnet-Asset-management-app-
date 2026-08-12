@@ -3,9 +3,11 @@
 import { useEffect, useMemo, useState } from "react";
 import { useRouter } from "next/navigation";
 import { getStoredToken, getStoredUsername, isSuperAdmin } from "@/lib/auth";
-import { getEquipment } from "@/lib/api";
+import { getEquipment, getStaff } from "@/lib/api";
 import { AdminSidebar } from "@/components/layout/admin-sidebar";
+import { AssetActions } from "@/components/asset-actions";
 import type { Equipment } from "@/types/asset";
+import type { Staff } from "@/types/staff";
 
 const STATUS_STYLES: Record<string, string> = {
   available: "bg-green-50 text-green-700",
@@ -46,10 +48,12 @@ export default function EquipmentPage() {
   const router = useRouter();
   const [gateChecked, setGateChecked] = useState(false);
   const [equipment, setEquipment] = useState<Equipment[]>([]);
+  const [staff, setStaff] = useState<Staff[]>([]);
   const [isLoading, setIsLoading] = useState(true);
   const [error, setError] = useState<string | null>(null);
   const [search, setSearch] = useState("");
   const [statusFilter, setStatusFilter] = useState("All");
+  const [refreshKey, setRefreshKey] = useState(0);
 
   useEffect(() => {
     const token = getStoredToken();
@@ -73,8 +77,14 @@ export default function EquipmentPage() {
       setIsLoading(true);
       setError(null);
       try {
-        const data = await getEquipment();
-        if (!cancelled) setEquipment(data);
+        const [eq, staffList] = await Promise.all([
+          getEquipment(),
+          getStaff(),
+        ]);
+        if (!cancelled) {
+          setEquipment(eq);
+          setStaff(staffList);
+        }
       } catch (err) {
         if (!cancelled) {
           setError(
@@ -90,7 +100,12 @@ export default function EquipmentPage() {
     return () => {
       cancelled = true;
     };
-  }, [gateChecked]);
+  }, [gateChecked, refreshKey]);
+
+  const staffOptions = useMemo(
+    () => staff.map((s) => ({ id: s.id, name: `${s.first_name} ${s.last_name}` })),
+    [staff]
+  );
 
   const statusOptions = useMemo(() => {
     const set = new Set<string>();
@@ -197,7 +212,7 @@ export default function EquipmentPage() {
 
           {!isLoading && !error && (
             <div className="mt-6 overflow-x-auto rounded-xl bg-white shadow-[0_1px_2px_rgba(16,24,64,0.06)]">
-              <table className="w-full min-w-[900px] border-collapse text-left text-sm">
+              <table className="w-full min-w-[1050px] border-collapse text-left text-sm">
                 <thead>
                   <tr className="border-b border-slate-100 bg-blue-50/60 text-xs font-semibold uppercase tracking-wide text-slate-500">
                     <th className="px-4 py-3">Item Name</th>
@@ -208,13 +223,14 @@ export default function EquipmentPage() {
                     <th className="px-4 py-3">Purchase Date</th>
                     <th className="px-4 py-3">Status</th>
                     <th className="px-4 py-3">Warranty</th>
+                    <th className="px-4 py-3">Actions</th>
                   </tr>
                 </thead>
                 <tbody>
                   {filtered.length === 0 ? (
                     <tr>
                       <td
-                        colSpan={8}
+                        colSpan={9}
                         className="px-4 py-8 text-center text-sm text-slate-400"
                       >
                         No equipment matches your search.
@@ -259,6 +275,13 @@ export default function EquipmentPage() {
                           </td>
                           <td className={`px-4 py-3 text-xs ${warranty.tone}`}>
                             {warranty.text}
+                          </td>
+                          <td className="px-4 py-3">
+                            <AssetActions
+                              assetId={e.asset}
+                              staffOptions={staffOptions}
+                              onChanged={() => setRefreshKey((k) => k + 1)}
+                            />
                           </td>
                         </tr>
                       );

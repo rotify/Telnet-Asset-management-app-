@@ -147,9 +147,9 @@ export default function AdminDashboardPage() {
     };
   }, [gateChecked]);
 
-  const equipment = data?.equipment ?? [];
-  const vehicles = data?.vehicles ?? [];
-  const staff = data?.staff ?? [];
+  const equipment = useMemo(() => data?.equipment ?? [], [data]);
+  const vehicles = useMemo(() => data?.vehicles ?? [], [data]);
+  const staff = useMemo(() => data?.staff ?? [], [data]);
 
   const statusBreakdown = useMemo(() => {
     const counts = new Map<string, number>();

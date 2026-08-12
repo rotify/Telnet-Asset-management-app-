@@ -3,9 +3,11 @@
 import { useEffect, useMemo, useState } from "react";
 import { useRouter } from "next/navigation";
 import { getStoredToken, getStoredUsername, isSuperAdmin } from "@/lib/auth";
-import { getVehicles } from "@/lib/api";
+import { getVehicles, getStaff } from "@/lib/api";
 import { AdminSidebar } from "@/components/layout/admin-sidebar";
+import { AssetActions } from "@/components/asset-actions";
 import type { Vehicle } from "@/types/asset";
+import type { Staff } from "@/types/staff";
 
 const STATUS_STYLES: Record<string, string> = {
   available: "bg-green-50 text-green-700",
@@ -73,10 +75,12 @@ export default function VehiclesPage() {
   const router = useRouter();
   const [gateChecked, setGateChecked] = useState(false);
   const [vehicles, setVehicles] = useState<Vehicle[]>([]);
+  const [staff, setStaff] = useState<Staff[]>([]);
   const [isLoading, setIsLoading] = useState(true);
   const [error, setError] = useState<string | null>(null);
   const [search, setSearch] = useState("");
   const [statusFilter, setStatusFilter] = useState("All");
+  const [refreshKey, setRefreshKey] = useState(0);
 
   useEffect(() => {
     const token = getStoredToken();
@@ -100,8 +104,14 @@ export default function VehiclesPage() {
       setIsLoading(true);
       setError(null);
       try {
-        const data = await getVehicles();
-        if (!cancelled) setVehicles(data);
+        const [data, staffList] = await Promise.all([
+          getVehicles(),
+          getStaff(),
+        ]);
+        if (!cancelled) {
+          setVehicles(data);
+          setStaff(staffList);
+        }
       } catch (err) {
         if (!cancelled) {
           setError(
@@ -117,7 +127,12 @@ export default function VehiclesPage() {
     return () => {
       cancelled = true;
     };
-  }, [gateChecked]);
+  }, [gateChecked, refreshKey]);
+
+  const staffOptions = useMemo(
+    () => staff.map((s) => ({ id: s.id, name: `${s.first_name} ${s.last_name}` })),
+    [staff]
+  );
 
   const statusOptions = useMemo(() => {
     const set = new Set<string>();
@@ -223,7 +238,7 @@ export default function VehiclesPage() {
 
           {!isLoading && !error && (
             <div className="mt-6 overflow-x-auto rounded-xl bg-white shadow-[0_1px_2px_rgba(16,24,64,0.06)]">
-              <table className="w-full min-w-[900px] border-collapse text-left text-sm">
+              <table className="w-full min-w-[1050px] border-collapse text-left text-sm">
                 <thead>
                   <tr className="border-b border-slate-100 bg-blue-50/60 text-xs font-semibold uppercase tracking-wide text-slate-500">
                     <th className="px-4 py-3">Vehicle Name</th>
@@ -233,13 +248,14 @@ export default function VehiclesPage() {
                     <th className="px-4 py-3">Make / Model</th>
                     <th className="px-4 py-3">Status</th>
                     <th className="px-4 py-3">Next Expiry</th>
+                    <th className="px-4 py-3">Actions</th>
                   </tr>
                 </thead>
                 <tbody>
                   {filtered.length === 0 ? (
                     <tr>
                       <td
-                        colSpan={7}
+                        colSpan={8}
                         className="px-4 py-8 text-center text-sm text-slate-400"
                       >
                         No vehicles match your search.
@@ -281,6 +297,13 @@ export default function VehiclesPage() {
                           </td>
                           <td className={`px-4 py-3 text-xs ${expiry.tone}`}>
                             {expiry.text}
+                          </td>
+                          <td className="px-4 py-3">
+                            <AssetActions
+                              assetId={v.asset}
+                              staffOptions={staffOptions}
+                              onChanged={() => setRefreshKey((k) => k + 1)}
+                            />
                           </td>
                         </tr>
                       );

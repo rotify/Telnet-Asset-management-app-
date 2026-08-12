@@ -1,10 +1,10 @@
 export interface Equipment {
-    id: string;
-    name: string;
-    equipment_type: string;
-    description: string | null;
-purchase_date: string | null;
-warranty_expiry: string | null;
+  id: number;
+  name: string;
+  equipment_type: string;
+  description: string | null;
+  purchase_date: string | null;
+  warranty_expiry: string | null;
   status: string;
   location: string | null;
   regional_office: string | null;
@@ -20,8 +20,9 @@ warranty_expiry: string | null;
   updated_at: string;
   assigned_staff: string | null;
   asset: number;
-    }
-    export interface Vehicle {
+}
+
+export interface Vehicle {
   id: number;
   name: string;
   license_plate: string;
