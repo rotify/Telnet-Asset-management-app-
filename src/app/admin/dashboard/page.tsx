@@ -57,7 +57,7 @@ function StatCard({
   hint?: string;
 }) {
   return (
-    <div className="rounded-xl bg-white p-4 shadow-[0_1px_2px_rgba(16,24,64,0.06)]">
+    <div className="rounded-lg bg-white p-4">
       <p className="text-xs font-medium text-slate-500">{label}</p>
       <p className="mt-1 text-2xl font-bold text-[#121B3B]">{value}</p>
       {hint && <p className="mt-1 text-xs text-slate-400">{hint}</p>}
@@ -83,10 +83,11 @@ function TagPill({ tag }: { tag: string }) {
   );
 }
 
+// Figma-matched "Upcoming Alerts" tints (bg + border pairs, verified from design file)
 const ALERT_STYLES: Record<string, string> = {
-  critical: "border-red-200 bg-red-50 text-red-700",
-  warning: "border-amber-200 bg-amber-50 text-amber-700",
-  info: "border-blue-200 bg-blue-50 text-blue-700",
+  critical: "border-[#F3B3B6] bg-[#FDEEEF]",
+  warning: "border-[#F4D199] bg-[#FCF3E5]",
+  info: "border-[#F0F6FA] bg-[#F0F6FA]",
 };
 
 export default function AdminDashboardPage() {
@@ -315,7 +316,7 @@ export default function AdminDashboardPage() {
                         </div>
                         <div className="mt-1 h-1.5 w-full rounded-full bg-slate-100">
                           <div
-                            className="h-1.5 rounded-full bg-blue-600"
+                            className="h-1.5 rounded-full bg-telnet-primary"
                             style={{
                               width: `${(s.count / maxStatusCount) * 100}%`,
                             }}
@@ -370,13 +371,15 @@ export default function AdminDashboardPage() {
                     {upcomingAlerts.map((alert) => (
                       <div
                         key={alert.id}
-                        className={`rounded-lg border px-3 py-2 text-sm ${
+                        className={`rounded border px-3 py-2 text-sm ${
                           ALERT_STYLES[alert.level] ?? ALERT_STYLES.info
                         }`}
                       >
-                        <p className="font-medium">{alert.message}</p>
+                        <p className="font-medium text-slate-800">
+                          {alert.message}
+                        </p>
                         {alert.sub && (
-                          <p className="text-xs opacity-80">{alert.sub}</p>
+                          <p className="text-xs text-slate-500">{alert.sub}</p>
                         )}
                       </div>
                     ))}

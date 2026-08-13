@@ -9,6 +9,7 @@ import {
   getEquipmentMaintenance,
 } from "@/lib/api";
 import { AdminSidebar } from "@/components/layout/admin-sidebar";
+import { StatusDot, type StatusTone } from "@/components/status-dot";
 import type { Equipment } from "@/types/asset";
 import type { MaintenanceRecord } from "@/types/maintenance";
 
@@ -19,15 +20,15 @@ function formatDate(dateStr: string | null): string {
   return d.toLocaleDateString("en-GB");
 }
 
-function dueStatus(dueDate: string | null): { label: string; tone: string } {
-  if (!dueDate) return { label: "No due date", tone: "bg-slate-100 text-slate-500" };
+function dueStatus(dueDate: string | null): { label: string; tone: StatusTone } {
+  if (!dueDate) return { label: "No due date", tone: "slate" };
   const days = Math.ceil(
     (new Date(dueDate).getTime() - Date.now()) / 86400000
   );
-  if (Number.isNaN(days)) return { label: "No due date", tone: "bg-slate-100 text-slate-500" };
-  if (days < 0) return { label: "Overdue", tone: "bg-red-50 text-red-700" };
-  if (days <= 14) return { label: "Due Soon", tone: "bg-amber-50 text-amber-700" };
-  return { label: "Scheduled", tone: "bg-green-50 text-green-700" };
+  if (Number.isNaN(days)) return { label: "No due date", tone: "slate" };
+  if (days < 0) return { label: "Overdue", tone: "red" };
+  if (days <= 14) return { label: "Due Soon", tone: "amber" };
+  return { label: "Scheduled", tone: "blue" };
 }
 
 const EMPTY_NEW_RECORD = {
@@ -159,7 +160,7 @@ export default function MaintenancePage() {
                 setShowAddForm((v) => !v);
                 setAddError(null);
               }}
-              className="rounded-lg bg-blue-600 px-4 py-2 text-sm font-semibold text-white hover:bg-blue-700"
+              className="rounded-lg bg-telnet-primary px-4 py-2 text-sm font-semibold text-white hover:bg-telnet-primaryHover"
             >
               {showAddForm ? "Cancel" : "+ Schedule Maintenance"}
             </button>
@@ -176,7 +177,7 @@ export default function MaintenancePage() {
                   onChange={(e) =>
                     setNewRecord((v) => ({ ...v, equipment: e.target.value }))
                   }
-                  className="rounded-lg border border-slate-200 px-3 py-2 text-sm focus:border-blue-600 focus:outline-none"
+                  className="rounded-lg border border-slate-200 px-3 py-2 text-sm focus:border-telnet-primary focus:outline-none"
                 >
                   <option value="">Select equipment…</option>
                   {equipment.map((e) => (
@@ -192,7 +193,7 @@ export default function MaintenancePage() {
                   onChange={(e) =>
                     setNewRecord((v) => ({ ...v, description: e.target.value }))
                   }
-                  className="rounded-lg border border-slate-200 px-3 py-2 text-sm focus:border-blue-600 focus:outline-none"
+                  className="rounded-lg border border-slate-200 px-3 py-2 text-sm focus:border-telnet-primary focus:outline-none"
                 />
                 <input
                   type="date"
@@ -200,7 +201,7 @@ export default function MaintenancePage() {
                   onChange={(e) =>
                     setNewRecord((v) => ({ ...v, due_date: e.target.value }))
                   }
-                  className="rounded-lg border border-slate-200 px-3 py-2 text-sm focus:border-blue-600 focus:outline-none"
+                  className="rounded-lg border border-slate-200 px-3 py-2 text-sm focus:border-telnet-primary focus:outline-none"
                 />
                 <input
                   type="text"
@@ -209,7 +210,7 @@ export default function MaintenancePage() {
                   onChange={(e) =>
                     setNewRecord((v) => ({ ...v, cost: e.target.value }))
                   }
-                  className="rounded-lg border border-slate-200 px-3 py-2 text-sm focus:border-blue-600 focus:outline-none"
+                  className="rounded-lg border border-slate-200 px-3 py-2 text-sm focus:border-telnet-primary focus:outline-none"
                 />
                 <input
                   type="text"
@@ -218,7 +219,7 @@ export default function MaintenancePage() {
                   onChange={(e) =>
                     setNewRecord((v) => ({ ...v, notes: e.target.value }))
                   }
-                  className="rounded-lg border border-slate-200 px-3 py-2 text-sm focus:border-blue-600 focus:outline-none sm:col-span-2"
+                  className="rounded-lg border border-slate-200 px-3 py-2 text-sm focus:border-telnet-primary focus:outline-none sm:col-span-2"
                 />
               </div>
               {addError && (
@@ -228,7 +229,7 @@ export default function MaintenancePage() {
                 type="button"
                 onClick={handleAdd}
                 disabled={isAdding}
-                className="mt-3 rounded-lg bg-blue-600 px-4 py-2 text-sm font-semibold text-white hover:bg-blue-700 disabled:opacity-60"
+                className="mt-3 rounded-lg bg-telnet-primary px-4 py-2 text-sm font-semibold text-white hover:bg-telnet-primaryHover disabled:opacity-60"
               >
                 {isAdding ? "Saving…" : "Save record"}
               </button>
@@ -268,7 +269,7 @@ export default function MaintenancePage() {
                 value={search}
                 onChange={(e) => setSearch(e.target.value)}
                 placeholder="Search by equipment or description…"
-                className="w-full rounded-lg border border-slate-200 bg-white py-2 pl-9 pr-3 text-sm text-slate-700 placeholder:text-slate-400 focus:border-blue-600 focus:outline-none"
+                className="w-full rounded-lg border border-slate-200 bg-white py-2 pl-9 pr-3 text-sm text-slate-700 placeholder:text-slate-400 focus:border-telnet-primary focus:outline-none"
               />
             </div>
           </div>
@@ -304,11 +305,11 @@ export default function MaintenancePage() {
                           {r.description}
                         </p>
                       </div>
-                      <span
-                        className={`shrink-0 rounded-md px-2 py-0.5 text-xs font-semibold ${status.tone}`}
-                      >
-                        {status.label}
-                      </span>
+                      <StatusDot
+                        label={status.label}
+                        tone={status.tone}
+                        className="shrink-0"
+                      />
                     </div>
 
                     <div className="mt-3 grid grid-cols-2 gap-x-3 gap-y-2 text-xs">
@@ -385,11 +386,7 @@ export default function MaintenancePage() {
                             {r.notes || "—"}
                           </td>
                           <td className="px-4 py-3">
-                            <span
-                              className={`rounded-md px-2 py-0.5 text-xs font-semibold ${status.tone}`}
-                            >
-                              {status.label}
-                            </span>
+                            <StatusDot label={status.label} tone={status.tone} />
                           </td>
                         </tr>
                       );

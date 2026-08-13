@@ -6,15 +6,16 @@ import { getStoredToken, getStoredUsername, isSuperAdmin } from "@/lib/auth";
 import { getVehicles, getStaff } from "@/lib/api";
 import { AdminSidebar } from "@/components/layout/admin-sidebar";
 import { AssetActions } from "@/components/asset-actions";
+import { StatusDot, type StatusTone } from "@/components/status-dot";
 import type { Vehicle } from "@/types/asset";
 import type { Staff } from "@/types/staff";
 
-const STATUS_STYLES: Record<string, string> = {
-  available: "bg-green-50 text-green-700",
-  assigned: "bg-blue-50 text-blue-700",
-  maintenance: "bg-amber-50 text-amber-700",
-  expired: "bg-red-50 text-red-700",
-  inactive: "bg-slate-100 text-slate-500",
+const STATUS_TONES: Record<string, StatusTone> = {
+  available: "blue",
+  assigned: "blue",
+  maintenance: "amber",
+  expired: "red",
+  inactive: "slate",
 };
 
 function titleCase(value: string | null | undefined): string {
@@ -208,13 +209,13 @@ export default function VehiclesPage() {
                 value={search}
                 onChange={(e) => setSearch(e.target.value)}
                 placeholder="Search by name, plate, VIN, or assignee…"
-                className="w-full rounded-lg border border-slate-200 bg-white py-2 pl-9 pr-3 text-sm text-slate-700 placeholder:text-slate-400 focus:border-blue-600 focus:outline-none"
+                className="w-full rounded-lg border border-slate-200 bg-white py-2 pl-9 pr-3 text-sm text-slate-700 placeholder:text-slate-400 focus:border-telnet-primary focus:outline-none"
               />
             </div>
             <select
               value={statusFilter}
               onChange={(e) => setStatusFilter(e.target.value)}
-              className="rounded-lg border border-slate-200 bg-white px-3 py-2 text-sm text-slate-700 focus:border-blue-600 focus:outline-none"
+              className="rounded-lg border border-slate-200 bg-white px-3 py-2 text-sm text-slate-700 focus:border-telnet-primary focus:outline-none"
             >
               {statusOptions.map((s) => (
                 <option key={s} value={s}>
@@ -253,14 +254,11 @@ export default function VehiclesPage() {
                           {v.asset_type || "—"}
                         </p>
                       </div>
-                      <span
-                        className={`shrink-0 rounded-md px-2 py-0.5 text-xs font-semibold ${
-                          STATUS_STYLES[statusKey] ??
-                          "bg-slate-100 text-slate-500"
-                        }`}
-                      >
-                        {titleCase(v.status)}
-                      </span>
+                      <StatusDot
+                        label={titleCase(v.status)}
+                        tone={STATUS_TONES[statusKey] ?? "slate"}
+                        className="shrink-0"
+                      />
                     </div>
 
                     <div className="mt-3 grid grid-cols-2 gap-x-3 gap-y-2 text-xs">
@@ -351,14 +349,10 @@ export default function VehiclesPage() {
                             {[v.make, v.model].filter(Boolean).join(" ") || "—"}
                           </td>
                           <td className="px-4 py-3">
-                            <span
-                              className={`rounded-md px-2 py-0.5 text-xs font-semibold ${
-                                STATUS_STYLES[statusKey] ??
-                                "bg-slate-100 text-slate-500"
-                              }`}
-                            >
-                              {titleCase(v.status)}
-                            </span>
+                            <StatusDot
+                              label={titleCase(v.status)}
+                              tone={STATUS_TONES[statusKey] ?? "slate"}
+                            />
                           </td>
                           <td className={`px-4 py-3 text-xs ${expiry.tone}`}>
                             {expiry.text}

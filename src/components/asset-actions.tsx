@@ -101,7 +101,7 @@ export function AssetActions({
             type="button"
             disabled={busy}
             onClick={() => setMode("assigning")}
-            className="font-medium text-blue-600 hover:text-blue-700 disabled:opacity-60"
+            className="font-medium text-telnet-primary hover:text-telnet-primaryHover disabled:opacity-60"
           >
             Assign
           </button>
@@ -126,7 +126,7 @@ export function AssetActions({
           <select
             value={selectedStaff}
             onChange={(e) => setSelectedStaff(e.target.value)}
-            className="rounded border border-slate-200 px-2 py-1 text-xs focus:border-blue-600 focus:outline-none"
+            className="rounded border border-slate-200 px-2 py-1 text-xs focus:border-telnet-primary focus:outline-none"
           >
             <option value="">Select staff…</option>
             {staffOptions.map((s) => (
@@ -139,7 +139,7 @@ export function AssetActions({
             type="button"
             disabled={busy}
             onClick={handleConfirmAssign}
-            className="font-medium text-blue-600 hover:text-blue-700 disabled:opacity-60"
+            className="font-medium text-telnet-primary hover:text-telnet-primaryHover disabled:opacity-60"
           >
             {busy ? "Saving…" : "Confirm"}
           </button>

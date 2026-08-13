@@ -5,6 +5,7 @@ import { useRouter } from "next/navigation";
 import { getStoredToken, getStoredUsername, isSuperAdmin } from "@/lib/auth";
 import { createStaff, deleteStaff, getStaff, updateStaff } from "@/lib/api";
 import { AdminSidebar } from "@/components/layout/admin-sidebar";
+import { StatusDot } from "@/components/status-dot";
 import type { Staff } from "@/types/staff";
 
 interface EditableFields {
@@ -178,7 +179,7 @@ export default function StaffPage() {
                 setShowAddForm((v) => !v);
                 setAddError(null);
               }}
-              className="rounded-lg bg-blue-600 px-4 py-2 text-sm font-semibold text-white hover:bg-blue-700"
+              className="rounded-lg bg-telnet-primary px-4 py-2 text-sm font-semibold text-white hover:bg-telnet-primaryHover"
             >
               {showAddForm ? "Cancel" : "+ Add Staff"}
             </button>
@@ -197,7 +198,7 @@ export default function StaffPage() {
                   onChange={(e) =>
                     setNewStaff((v) => ({ ...v, staff_id: e.target.value }))
                   }
-                  className="rounded-lg border border-slate-200 px-3 py-2 text-sm focus:border-blue-600 focus:outline-none"
+                  className="rounded-lg border border-slate-200 px-3 py-2 text-sm focus:border-telnet-primary focus:outline-none"
                 />
                 <input
                   type="text"
@@ -206,7 +207,7 @@ export default function StaffPage() {
                   onChange={(e) =>
                     setNewStaff((v) => ({ ...v, first_name: e.target.value }))
                   }
-                  className="rounded-lg border border-slate-200 px-3 py-2 text-sm focus:border-blue-600 focus:outline-none"
+                  className="rounded-lg border border-slate-200 px-3 py-2 text-sm focus:border-telnet-primary focus:outline-none"
                 />
                 <input
                   type="text"
@@ -215,7 +216,7 @@ export default function StaffPage() {
                   onChange={(e) =>
                     setNewStaff((v) => ({ ...v, last_name: e.target.value }))
                   }
-                  className="rounded-lg border border-slate-200 px-3 py-2 text-sm focus:border-blue-600 focus:outline-none"
+                  className="rounded-lg border border-slate-200 px-3 py-2 text-sm focus:border-telnet-primary focus:outline-none"
                 />
               </div>
               {addError && (
@@ -225,7 +226,7 @@ export default function StaffPage() {
                 type="button"
                 onClick={handleAddStaff}
                 disabled={isAdding}
-                className="mt-3 rounded-lg bg-blue-600 px-4 py-2 text-sm font-semibold text-white hover:bg-blue-700 disabled:opacity-60"
+                className="mt-3 rounded-lg bg-telnet-primary px-4 py-2 text-sm font-semibold text-white hover:bg-telnet-primaryHover disabled:opacity-60"
               >
                 {isAdding ? "Adding…" : "Save staff member"}
               </button>
@@ -271,7 +272,7 @@ export default function StaffPage() {
                 value={search}
                 onChange={(e) => setSearch(e.target.value)}
                 placeholder="Search staff…"
-                className="w-full rounded-lg border border-slate-200 bg-white py-2 pl-9 pr-3 text-sm text-slate-700 placeholder:text-slate-400 focus:border-blue-600 focus:outline-none"
+                className="w-full rounded-lg border border-slate-200 bg-white py-2 pl-9 pr-3 text-sm text-slate-700 placeholder:text-slate-400 focus:border-telnet-primary focus:outline-none"
               />
             </div>
           </div>
@@ -309,7 +310,7 @@ export default function StaffPage() {
                                 )
                               }
                               placeholder="First name"
-                              className="w-full min-w-0 rounded border border-slate-200 px-2 py-1 text-sm focus:border-blue-600 focus:outline-none"
+                              className="w-full min-w-0 rounded border border-slate-200 px-2 py-1 text-sm focus:border-telnet-primary focus:outline-none"
                             />
                             <input
                               value={editValues.last_name}
@@ -319,7 +320,7 @@ export default function StaffPage() {
                                 )
                               }
                               placeholder="Last name"
-                              className="w-full min-w-0 rounded border border-slate-200 px-2 py-1 text-sm focus:border-blue-600 focus:outline-none"
+                              className="w-full min-w-0 rounded border border-slate-200 px-2 py-1 text-sm focus:border-telnet-primary focus:outline-none"
                             />
                           </div>
                         ) : (
@@ -342,15 +343,11 @@ export default function StaffPage() {
                           Active
                         </label>
                       ) : (
-                        <span
-                          className={`shrink-0 rounded-md px-2 py-0.5 text-xs font-semibold ${
-                            s.is_active
-                              ? "bg-green-50 text-green-700"
-                              : "bg-slate-100 text-slate-500"
-                          }`}
-                        >
-                          {s.is_active ? "Active" : "Inactive"}
-                        </span>
+                        <StatusDot
+                          label={s.is_active ? "Active" : "Inactive"}
+                          tone={s.is_active ? "blue" : "slate"}
+                          className="shrink-0"
+                        />
                       )}
                     </div>
 
@@ -365,7 +362,7 @@ export default function StaffPage() {
                                 v ? { ...v, department: e.target.value } : v
                               )
                             }
-                            className="mt-0.5 w-full rounded border border-slate-200 px-2 py-1 text-sm focus:border-blue-600 focus:outline-none"
+                            className="mt-0.5 w-full rounded border border-slate-200 px-2 py-1 text-sm focus:border-telnet-primary focus:outline-none"
                           />
                         ) : (
                           <p className="text-slate-700">
@@ -383,7 +380,7 @@ export default function StaffPage() {
                                 v ? { ...v, branch: e.target.value } : v
                               )
                             }
-                            className="mt-0.5 w-full rounded border border-slate-200 px-2 py-1 text-sm focus:border-blue-600 focus:outline-none"
+                            className="mt-0.5 w-full rounded border border-slate-200 px-2 py-1 text-sm focus:border-telnet-primary focus:outline-none"
                           />
                         ) : (
                           <p className="text-slate-700">{s.branch || "—"}</p>
@@ -398,7 +395,7 @@ export default function StaffPage() {
                             type="button"
                             disabled={isBusy}
                             onClick={() => saveEdit(s.id)}
-                            className="text-sm font-medium text-blue-600 hover:text-blue-700 disabled:opacity-60"
+                            className="text-sm font-medium text-telnet-primary hover:text-telnet-primaryHover disabled:opacity-60"
                           >
                             {isBusy ? "Saving…" : "Save"}
                           </button>
@@ -415,7 +412,7 @@ export default function StaffPage() {
                           <button
                             type="button"
                             onClick={() => startEdit(s)}
-                            className="text-sm font-medium text-blue-600 hover:text-blue-700"
+                            className="text-sm font-medium text-telnet-primary hover:text-telnet-primaryHover"
                           >
                             Edit
                           </button>
@@ -481,7 +478,7 @@ export default function StaffPage() {
                                       v ? { ...v, first_name: e.target.value } : v
                                     )
                                   }
-                                  className="w-24 rounded border border-slate-200 px-2 py-1 text-sm focus:border-blue-600 focus:outline-none"
+                                  className="w-24 rounded border border-slate-200 px-2 py-1 text-sm focus:border-telnet-primary focus:outline-none"
                                 />
                                 <input
                                   value={editValues.last_name}
@@ -490,7 +487,7 @@ export default function StaffPage() {
                                       v ? { ...v, last_name: e.target.value } : v
                                     )
                                   }
-                                  className="w-24 rounded border border-slate-200 px-2 py-1 text-sm focus:border-blue-600 focus:outline-none"
+                                  className="w-24 rounded border border-slate-200 px-2 py-1 text-sm focus:border-telnet-primary focus:outline-none"
                                 />
                               </div>
                             ) : (
@@ -506,7 +503,7 @@ export default function StaffPage() {
                                     v ? { ...v, department: e.target.value } : v
                                   )
                                 }
-                                className="w-28 rounded border border-slate-200 px-2 py-1 text-sm focus:border-blue-600 focus:outline-none"
+                                className="w-28 rounded border border-slate-200 px-2 py-1 text-sm focus:border-telnet-primary focus:outline-none"
                               />
                             ) : (
                               s.department || "—"
@@ -521,7 +518,7 @@ export default function StaffPage() {
                                     v ? { ...v, branch: e.target.value } : v
                                   )
                                 }
-                                className="w-28 rounded border border-slate-200 px-2 py-1 text-sm focus:border-blue-600 focus:outline-none"
+                                className="w-28 rounded border border-slate-200 px-2 py-1 text-sm focus:border-telnet-primary focus:outline-none"
                               />
                             ) : (
                               s.branch || "—"
@@ -539,15 +536,10 @@ export default function StaffPage() {
                                 }
                               />
                             ) : (
-                              <span
-                                className={`rounded-md px-2 py-0.5 text-xs font-semibold ${
-                                  s.is_active
-                                    ? "bg-green-50 text-green-700"
-                                    : "bg-slate-100 text-slate-500"
-                                }`}
-                              >
-                                {s.is_active ? "Active" : "Inactive"}
-                              </span>
+                              <StatusDot
+                                label={s.is_active ? "Active" : "Inactive"}
+                                tone={s.is_active ? "blue" : "slate"}
+                              />
                             )}
                           </td>
                           <td className="px-4 py-3">
@@ -557,7 +549,7 @@ export default function StaffPage() {
                                   type="button"
                                   disabled={isBusy}
                                   onClick={() => saveEdit(s.id)}
-                                  className="text-sm font-medium text-blue-600 hover:text-blue-700 disabled:opacity-60"
+                                  className="text-sm font-medium text-telnet-primary hover:text-telnet-primaryHover disabled:opacity-60"
                                 >
                                   {isBusy ? "Saving…" : "Save"}
                                 </button>
@@ -574,7 +566,7 @@ export default function StaffPage() {
                                 <button
                                   type="button"
                                   onClick={() => startEdit(s)}
-                                  className="text-sm font-medium text-blue-600 hover:text-blue-700"
+                                  className="text-sm font-medium text-telnet-primary hover:text-telnet-primaryHover"
                                 >
                                   Edit
                                 </button>
