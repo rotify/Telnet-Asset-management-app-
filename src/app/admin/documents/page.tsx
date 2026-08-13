@@ -11,8 +11,8 @@ import type { DocumentRecord } from "@/types/document";
 type DocStatus = "Valid" | "Expiring" | "Expired" | "Unknown";
 
 const STATUS_TONES: Record<DocStatus, StatusTone> = {
-  Valid: "blue",
-  Expiring: "amber",
+  Valid: "green",
+  Expiring: "orange",
   Expired: "red",
   Unknown: "slate",
 };

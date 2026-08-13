@@ -1,14 +1,13 @@
-// Figma-matched status/priority indicator: a colored dot + colored text,
-// no background chip. Colors verified from the Figma design file:
-//   blue  #008EE7 -> positive / active / completed states
-//   red   #FD7072 -> urgent / overdue / expired / high priority
-//   amber #F6AD3F -> warning / medium priority / in-progress
-//   slate #576A77 -> neutral / low priority / inactive
+// Status/priority indicator: a colored dot + colored text, no background chip.
+//   green  #22C55E -> active / valid / on track
+//   orange #F97316 -> pending / due soon / in progress / warning
+//   red    #EF4444 -> inactive / overdue / expired / high priority
+//   slate  #576A77 -> neutral / no data
 
 export const STATUS_COLORS = {
-  blue: "#008EE7",
-  red: "#FD7072",
-  amber: "#F6AD3F",
+  green: "#22C55E",
+  orange: "#F97316",
+  red: "#EF4444",
   slate: "#576A77",
 } as const;
 

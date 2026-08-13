@@ -5,8 +5,17 @@ import { useRouter } from "next/navigation";
 import { getStoredToken, getStoredUsername, isSuperAdmin } from "@/lib/auth";
 import { getEquipment, getVehicles, getStaff } from "@/lib/api";
 import { AdminSidebar } from "@/components/layout/admin-sidebar";
+import { STATUS_COLORS } from "@/components/status-dot";
 import type { Equipment, Vehicle } from "@/types/asset";
 import type { Staff } from "@/types/staff";
+
+const STATUS_BAR_COLORS: Record<string, string> = {
+  Available: STATUS_COLORS.green,
+  Assigned: STATUS_COLORS.green,
+  Maintenance: STATUS_COLORS.orange,
+  Expired: STATUS_COLORS.red,
+  Inactive: STATUS_COLORS.red,
+};
 
 interface DashboardData {
   equipment: Equipment[];
@@ -316,9 +325,12 @@ export default function AdminDashboardPage() {
                         </div>
                         <div className="mt-1 h-1.5 w-full rounded-full bg-slate-100">
                           <div
-                            className="h-1.5 rounded-full bg-telnet-primary"
+                            className="h-1.5 rounded-full"
                             style={{
                               width: `${(s.count / maxStatusCount) * 100}%`,
+                              backgroundColor:
+                                STATUS_BAR_COLORS[s.label] ??
+                                STATUS_COLORS.slate,
                             }}
                           />
                         </div>

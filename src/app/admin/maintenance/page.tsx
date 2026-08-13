@@ -45,8 +45,8 @@ function dueStatus(dueDate: string | null): { label: string; tone: StatusTone } 
   );
   if (Number.isNaN(days)) return { label: "No due date", tone: "slate" };
   if (days < 0) return { label: "Overdue", tone: "red" };
-  if (days <= 14) return { label: "Due Soon", tone: "amber" };
-  return { label: "Scheduled", tone: "blue" };
+  if (days <= 14) return { label: "Due Soon", tone: "orange" };
+  return { label: "Scheduled", tone: "green" };
 }
 
 const EMPTY_NEW_RECORD = {

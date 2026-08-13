@@ -1,6 +1,4 @@
-// Tiny pub-sub so the hamburger button in the global SiteHeader can open
-// the AdminSidebar drawer on mobile, even though they're separate
-// components with no shared parent state.
+
 type Listener = () => void;
 
 let isOpen = false;

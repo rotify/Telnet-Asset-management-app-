@@ -345,7 +345,7 @@ export default function StaffPage() {
                       ) : (
                         <StatusDot
                           label={s.is_active ? "Active" : "Inactive"}
-                          tone={s.is_active ? "blue" : "slate"}
+                          tone={s.is_active ? "green" : "red"}
                           className="shrink-0"
                         />
                       )}
@@ -538,7 +538,7 @@ export default function StaffPage() {
                             ) : (
                               <StatusDot
                                 label={s.is_active ? "Active" : "Inactive"}
-                                tone={s.is_active ? "blue" : "slate"}
+                                tone={s.is_active ? "green" : "red"}
                               />
                             )}
                           </td>

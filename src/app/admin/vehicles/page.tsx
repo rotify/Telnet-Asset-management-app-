@@ -11,11 +11,11 @@ import type { Vehicle } from "@/types/asset";
 import type { Staff } from "@/types/staff";
 
 const STATUS_TONES: Record<string, StatusTone> = {
-  available: "blue",
-  assigned: "blue",
-  maintenance: "amber",
+  available: "green",
+  assigned: "green",
+  maintenance: "orange",
   expired: "red",
-  inactive: "slate",
+  inactive: "red",
 };
 
 function titleCase(value: string | null | undefined): string {
