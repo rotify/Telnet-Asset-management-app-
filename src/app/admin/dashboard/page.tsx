@@ -92,7 +92,7 @@ function TagPill({ tag }: { tag: string }) {
   );
 }
 
-// Figma-matched "Upcoming Alerts" tints (bg + border pairs, verified from design file)
+
 const ALERT_STYLES: Record<string, string> = {
   critical: "border-[#F3B3B6] bg-[#FDEEEF]",
   warning: "border-[#F4D199] bg-[#FCF3E5]",

@@ -44,28 +44,19 @@ export function SiteHeader() {
     window.location.href = "/login";
   }
 
-  // Inside /admin, the AdminSidebar already shows the TELNET brand and its
-  // own Log Out button, so this bar keeps its navy color band (for visual
-  // consistency across every page) but drops the duplicate branding, login
-  // link, and theme switch — it's just the mobile menu toggle now.
-  if (isAdminSection) {
-    return (
-      <header className="flex h-14 items-center bg-[#10245c] px-4">
-        <button
-          type="button"
-          onClick={toggleSidebar}
-          aria-label="Toggle navigation menu"
-          className="flex h-8 w-8 items-center justify-center rounded-md bg-white/10 text-white hover:bg-white/20 lg:hidden"
-        >
-          <MenuIcon />
-        </button>
-      </header>
-    );
-  }
-
   return (
     <header className="flex h-14 items-center justify-between bg-[#10245c] px-6 text-white">
       <div className="flex items-center gap-3">
+        {isAdminSection && (
+          <button
+            type="button"
+            onClick={toggleSidebar}
+            aria-label="Toggle navigation menu"
+            className="flex h-8 w-8 items-center justify-center rounded-md bg-white/10 hover:bg-white/20 lg:hidden"
+          >
+            <MenuIcon />
+          </button>
+        )}
         <span className="font-serif text-lg font-bold text-[#50A5DB]">
           TELNET
         </span>
