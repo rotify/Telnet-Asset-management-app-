@@ -10,8 +10,26 @@ import {
 } from "@/lib/api";
 import { AdminSidebar } from "@/components/layout/admin-sidebar";
 import { StatusDot, type StatusTone } from "@/components/status-dot";
+import { ThreeDotMenu, MenuItem } from "@/components/three-dot-menu";
 import type { Equipment } from "@/types/asset";
 import type { MaintenanceRecord } from "@/types/maintenance";
+
+function RecordActions() {
+  return (
+    <ThreeDotMenu>
+      {() => (
+        <div>
+          <MenuItem disabled tone="muted">
+            Edit (no update endpoint yet)
+          </MenuItem>
+          <MenuItem disabled tone="muted">
+            Delete (no delete endpoint yet)
+          </MenuItem>
+        </div>
+      )}
+    </ThreeDotMenu>
+  );
+}
 
 function formatDate(dateStr: string | null): string {
   if (!dateStr) return "—";
@@ -332,6 +350,10 @@ export default function MaintenancePage() {
                         </div>
                       )}
                     </div>
+
+                    <div className="mt-3 flex justify-end border-t border-slate-100 pt-2">
+                      <RecordActions />
+                    </div>
                   </div>
                 );
               })}
@@ -349,13 +371,14 @@ export default function MaintenancePage() {
                     <th className="px-4 py-3">Cost</th>
                     <th className="px-4 py-3">Notes</th>
                     <th className="px-4 py-3">Status</th>
+                    <th className="px-4 py-3">Actions</th>
                   </tr>
                 </thead>
                 <tbody>
                   {filtered.length === 0 ? (
                     <tr>
                       <td
-                        colSpan={6}
+                        colSpan={7}
                         className="px-4 py-8 text-center text-sm text-slate-400"
                       >
                         No maintenance records match your search.
@@ -387,6 +410,9 @@ export default function MaintenancePage() {
                           </td>
                           <td className="px-4 py-3">
                             <StatusDot label={status.label} tone={status.tone} />
+                          </td>
+                          <td className="px-4 py-3">
+                            <RecordActions />
                           </td>
                         </tr>
                       );
