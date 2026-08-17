@@ -169,7 +169,7 @@ export default function VehiclesPage() {
           <header>
             <h1 className="text-2xl font-bold text-[#121B3B]">Vehicles</h1>
             <p className="mt-1 text-sm text-slate-500">
-              Live vehicle records from the backend.
+              Live vehicle records.
             </p>
           </header>
 

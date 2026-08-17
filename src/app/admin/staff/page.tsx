@@ -170,7 +170,7 @@ export default function StaffPage() {
                 Users &amp; Roles
               </h1>
               <p className="mt-1 text-sm text-slate-500">
-                Live staff records — add, edit, and remove staff directly.
+                Live staff records.
               </p>
             </div>
             <button

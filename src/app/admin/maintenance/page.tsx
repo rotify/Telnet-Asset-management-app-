@@ -169,7 +169,7 @@ export default function MaintenancePage() {
                 Maintenance
               </h1>
               <p className="mt-1 text-sm text-slate-500">
-                Live equipment maintenance records from the backend.
+                Live equipment maintenance.
               </p>
             </div>
             <button

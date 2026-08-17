@@ -153,7 +153,7 @@ export default function DocumentsPage() {
             <div>
               <h1 className="text-2xl font-bold text-[#121B3B]">Documents</h1>
               <p className="mt-1 text-sm text-slate-500">
-                Live certificates, licences, and warranties from the backend.
+                Live certificates, licences, and warranties.
               </p>
             </div>
             <button

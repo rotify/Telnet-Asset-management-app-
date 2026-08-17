@@ -161,14 +161,7 @@ export function AdminSidebar() {
           isOpen ? "translate-x-0" : "-translate-x-full"
         }`}
       >
-        <div
-          className="px-2 text-2xl font-bold text-[#10245c]"
-          style={{ fontFamily: 'Georgia, "Times New Roman", serif' }}
-        >
-          TELNET
-        </div>
-
-        <nav className="mt-8 flex flex-1 flex-col gap-1">
+        <nav className="flex flex-1 flex-col gap-1">
           {NAV_ITEMS.map((item) => {
             const isActive = pathname === item.href;
             const baseClasses =

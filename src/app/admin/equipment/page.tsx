@@ -142,7 +142,7 @@ export default function EquipmentPage() {
           <header>
             <h1 className="text-2xl font-bold text-[#121B3B]">Equipments</h1>
             <p className="mt-1 text-sm text-slate-500">
-              Live equipment records from the backend.
+              Live equipment records.
             </p>
           </header>
 
