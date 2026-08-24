@@ -139,11 +139,22 @@ export default function EquipmentPage() {
 
       <div className="flex-1 px-6 py-8">
         <div className="mx-auto max-w-6xl">
-          <header>
-            <h1 className="text-2xl font-bold text-[#121B3B]">Equipments</h1>
-            <p className="mt-1 text-sm text-slate-500">
-              Live equipment records.
-            </p>
+          <header className="flex flex-wrap items-center justify-between gap-3">
+            <div>
+              <h1 className="text-2xl font-bold text-[#121B3B]">
+                Equipments
+              </h1>
+              <p className="mt-1 text-sm text-slate-500">
+                Live equipment records.
+              </p>
+            </div>
+            <button
+              type="button"
+              onClick={() => router.push("/admin/equipment/new")}
+              className="rounded-lg bg-telnet-primary px-4 py-2 text-sm font-semibold text-white hover:bg-telnet-primaryHover"
+            >
+              + Register Equipment
+            </button>
           </header>
 
           {error && (

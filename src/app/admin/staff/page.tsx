@@ -175,13 +175,10 @@ export default function StaffPage() {
             </div>
             <button
               type="button"
-              onClick={() => {
-                setShowAddForm((v) => !v);
-                setAddError(null);
-              }}
+              onClick={() => router.push("/admin/staff/new")}
               className="rounded-lg bg-telnet-primary px-4 py-2 text-sm font-semibold text-white hover:bg-telnet-primaryHover"
             >
-              {showAddForm ? "Cancel" : "+ Add Staff"}
+              + Add Employee
             </button>
           </header>
 

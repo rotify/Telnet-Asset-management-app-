@@ -63,8 +63,63 @@ export function getEquipment(): Promise<Equipment[]> {
   return authedFetch<Equipment[]>("/api/equipment");
 }
 
+export interface EquipmentPayload {
+  name: string;
+  equipment_type?: string;
+  serial_number?: string;
+  manufacturer?: string;
+  model_number?: string;
+  condition?: string;
+  purchase_date?: string;
+  cost?: string;
+  supplier?: string;
+  warranty_expiry?: string;
+  service_interval_months?: string;
+  next_service_date?: string;
+  assigned_staff?: string;
+  department?: string;
+  location?: string;
+  notes?: string;
+}
+
+export function createEquipment(
+  payload: EquipmentPayload
+): Promise<Equipment> {
+  return authedMutate<Equipment>("/api/equipment", "POST", payload);
+}
+
 export function getVehicles(): Promise<Vehicle[]> {
   return authedFetch<Vehicle[]>("/api/vehicles");
+}
+
+export interface VehiclePayload {
+  name: string;
+  license_plate?: string;
+  asset_type?: string;
+  make?: string;
+  model?: string;
+  year_of_manufacture?: string;
+  vin_number?: string;
+  engine_number?: string;
+  fuel_type?: string;
+  color?: string;
+  status?: string;
+  assigned_staff?: string;
+  department?: string;
+  current_mileage?: string;
+  service_interval_km?: string;
+  base_location?: string;
+  next_service_date?: string;
+  insurance_provider?: string;
+  insurance_policy_number?: string;
+  roadworthy_expiry?: string;
+  license_expiry?: string;
+  cost?: string;
+  notes?: string;
+}
+
+export function createVehicle(payload: VehiclePayload): Promise<Vehicle> {
+  return authedMutate<Vehicle>("/api/vehicles", "POST", payload);
 }
 
 export function getStaff(): Promise<Staff[]> {
@@ -79,6 +134,21 @@ export interface StaffPayload {
   department?: string | null;
   branch?: string | null;
   is_active?: boolean;
+  phone_number?: string;
+  date_of_birth?: string;
+  home_address?: string;
+  job_title?: string;
+  system_role?: string;
+  employment_type?: string;
+  date_joined?: string;
+  status?: string;
+  reporting_manager?: string;
+  work_location?: string;
+  drivers_licence_number?: string;
+  licence_expiry?: string;
+  emergency_contact_name?: string;
+  emergency_contact_phone?: string;
+  notes?: string;
 }
 
 export function createStaff(payload: StaffPayload): Promise<Staff> {
