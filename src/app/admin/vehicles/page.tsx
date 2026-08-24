@@ -245,23 +245,42 @@ export default function VehiclesPage() {
           )}
 
           {!isLoading && !error && filtered.length > 0 && (
-            <div className="mt-6 space-y-3 md:hidden">
+            <div className="mt-6 grid grid-cols-1 gap-4 md:grid-cols-2">
               {filtered.map((v) => {
                 const statusKey = (v.status ?? "").toLowerCase();
                 const expiry = nearestExpiry(v);
                 return (
                   <div
                     key={v.id}
-                    className="rounded-xl bg-white p-4 shadow-[0_1px_2px_rgba(16,24,64,0.06)]"
+                    className="rounded-xl border-t-4 border-t-telnet-primary bg-white p-4 shadow-[0_1px_2px_rgba(16,24,64,0.06)]"
                   >
                     <div className="flex items-start justify-between gap-2">
-                      <div>
-                        <p className="font-semibold text-slate-800">
-                          {v.name}
-                        </p>
-                        <p className="text-xs text-slate-400">
-                          {v.asset_type || "—"}
-                        </p>
+                      <div className="flex items-start gap-3">
+                        <span className="flex h-9 w-9 shrink-0 items-center justify-center rounded-lg bg-blue-50 text-telnet-primary">
+                          <svg
+                            width="18"
+                            height="18"
+                            viewBox="0 0 24 24"
+                            fill="none"
+                            stroke="currentColor"
+                            strokeWidth={1.8}
+                            strokeLinecap="round"
+                            strokeLinejoin="round"
+                          >
+                            <rect x="1" y="6" width="13" height="11" rx="1.5" />
+                            <path d="M14 10h4l3 3v4h-7z" />
+                            <circle cx="6" cy="19" r="1.6" />
+                            <circle cx="17" cy="19" r="1.6" />
+                          </svg>
+                        </span>
+                        <div>
+                          <p className="font-semibold text-slate-800">
+                            {v.name}
+                          </p>
+                          <p className="text-xs text-slate-400">
+                            {v.license_plate || v.vin_number || "—"}
+                          </p>
+                        </div>
                       </div>
                       <StatusDot
                         label={titleCase(v.status)}
@@ -270,17 +289,11 @@ export default function VehiclesPage() {
                       />
                     </div>
 
-                    <div className="mt-3 grid grid-cols-2 gap-x-3 gap-y-2 text-xs">
+                    <div className="mt-4 grid grid-cols-3 gap-x-3 gap-y-2 border-t border-slate-100 pt-3 text-xs">
                       <div>
-                        <p className="text-slate-400">Plate / VIN</p>
+                        <p className="text-slate-400">Type</p>
                         <p className="text-slate-700">
-                          {v.license_plate || v.vin_number || "—"}
-                        </p>
-                      </div>
-                      <div>
-                        <p className="text-slate-400">Assigned To</p>
-                        <p className="text-slate-700">
-                          {v.assigned_staff || "Unassigned"}
+                          {v.asset_type || "—"}
                         </p>
                       </div>
                       <div>
@@ -289,13 +302,25 @@ export default function VehiclesPage() {
                           {[v.make, v.model].filter(Boolean).join(" ") || "—"}
                         </p>
                       </div>
+                      <div>
+                        <p className="text-slate-400">Assigned To</p>
+                        <p className="text-slate-700">
+                          {v.assigned_staff || "Unassigned"}
+                        </p>
+                      </div>
                     </div>
 
-                    <p className={`mt-3 text-xs ${expiry.tone}`}>
-                      {expiry.text}
-                    </p>
+                    <div className="mt-2 flex items-center justify-between text-xs">
+                      <span className="text-slate-400">Insurance</span>
+                      <span className={`font-medium ${expiry.tone}`}>
+                        {expiry.text}
+                      </span>
+                    </div>
 
-                    <div className="mt-3 border-t border-slate-100 pt-3">
+                    <div className="mt-4 flex items-center justify-between border-t border-slate-100 pt-3">
+                      <span className="text-sm font-medium text-slate-500">
+                        View details
+                      </span>
                       <AssetActions
                         assetId={v.asset}
                         staffOptions={staffOptions}
@@ -305,80 +330,6 @@ export default function VehiclesPage() {
                   </div>
                 );
               })}
-            </div>
-          )}
-
-          {!isLoading && !error && filtered.length > 0 && (
-            <div className="mt-6 hidden overflow-x-auto rounded-xl bg-white shadow-[0_1px_2px_rgba(16,24,64,0.06)] md:block">
-              <table className="w-full min-w-[1050px] border-collapse text-left text-sm">
-                <thead>
-                  <tr className="border-b border-slate-100 bg-blue-50/60 text-xs font-semibold uppercase tracking-wide text-slate-500">
-                    <th className="px-4 py-3">Vehicle Name</th>
-                    <th className="px-4 py-3">Type</th>
-                    <th className="px-4 py-3">Plate / VIN</th>
-                    <th className="px-4 py-3">Assigned To</th>
-                    <th className="px-4 py-3">Make / Model</th>
-                    <th className="px-4 py-3">Status</th>
-                    <th className="px-4 py-3">Next Expiry</th>
-                    <th className="px-4 py-3">Actions</th>
-                  </tr>
-                </thead>
-                <tbody>
-                  {filtered.length === 0 ? (
-                    <tr>
-                      <td
-                        colSpan={8}
-                        className="px-4 py-8 text-center text-sm text-slate-400"
-                      >
-                        No vehicles match your search.
-                      </td>
-                    </tr>
-                  ) : (
-                    filtered.map((v) => {
-                      const statusKey = (v.status ?? "").toLowerCase();
-                      const expiry = nearestExpiry(v);
-                      return (
-                        <tr
-                          key={v.id}
-                          className="border-b border-slate-50 last:border-0 hover:bg-slate-50"
-                        >
-                          <td className="px-4 py-3 font-medium text-slate-800">
-                            {v.name}
-                          </td>
-                          <td className="px-4 py-3 text-slate-500">
-                            {v.asset_type || "—"}
-                          </td>
-                          <td className="px-4 py-3 text-slate-500">
-                            {v.license_plate || v.vin_number || "—"}
-                          </td>
-                          <td className="px-4 py-3 text-slate-500">
-                            {v.assigned_staff || "Unassigned"}
-                          </td>
-                          <td className="px-4 py-3 text-slate-500">
-                            {[v.make, v.model].filter(Boolean).join(" ") || "—"}
-                          </td>
-                          <td className="px-4 py-3">
-                            <StatusDot
-                              label={titleCase(v.status)}
-                              tone={STATUS_TONES[statusKey] ?? "slate"}
-                            />
-                          </td>
-                          <td className={`px-4 py-3 text-xs ${expiry.tone}`}>
-                            {expiry.text}
-                          </td>
-                          <td className="px-4 py-3">
-                            <AssetActions
-                              assetId={v.asset}
-                              staffOptions={staffOptions}
-                              onChanged={() => setRefreshKey((k) => k + 1)}
-                            />
-                          </td>
-                        </tr>
-                      );
-                    })
-                  )}
-                </tbody>
-              </table>
             </div>
           )}
         </div>

@@ -339,15 +339,13 @@ export default function DocumentsPage() {
 
                     <div className="mt-4 space-y-2 border-t border-slate-100 pt-3 text-sm">
                       <div className="flex justify-between">
-                        <span className="text-slate-400">Expiry Date</span>
+                        <span className="text-slate-400">Expiring Date</span>
                         <span className="font-medium text-slate-700">
                           {formatDate(doc.expiry_date)}
                         </span>
                       </div>
                       <div className="flex justify-between">
-                        <span className="text-slate-400">
-                          Responsible Person
-                        </span>
+                        <span className="text-slate-400">Uploaded By</span>
                         <span className="font-medium text-slate-700">
                           {doc.responsible_person || "—"}
                         </span>

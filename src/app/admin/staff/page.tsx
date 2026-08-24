@@ -32,6 +32,38 @@ const EMPTY_NEW_STAFF = {
   last_name: "",
 };
 
+const ROLE_CARDS = [
+  {
+    name: "Super Admin",
+    members: 1,
+    description: "Full control over assets, staff, roles and system settings.",
+    visiblePermissions: 6,
+    morePermissions: 6,
+  },
+  {
+    name: "Admin",
+    members: 1,
+    description:
+      "Manage assets, assignments, maintenance and reporting for their department.",
+    visiblePermissions: 6,
+    morePermissions: 2,
+  },
+  {
+    name: "Driver",
+    members: 10,
+    description: "Views assigned vehicles, logs trips and reports faults.",
+    visiblePermissions: 1,
+    morePermissions: 0,
+  },
+  {
+    name: "Staff",
+    members: 30,
+    description: "Views their own assigned equipment and company documents.",
+    visiblePermissions: 1,
+    morePermissions: 0,
+  },
+] as const;
+
 export default function StaffPage() {
   const router = useRouter();
   const [gateChecked, setGateChecked] = useState(false);
@@ -586,6 +618,54 @@ export default function StaffPage() {
               </table>
             </div>
           )}
+
+          <div className="mt-8 grid grid-cols-1 gap-4 sm:grid-cols-2">
+            {ROLE_CARDS.map((role) => (
+              <div
+                key={role.name}
+                className="rounded-xl bg-white p-4 shadow-[0_1px_2px_rgba(16,24,64,0.06)]"
+              >
+                <div className="flex items-center justify-between">
+                  <p className="font-semibold text-[#121B3B]">{role.name}</p>
+                  <span className="text-xs text-slate-400">
+                    {role.members} member(s)
+                  </span>
+                </div>
+                <p className="mt-1 text-xs text-slate-500">
+                  {role.description}
+                </p>
+                <ul className="mt-3 space-y-1.5 border-t border-slate-100 pt-3">
+                  {Array.from({ length: role.visiblePermissions }).map(
+                    (_, i) => (
+                      <li
+                        key={i}
+                        className="flex items-center gap-2 text-xs text-slate-600"
+                      >
+                        <svg
+                          width="14"
+                          height="14"
+                          viewBox="0 0 24 24"
+                          fill="none"
+                          stroke="#2DB130"
+                          strokeWidth={2.5}
+                          strokeLinecap="round"
+                          strokeLinejoin="round"
+                        >
+                          <path d="M20 6 9 17l-5-5" />
+                        </svg>
+                        View assets
+                      </li>
+                    )
+                  )}
+                </ul>
+                {role.morePermissions > 0 && (
+                  <p className="mt-2 text-xs text-slate-400">
+                    +{role.morePermissions} more permissions
+                  </p>
+                )}
+              </div>
+            ))}
+          </div>
         </div>
       </div>
     </div>

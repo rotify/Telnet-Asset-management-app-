@@ -19,7 +19,7 @@ interface NavItem {
 
 const NAV_ITEMS: NavItem[] = [
   { label: "Dashboard", href: "/admin/dashboard", icon: "grid", live: true },
-  { label: "Assets", href: "/admin/assets", icon: "box", live: false },
+  { label: "Assets", href: "/admin/assets", icon: "box", live: true },
   { label: "Vehicles", href: "/admin/vehicles", icon: "truck", live: true },
   { label: "Documents", href: "/admin/documents", icon: "doc", live: true },
   { label: "Equipments", href: "/admin/equipment", icon: "wrench", live: true },
