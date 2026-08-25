@@ -27,50 +27,14 @@ function titleCase(value: string | null | undefined): string {
     .join(" ");
 }
 
-function formatDate(dateStr: string | null): string {
-  if (!dateStr) return "—";
-  const d = new Date(dateStr);
-  if (Number.isNaN(d.getTime())) return dateStr;
-  return d.toLocaleDateString("en-GB");
-}
-
-function nearestExpiry(v: Vehicle): { text: string; tone: string } {
-  const candidates: [string, string | null][] = [
-    ["Insurance", v.insurance_expiry],
-    ["Roadworthiness", v.roadworthy_expiry],
-    ["License", v.license_expiry],
-  ];
-  const withDates = candidates
-    .filter(([, d]) => !!d)
-    .map(([label, d]) => ({
-      label,
-      date: d as string,
-      time: new Date(d as string).getTime(),
-    }))
-    .filter((c) => !Number.isNaN(c.time))
-    .sort((a, b) => a.time - b.time);
-
-  if (withDates.length === 0) {
-    return { text: "No expiry dates on file", tone: "text-slate-400" };
-  }
-
-  const soonest = withDates[0];
-  const days = Math.ceil((soonest.time - Date.now()) / 86400000);
-  const formatted = formatDate(soonest.date);
-  if (days < 0)
-    return {
-      text: `${soonest.label} expired ${formatted}`,
-      tone: "text-red-600",
-    };
-  if (days <= 30)
-    return {
-      text: `${soonest.label} due ${formatted}`,
-      tone: "text-amber-600",
-    };
-  return {
-    text: `${soonest.label} until ${formatted}`,
-    tone: "text-green-600",
-  };
+function expiryStatus(dateStr: string | null): { label: string; tone: StatusTone } {
+  if (!dateStr) return { label: "No date", tone: "slate" };
+  const target = new Date(dateStr).getTime();
+  if (Number.isNaN(target)) return { label: "No date", tone: "slate" };
+  const days = Math.ceil((target - Date.now()) / 86400000);
+  if (days < 0) return { label: "Expired", tone: "red" };
+  if (days <= 30) return { label: "Expiring", tone: "orange" };
+  return { label: "Valid", tone: "navy" };
 }
 
 export default function VehiclesPage() {
@@ -159,6 +123,30 @@ export default function VehiclesPage() {
     });
   }, [vehicles, search, statusFilter]);
 
+  function handleExport() {
+    const rows = [
+      ["Name", "Plate / VIN", "Status", "Fuel Type", "Current Driver", "Mileage", "Insurance", "Road Worthiness"],
+      ...vehicles.map((v) => [
+        v.name,
+        v.license_plate || v.vin_number || "",
+        titleCase(v.status),
+        v.fuel_type ?? "",
+        v.assigned_staff ?? "",
+        v.current_mileage ?? "",
+        v.insurance_expiry ?? "",
+        v.roadworthy_expiry ?? "",
+      ]),
+    ];
+    const csv = rows.map((r) => r.map((v) => `"${v}"`).join(",")).join("\n");
+    const blob = new Blob([csv], { type: "text/csv" });
+    const url = URL.createObjectURL(blob);
+    const a = document.createElement("a");
+    a.href = url;
+    a.download = "vehicles.csv";
+    a.click();
+    URL.revokeObjectURL(url);
+  }
+
   if (!gateChecked) return null;
 
   return (
@@ -171,18 +159,30 @@ export default function VehiclesPage() {
 
           <header className="mt-6 flex flex-wrap items-center justify-between gap-3">
             <div>
-              <h1 className="text-2xl font-bold text-[#121B3B]">Vehicles</h1>
+              <h1 className="text-2xl font-bold text-[#121B3B]">
+                Vehicle Management
+              </h1>
               <p className="mt-1 text-sm text-slate-500">
-                Live vehicle records.
+                Monitor company assets, vehicles, equipment, maintenance
+                schedules, and document status from one centralized dashboard.
               </p>
             </div>
-            <button
-              type="button"
-              onClick={() => router.push("/admin/vehicles/new")}
-              className="rounded-lg bg-telnet-primary px-4 py-2 text-sm font-semibold text-white hover:bg-telnet-primaryHover"
-            >
-              + Register Vehicle
-            </button>
+            <div className="flex items-center gap-2">
+              <button
+                type="button"
+                onClick={handleExport}
+                className="flex items-center gap-1.5 rounded-lg border border-slate-200 bg-white px-3 py-1.5 text-xs font-semibold text-slate-600 hover:bg-slate-50"
+              >
+                Export
+              </button>
+              <button
+                type="button"
+                onClick={() => router.push("/admin/vehicles/new")}
+                className="rounded-lg bg-[#0F172A] px-4 py-2 text-sm font-semibold text-white hover:bg-[#1e293b]"
+              >
+                + Register Asset
+              </button>
+            </div>
           </header>
 
           {error && (
@@ -235,6 +235,18 @@ export default function VehiclesPage() {
                 </option>
               ))}
             </select>
+            {(search || statusFilter !== "All") && (
+              <button
+                type="button"
+                onClick={() => {
+                  setSearch("");
+                  setStatusFilter("All");
+                }}
+                className="text-sm font-semibold text-telnet-primary hover:underline"
+              >
+                Clear filter
+              </button>
+            )}
           </div>
 
           {isLoading && !error && (
@@ -251,18 +263,19 @@ export default function VehiclesPage() {
             <div className="mt-6 grid grid-cols-1 gap-4 md:grid-cols-2">
               {filtered.map((v) => {
                 const statusKey = (v.status ?? "").toLowerCase();
-                const expiry = nearestExpiry(v);
+                const insurance = expiryStatus(v.insurance_expiry);
+                const roadworthy = expiryStatus(v.roadworthy_expiry);
                 return (
                   <div
                     key={v.id}
-                    className="rounded-xl border-t-4 border-t-telnet-primary bg-white p-4 shadow-[0_1px_2px_rgba(16,24,64,0.06)]"
+                    className="rounded-xl bg-white p-4 shadow-[0_1px_2px_rgba(16,24,64,0.06)]"
                   >
                     <div className="flex items-start justify-between gap-2">
                       <div className="flex items-start gap-3">
-                        <span className="flex h-9 w-9 shrink-0 items-center justify-center rounded-lg bg-blue-50 text-telnet-primary">
+                        <span className="mt-0.5 shrink-0 text-slate-400">
                           <svg
-                            width="18"
-                            height="18"
+                            width="16"
+                            height="16"
                             viewBox="0 0 24 24"
                             fill="none"
                             stroke="currentColor"
@@ -270,10 +283,8 @@ export default function VehiclesPage() {
                             strokeLinecap="round"
                             strokeLinejoin="round"
                           >
-                            <rect x="1" y="6" width="13" height="11" rx="1.5" />
-                            <path d="M14 10h4l3 3v4h-7z" />
-                            <circle cx="6" cy="19" r="1.6" />
-                            <circle cx="17" cy="19" r="1.6" />
+                            <path d="M6 8a6 6 0 0 1 12 0c0 5 2 6 2 6H4s2-1 2-6" />
+                            <path d="M10 20a2 2 0 0 0 4 0" />
                           </svg>
                         </span>
                         <div>
@@ -294,30 +305,34 @@ export default function VehiclesPage() {
 
                     <div className="mt-4 grid grid-cols-3 gap-x-3 gap-y-2 border-t border-slate-100 pt-3 text-xs">
                       <div>
-                        <p className="text-slate-400">Type</p>
-                        <p className="text-slate-700">
-                          {v.asset_type || "—"}
+                        <p className="text-slate-400">Fuel Type</p>
+                        <p className="font-medium text-slate-700">
+                          {v.fuel_type || "—"}
                         </p>
                       </div>
                       <div>
-                        <p className="text-slate-400">Make / Model</p>
-                        <p className="text-slate-700">
-                          {[v.make, v.model].filter(Boolean).join(" ") || "—"}
-                        </p>
-                      </div>
-                      <div>
-                        <p className="text-slate-400">Assigned To</p>
-                        <p className="text-slate-700">
+                        <p className="text-slate-400">Current Driver</p>
+                        <p className="font-medium text-slate-700">
                           {v.assigned_staff || "Unassigned"}
+                        </p>
+                      </div>
+                      <div>
+                        <p className="text-slate-400">Mileage</p>
+                        <p className="font-medium text-slate-700">
+                          {v.current_mileage ? `${v.current_mileage} km` : "—"}
                         </p>
                       </div>
                     </div>
 
-                    <div className="mt-2 flex items-center justify-between text-xs">
-                      <span className="text-slate-400">Insurance</span>
-                      <span className={`font-medium ${expiry.tone}`}>
-                        {expiry.text}
-                      </span>
+                    <div className="mt-3 grid grid-cols-2 gap-x-3 gap-y-1 text-xs">
+                      <div>
+                        <p className="text-slate-400">Insurance</p>
+                        <StatusDot label={insurance.label} tone={insurance.tone} />
+                      </div>
+                      <div>
+                        <p className="text-slate-400">Road Worthiness</p>
+                        <StatusDot label={roadworthy.label} tone={roadworthy.tone} />
+                      </div>
                     </div>
 
                     <div className="mt-4 flex items-center justify-between border-t border-slate-100 pt-3">

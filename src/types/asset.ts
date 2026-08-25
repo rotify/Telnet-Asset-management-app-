@@ -40,4 +40,15 @@ export interface Vehicle {
   updated_at: string;
   assigned_staff: string | null;
   asset: number;
+  fuel_type: string | null;
+  current_mileage: string | null;
+  department: string | null;
+  year_of_manufacture: string | null;
+  engine_number: string | null;
+  color: string | null;
+  service_interval_km: string | null;
+  base_location: string | null;
+  next_service_date: string | null;
+  insurance_provider: string | null;
+  insurance_policy_number: string | null;
 }
