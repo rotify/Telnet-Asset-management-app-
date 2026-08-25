@@ -145,10 +145,11 @@ export default function EquipmentPage() {
           <header className="mt-6 flex flex-wrap items-center justify-between gap-3">
             <div>
               <h1 className="text-2xl font-bold text-[#121B3B]">
-                Equipments
+                Company Equipment
               </h1>
               <p className="mt-1 text-sm text-slate-500">
-                Live equipment records.
+                Monitor company assets, vehicles, equipment, maintenance
+                schedules, and document status from one centralized dashboard.
               </p>
             </div>
             <button
@@ -210,6 +211,18 @@ export default function EquipmentPage() {
                 </option>
               ))}
             </select>
+            {(search || statusFilter !== "All") && (
+              <button
+                type="button"
+                onClick={() => {
+                  setSearch("");
+                  setStatusFilter("All");
+                }}
+                className="text-sm font-semibold text-telnet-primary hover:underline"
+              >
+                Clear filter
+              </button>
+            )}
           </div>
 
           {isLoading && !error && (
@@ -297,7 +310,7 @@ export default function EquipmentPage() {
               <table className="w-full min-w-[1050px] border-collapse text-left text-sm">
                 <thead>
                   <tr className="border-b border-slate-100 bg-blue-50/60 text-xs font-semibold uppercase tracking-wide text-slate-500">
-                    <th className="px-4 py-3">Item Name</th>
+                    <th className="px-4 py-3">Doc Name</th>
                     <th className="px-4 py-3">Category</th>
                     <th className="px-4 py-3">Serial No</th>
                     <th className="px-4 py-3">Assigned To</th>
