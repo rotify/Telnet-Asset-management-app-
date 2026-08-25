@@ -5,6 +5,7 @@ import { useRouter } from "next/navigation";
 import { getStoredToken, getStoredUsername, isSuperAdmin } from "@/lib/auth";
 import { getEquipment, getStaff } from "@/lib/api";
 import { AdminSidebar } from "@/components/layout/admin-sidebar";
+import { AdminTopBar } from "@/components/layout/admin-topbar";
 import { AssetActions } from "@/components/asset-actions";
 import { StatusDot, type StatusTone } from "@/components/status-dot";
 import type { Equipment } from "@/types/asset";
@@ -139,7 +140,9 @@ export default function EquipmentPage() {
 
       <div className="flex-1 px-6 py-8">
         <div className="mx-auto max-w-6xl">
-          <header className="flex flex-wrap items-center justify-between gap-3">
+          <AdminTopBar />
+
+          <header className="mt-6 flex flex-wrap items-center justify-between gap-3">
             <div>
               <h1 className="text-2xl font-bold text-[#121B3B]">
                 Equipments

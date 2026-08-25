@@ -5,6 +5,7 @@ import { useRouter } from "next/navigation";
 import { getStoredToken, getStoredUsername, isSuperAdmin } from "@/lib/auth";
 import { createStaff } from "@/lib/api";
 import { AdminSidebar } from "@/components/layout/admin-sidebar";
+import { AdminTopBar } from "@/components/layout/admin-topbar";
 
 function Field({
   label,
@@ -123,7 +124,9 @@ export default function AddStaffPage() {
 
       <div className="flex-1 px-6 py-8">
         <div className="mx-auto max-w-4xl">
-          <header>
+          <AdminTopBar />
+
+          <header className="mt-6">
             <h1 className="text-2xl font-bold text-[#121B3B]">
               Company Asset
             </h1>

@@ -5,6 +5,7 @@ import { useRouter } from "next/navigation";
 import { getStoredToken, getStoredUsername, isSuperAdmin } from "@/lib/auth";
 import { getEquipment, getVehicles, getStaff } from "@/lib/api";
 import { AdminSidebar } from "@/components/layout/admin-sidebar";
+import { AdminTopBar } from "@/components/layout/admin-topbar";
 import { AssetActions } from "@/components/asset-actions";
 import { StatusDot, type StatusTone } from "@/components/status-dot";
 import type { Equipment, Vehicle } from "@/types/asset";
@@ -155,7 +156,9 @@ export default function AssetsPage() {
 
       <div className="flex-1 px-6 py-8">
         <div className="mx-auto max-w-6xl">
-          <header>
+          <AdminTopBar />
+
+          <header className="mt-6">
             <h1 className="text-2xl font-bold text-[#121B3B]">Assets</h1>
             <p className="mt-1 text-sm text-slate-500">
               Combined view of every equipment and vehicle asset.

@@ -5,6 +5,7 @@ import { useRouter } from "next/navigation";
 import { getStoredToken, getStoredUsername, isSuperAdmin } from "@/lib/auth";
 import { createDocument, getDocuments } from "@/lib/api";
 import { AdminSidebar } from "@/components/layout/admin-sidebar";
+import { AdminTopBar } from "@/components/layout/admin-topbar";
 import { StatusDot, type StatusTone } from "@/components/status-dot";
 import type { DocumentRecord } from "@/types/document";
 
@@ -149,7 +150,9 @@ export default function DocumentsPage() {
 
       <div className="flex-1 px-6 py-8">
         <div className="mx-auto max-w-6xl">
-          <header className="flex flex-wrap items-center justify-between gap-3">
+          <AdminTopBar />
+
+          <header className="mt-6 flex flex-wrap items-center justify-between gap-3">
             <div>
               <h1 className="text-2xl font-bold text-[#121B3B]">Documents</h1>
               <p className="mt-1 text-sm text-slate-500">

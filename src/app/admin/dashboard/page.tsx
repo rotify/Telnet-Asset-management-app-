@@ -5,6 +5,7 @@ import { useRouter } from "next/navigation";
 import { getStoredToken, getStoredUsername, isSuperAdmin } from "@/lib/auth";
 import { getEquipment, getVehicles, getStaff, getDocuments } from "@/lib/api";
 import { AdminSidebar } from "@/components/layout/admin-sidebar";
+import { AdminTopBar } from "@/components/layout/admin-topbar";
 import { STATUS_COLORS } from "@/components/status-dot";
 import type { Equipment, Vehicle } from "@/types/asset";
 import type { Staff } from "@/types/staff";
@@ -56,53 +57,6 @@ function titleCase(value: string | null | undefined): string {
     .split(/[\s_-]+/)
     .map((w) => w.charAt(0).toUpperCase() + w.slice(1).toLowerCase())
     .join(" ");
-}
-
-function initials(name: string | null): string {
-  if (!name) return "A";
-  const parts = name.trim().split(/\s+/);
-  const first = parts[0]?.[0] ?? "";
-  const last = parts.length > 1 ? parts[parts.length - 1][0] : "";
-  return (first + last).toUpperCase() || "A";
-}
-
-function currentWeekRange(): string {
-  const now = new Date();
-  const day = now.getDay();
-  const monday = new Date(now);
-  monday.setDate(now.getDate() - ((day + 6) % 7));
-  const sunday = new Date(monday);
-  sunday.setDate(monday.getDate() + 6);
-  const fmt = (d: Date) =>
-    d.toLocaleDateString("en-US", { month: "short", day: "numeric" });
-  return `${fmt(monday)} - ${fmt(sunday)}, ${sunday.getFullYear()}`;
-}
-
-function SearchIcon() {
-  return (
-    <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth={2}>
-      <circle cx="11" cy="11" r="7" />
-      <path d="m20 20-3.5-3.5" strokeLinecap="round" />
-    </svg>
-  );
-}
-
-function CalendarIcon() {
-  return (
-    <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth={1.8} strokeLinecap="round" strokeLinejoin="round">
-      <rect x="3" y="5" width="18" height="16" rx="2" />
-      <path d="M8 3v4M16 3v4M3 10h18" />
-    </svg>
-  );
-}
-
-function BellIcon() {
-  return (
-    <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth={1.8} strokeLinecap="round" strokeLinejoin="round">
-      <path d="M6 8a6 6 0 0 1 12 0c0 5 2 6 2 6H4s2-1 2-6Z" />
-      <path d="M10 19a2 2 0 0 0 4 0" />
-    </svg>
-  );
 }
 
 function ExportIcon() {
@@ -413,46 +367,11 @@ export default function AdminDashboardPage() {
 
       <div className="flex-1 px-6 py-8">
         <div className="mx-auto max-w-6xl">
-          {/* Top utility row: search, date range, notifications, profile */}
-          <div className="flex flex-wrap items-center justify-between gap-3">
-            <div className="relative w-full max-w-[389px]">
-              <span className="pointer-events-none absolute left-3 top-1/2 -translate-y-1/2 text-slate-400">
-                <SearchIcon />
-              </span>
-              <input
-                type="text"
-                value={search}
-                onChange={(e) => setSearch(e.target.value)}
-                placeholder="Search..."
-                className="w-full rounded-lg border border-[#D9D9D9] bg-white py-2.5 pl-9 pr-3 text-sm text-slate-700 placeholder:text-slate-400 focus:border-telnet-primary focus:outline-none"
-              />
-            </div>
-            <div className="flex items-center gap-4">
-              <div className="flex items-center gap-1.5 text-sm text-slate-600">
-                <CalendarIcon />
-                {currentWeekRange()}
-              </div>
-              <button
-                type="button"
-                aria-label="Notifications"
-                className="relative flex h-11 w-11 items-center justify-center rounded-full bg-[#F5F2F2] text-slate-600"
-              >
-                <BellIcon />
-                {upcomingAlerts.length > 0 && (
-                  <span className="absolute right-2.5 top-2.5 h-2 w-2 rounded-full bg-[#FD7072]" />
-                )}
-              </button>
-              <div className="flex items-center gap-2">
-                <span className="flex h-9 w-9 shrink-0 items-center justify-center rounded-full bg-telnet-primary text-xs font-bold text-white">
-                  {initials(username)}
-                </span>
-                <div>
-                  <p className="text-sm font-bold text-[#121B3B]">{username}</p>
-                  <p className="text-xs font-bold text-[#787A78]">Admin</p>
-                </div>
-              </div>
-            </div>
-          </div>
+          <AdminTopBar
+            search={search}
+            onSearchChange={setSearch}
+            hasNotifications={upcomingAlerts.length > 0}
+          />
 
           <header className="mt-6 flex flex-wrap items-center justify-between gap-3">
             <div>
