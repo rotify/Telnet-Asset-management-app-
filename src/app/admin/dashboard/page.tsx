@@ -3,11 +3,12 @@
 import { useEffect, useMemo, useState } from "react";
 import { useRouter } from "next/navigation";
 import { getStoredToken, getStoredUsername, isSuperAdmin } from "@/lib/auth";
-import { getEquipment, getVehicles, getStaff } from "@/lib/api";
+import { getEquipment, getVehicles, getStaff, getDocuments } from "@/lib/api";
 import { AdminSidebar } from "@/components/layout/admin-sidebar";
 import { STATUS_COLORS } from "@/components/status-dot";
 import type { Equipment, Vehicle } from "@/types/asset";
 import type { Staff } from "@/types/staff";
+import type { DocumentRecord } from "@/types/document";
 
 const STATUS_BAR_COLORS: Record<string, string> = {
   Available: STATUS_COLORS.green,
@@ -21,6 +22,7 @@ interface DashboardData {
   equipment: Equipment[];
   vehicles: Vehicle[];
   staff: Staff[];
+  documents: DocumentRecord[];
 }
 
 const STATUS_ORDER = ["Available", "Assigned", "Maintenance", "Expired", "Inactive"];
@@ -56,20 +58,141 @@ function titleCase(value: string | null | undefined): string {
     .join(" ");
 }
 
+function initials(name: string | null): string {
+  if (!name) return "A";
+  const parts = name.trim().split(/\s+/);
+  const first = parts[0]?.[0] ?? "";
+  const last = parts.length > 1 ? parts[parts.length - 1][0] : "";
+  return (first + last).toUpperCase() || "A";
+}
+
+function currentWeekRange(): string {
+  const now = new Date();
+  const day = now.getDay();
+  const monday = new Date(now);
+  monday.setDate(now.getDate() - ((day + 6) % 7));
+  const sunday = new Date(monday);
+  sunday.setDate(monday.getDate() + 6);
+  const fmt = (d: Date) =>
+    d.toLocaleDateString("en-US", { month: "short", day: "numeric" });
+  return `${fmt(monday)} - ${fmt(sunday)}, ${sunday.getFullYear()}`;
+}
+
+function SearchIcon() {
+  return (
+    <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth={2}>
+      <circle cx="11" cy="11" r="7" />
+      <path d="m20 20-3.5-3.5" strokeLinecap="round" />
+    </svg>
+  );
+}
+
+function CalendarIcon() {
+  return (
+    <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth={1.8} strokeLinecap="round" strokeLinejoin="round">
+      <rect x="3" y="5" width="18" height="16" rx="2" />
+      <path d="M8 3v4M16 3v4M3 10h18" />
+    </svg>
+  );
+}
+
+function BellIcon() {
+  return (
+    <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth={1.8} strokeLinecap="round" strokeLinejoin="round">
+      <path d="M6 8a6 6 0 0 1 12 0c0 5 2 6 2 6H4s2-1 2-6Z" />
+      <path d="M10 19a2 2 0 0 0 4 0" />
+    </svg>
+  );
+}
+
+function ExportIcon() {
+  return (
+    <svg width="13" height="13" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth={2} strokeLinecap="round" strokeLinejoin="round">
+      <path d="M12 3v12M7 10l5 5 5-5M4 21h16" />
+    </svg>
+  );
+}
+
+function AssetsIcon() {
+  return (
+    <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth={1.8} strokeLinecap="round" strokeLinejoin="round">
+      <path d="M21 8 12 3 3 8v8l9 5 9-5V8Z" />
+      <path d="M3 8l9 5 9-5M12 13v8" />
+    </svg>
+  );
+}
+
+function VehicleIcon() {
+  return (
+    <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth={1.8} strokeLinecap="round" strokeLinejoin="round">
+      <rect x="1" y="6" width="13" height="11" rx="1.5" />
+      <path d="M14 10h4l3 3v4h-7z" />
+      <circle cx="6" cy="19" r="1.6" />
+      <circle cx="17" cy="19" r="1.6" />
+    </svg>
+  );
+}
+
+function EquipmentIcon() {
+  return (
+    <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth={1.8} strokeLinecap="round" strokeLinejoin="round">
+      <path d="M14.7 6.3a4 4 0 0 1-5.4 5.4L4 17l3 3 5.3-5.3a4 4 0 0 1 5.4-5.4l-3-3-3 3Z" />
+    </svg>
+  );
+}
+
+function DocumentIcon() {
+  return (
+    <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth={1.8} strokeLinecap="round" strokeLinejoin="round">
+      <path d="M6 2h9l4 4v16H6z" />
+      <path d="M14 2v5h5M9 12h6M9 16h6" />
+    </svg>
+  );
+}
+
+function AlertTriangleIcon() {
+  return (
+    <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth={1.8} strokeLinecap="round" strokeLinejoin="round">
+      <path d="M10.3 3.9 1.8 18a1.7 1.7 0 0 0 1.5 2.5h17.4a1.7 1.7 0 0 0 1.5-2.5L13.7 3.9a1.7 1.7 0 0 0-3.4 0Z" />
+      <path d="M12 9v4M12 17h.01" />
+    </svg>
+  );
+}
+
+function XCircleIcon() {
+  return (
+    <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth={1.8} strokeLinecap="round" strokeLinejoin="round">
+      <circle cx="12" cy="12" r="9" />
+      <path d="m9.5 9.5 5 5m0-5-5 5" />
+    </svg>
+  );
+}
+
 function StatCard({
   label,
   value,
   hint,
+  icon,
 }: {
   label: string;
   value: string | number;
   hint?: string;
+  icon: React.ReactNode;
 }) {
   return (
-    <div className="rounded-lg bg-white p-4">
-      <p className="text-xs font-medium text-slate-500">{label}</p>
-      <p className="mt-1 text-2xl font-bold text-[#121B3B]">{value}</p>
-      {hint && <p className="mt-1 text-xs text-slate-400">{hint}</p>}
+    <div className="rounded-xl bg-white p-4 shadow-[0_1px_2px_rgba(16,24,64,0.06)]">
+      <div className="flex items-center gap-3">
+        <span className="flex h-[51px] w-[51px] shrink-0 items-center justify-center rounded-2xl bg-[#F0F6FA] text-telnet-primary">
+          {icon}
+        </span>
+        <div>
+          <p className="text-xs font-bold uppercase tracking-wide text-slate-500">
+            {label}
+          </p>
+          <p className="text-2xl font-bold text-[#121B3B]">{value}</p>
+        </div>
+      </div>
+      {hint && <p className="mt-2 text-xs text-slate-400">{hint}</p>}
     </div>
   );
 }
@@ -92,11 +215,17 @@ function TagPill({ tag }: { tag: string }) {
   );
 }
 
+const TAG_DOT_COLORS: Record<string, string> = {
+  Vehicle: "#576A77",
+  Equipment: "#F6AD3F",
+  Staff: "#7C3AED",
+  Document: "#2DB130",
+};
 
-const ALERT_STYLES: Record<string, string> = {
-  critical: "border-[#F3B3B6] bg-[#FDEEEF]",
-  warning: "border-[#F4D199] bg-[#FCF3E5]",
-  info: "border-[#F0F6FA] bg-[#F0F6FA]",
+const ALERT_STYLES: Record<string, { row: string; icon: string }> = {
+  critical: { row: "border-[#F3B3B6] bg-[#FDEEEF]", icon: "#FD7072" },
+  warning: { row: "border-[#F4D199] bg-[#FCF3E5]", icon: "#F6AD3F" },
+  info: { row: "border-[#F0F6FA] bg-[#F0F6FA]", icon: "#576A77" },
 };
 
 export default function AdminDashboardPage() {
@@ -106,6 +235,8 @@ export default function AdminDashboardPage() {
   const [data, setData] = useState<DashboardData | null>(null);
   const [error, setError] = useState<string | null>(null);
   const [isLoading, setIsLoading] = useState(true);
+  const [search, setSearch] = useState("");
+  const [showRegisterMenu, setShowRegisterMenu] = useState(false);
 
   useEffect(() => {
     const token = getStoredToken();
@@ -132,13 +263,14 @@ export default function AdminDashboardPage() {
       setIsLoading(true);
       setError(null);
       try {
-        const [equipment, vehicles, staff] = await Promise.all([
+        const [equipment, vehicles, staff, documents] = await Promise.all([
           getEquipment(),
           getVehicles(),
           getStaff(),
+          getDocuments().catch(() => []),
         ]);
         if (!cancelled) {
-          setData({ equipment, vehicles, staff });
+          setData({ equipment, vehicles, staff, documents });
         }
       } catch (err) {
         if (!cancelled) {
@@ -160,6 +292,7 @@ export default function AdminDashboardPage() {
   const equipment = useMemo(() => data?.equipment ?? [], [data]);
   const vehicles = useMemo(() => data?.vehicles ?? [], [data]);
   const staff = useMemo(() => data?.staff ?? [], [data]);
+  const documents = useMemo(() => data?.documents ?? [], [data]);
 
   const statusBreakdown = useMemo(() => {
     const counts = new Map<string, number>();
@@ -207,11 +340,13 @@ export default function AdminDashboardPage() {
         created_at: s.created_at,
       })),
     ];
+    const q = search.trim().toLowerCase();
     return items
       .filter((i) => i.created_at)
+      .filter((i) => !q || i.title.toLowerCase().includes(q) || i.sub.toLowerCase().includes(q))
       .sort((a, b) => (a.created_at < b.created_at ? 1 : -1))
       .slice(0, 6);
-  }, [equipment, vehicles, staff]);
+  }, [equipment, vehicles, staff, search]);
 
   const upcomingAlerts = useMemo(() => {
     const alerts: { id: string; message: string; sub: string; level: string }[] = [];
@@ -252,6 +387,24 @@ export default function AdminDashboardPage() {
     return alerts.slice(0, 6);
   }, [equipment, vehicles]);
 
+  function handleExport() {
+    const rows = [
+      ["Metric", "Value"],
+      ["Total assets", String(equipment.length + vehicles.length)],
+      ["Total vehicles", String(vehicles.length)],
+      ["Total equipment", String(equipment.length)],
+      ["Total documents", String(documents.length)],
+    ];
+    const csv = rows.map((r) => r.join(",")).join("\n");
+    const blob = new Blob([csv], { type: "text/csv" });
+    const url = URL.createObjectURL(blob);
+    const a = document.createElement("a");
+    a.href = url;
+    a.download = "asset-management-summary.csv";
+    a.click();
+    URL.revokeObjectURL(url);
+  }
+
   if (!gateChecked) return null;
 
   return (
@@ -260,18 +413,93 @@ export default function AdminDashboardPage() {
 
       <div className="flex-1 px-6 py-8">
         <div className="mx-auto max-w-6xl">
-          <header className="flex flex-wrap items-center justify-between gap-3">
+          {/* Top utility row: search, date range, notifications, profile */}
+          <div className="flex flex-wrap items-center justify-between gap-3">
+            <div className="relative w-full max-w-[389px]">
+              <span className="pointer-events-none absolute left-3 top-1/2 -translate-y-1/2 text-slate-400">
+                <SearchIcon />
+              </span>
+              <input
+                type="text"
+                value={search}
+                onChange={(e) => setSearch(e.target.value)}
+                placeholder="Search..."
+                className="w-full rounded-lg border border-[#D9D9D9] bg-white py-2.5 pl-9 pr-3 text-sm text-slate-700 placeholder:text-slate-400 focus:border-telnet-primary focus:outline-none"
+              />
+            </div>
+            <div className="flex items-center gap-4">
+              <div className="flex items-center gap-1.5 text-sm text-slate-600">
+                <CalendarIcon />
+                {currentWeekRange()}
+              </div>
+              <button
+                type="button"
+                aria-label="Notifications"
+                className="relative flex h-11 w-11 items-center justify-center rounded-full bg-[#F5F2F2] text-slate-600"
+              >
+                <BellIcon />
+                {upcomingAlerts.length > 0 && (
+                  <span className="absolute right-2.5 top-2.5 h-2 w-2 rounded-full bg-[#FD7072]" />
+                )}
+              </button>
+              <div className="flex items-center gap-2">
+                <span className="flex h-9 w-9 shrink-0 items-center justify-center rounded-full bg-telnet-primary text-xs font-bold text-white">
+                  {initials(username)}
+                </span>
+                <div>
+                  <p className="text-sm font-bold text-[#121B3B]">{username}</p>
+                  <p className="text-xs font-bold text-[#787A78]">Admin</p>
+                </div>
+              </div>
+            </div>
+          </div>
+
+          <header className="mt-6 flex flex-wrap items-center justify-between gap-3">
             <div>
               <h1 className="text-2xl font-bold text-[#121B3B]">
                 Asset Management
               </h1>
               <p className="mt-1 text-sm text-slate-500">
-                Monitor company assets, vehicles, equipment, and staff from one
-                centralized dashboard.
+                Monitor company assets, vehicles, equipment, maintenance
+                schedules, and document status from one centralized dashboard.
               </p>
             </div>
-            <div className="flex items-center gap-2 text-sm text-slate-500">
-              Signed in as <span className="font-semibold text-[#121B3B]">{username}</span>
+            <div className="flex items-center gap-2">
+              <button
+                type="button"
+                onClick={handleExport}
+                className="flex items-center gap-1.5 rounded-lg border border-slate-200 bg-white px-3 py-1.5 text-xs font-semibold text-slate-600 hover:bg-slate-50"
+              >
+                <ExportIcon />
+                Export
+              </button>
+              <div className="relative">
+                <button
+                  type="button"
+                  onClick={() => setShowRegisterMenu((v) => !v)}
+                  className="flex items-center gap-1.5 rounded-lg bg-[#0F172A] px-3 py-1.5 text-xs font-semibold text-white hover:bg-[#1e293b]"
+                >
+                  + Register Asset
+                </button>
+                {showRegisterMenu && (
+                  <div className="absolute right-0 z-10 mt-1 w-40 overflow-hidden rounded-lg border border-slate-200 bg-white py-1 shadow-lg">
+                    <button
+                      type="button"
+                      onClick={() => router.push("/admin/equipment/new")}
+                      className="block w-full px-3 py-2 text-left text-xs font-medium text-slate-700 hover:bg-slate-50"
+                    >
+                      Register Equipment
+                    </button>
+                    <button
+                      type="button"
+                      onClick={() => router.push("/admin/vehicles/new")}
+                      className="block w-full px-3 py-2 text-left text-xs font-medium text-slate-700 hover:bg-slate-50"
+                    >
+                      Register Vehicle
+                    </button>
+                  </div>
+                )}
+              </div>
             </div>
           </header>
 
@@ -301,21 +529,37 @@ export default function AdminDashboardPage() {
                 <StatCard
                   label="Total assets"
                   value={equipment.length + vehicles.length}
+                  hint="View every registered assets"
+                  icon={<AssetsIcon />}
                 />
-                <StatCard label="Total vehicles" value={vehicles.length} />
-                <StatCard label="Total equipment" value={equipment.length} />
                 <StatCard
-                  label="Total staff"
-                  value={staff.length}
-                  hint="Documents count pending backend API"
+                  label="Total vehicles"
+                  value={vehicles.length}
+                  hint="Monitor all company vehicles and status."
+                  icon={<VehicleIcon />}
+                />
+                <StatCard
+                  label="Total equipment"
+                  value={equipment.length}
+                  hint="Track office equipment"
+                  icon={<EquipmentIcon />}
+                />
+                <StatCard
+                  label="Total documents"
+                  value={documents.length}
+                  hint="Manage all sort of documents."
+                  icon={<DocumentIcon />}
                 />
               </div>
 
               <div className="mt-6 grid grid-cols-1 gap-4 lg:grid-cols-2">
                 <div className="rounded-xl bg-white p-4 shadow-[0_1px_2px_rgba(16,24,64,0.06)]">
-                  <p className="text-sm font-semibold text-[#121B3B]">
-                    Asset status
-                  </p>
+                  <div className="flex items-center justify-between">
+                    <p className="text-sm font-semibold text-[#121B3B]">
+                      Asset status
+                    </p>
+                    <span className="text-slate-400">⋯</span>
+                  </div>
                   <div className="mt-4 space-y-3">
                     {statusBreakdown.map((s) => (
                       <div key={s.label}>
@@ -340,9 +584,18 @@ export default function AdminDashboardPage() {
                 </div>
 
                 <div className="rounded-xl bg-white p-4 shadow-[0_1px_2px_rgba(16,24,64,0.06)]">
-                  <p className="text-sm font-semibold text-[#121B3B]">
-                    Recent activity
-                  </p>
+                  <div className="flex items-center justify-between">
+                    <p className="text-sm font-semibold text-[#121B3B]">
+                      Recent activities
+                    </p>
+                    <button
+                      type="button"
+                      onClick={() => router.push("/admin/assets")}
+                      className="text-xs font-semibold text-telnet-primary hover:underline"
+                    >
+                      View all
+                    </button>
+                  </div>
                   {recentActivity.length === 0 ? (
                     <p className="mt-3 text-sm text-slate-400">
                       Nothing recorded yet.
@@ -352,9 +605,13 @@ export default function AdminDashboardPage() {
                       {recentActivity.map((item) => (
                         <li
                           key={item.id}
-                          className="flex items-center justify-between gap-3 py-2 text-sm"
+                          className="flex items-center gap-3 py-2 text-sm"
                         >
-                          <div className="min-w-0">
+                          <span
+                            className="h-2 w-2 shrink-0 rounded-full"
+                            style={{ backgroundColor: TAG_DOT_COLORS[item.tag] }}
+                          />
+                          <div className="min-w-0 flex-1">
                             <p className="truncate font-medium text-slate-800">
                               {item.title}
                             </p>
@@ -380,21 +637,27 @@ export default function AdminDashboardPage() {
                   </p>
                 ) : (
                   <div className="mt-3 space-y-2">
-                    {upcomingAlerts.map((alert) => (
-                      <div
-                        key={alert.id}
-                        className={`rounded border px-3 py-2 text-sm ${
-                          ALERT_STYLES[alert.level] ?? ALERT_STYLES.info
-                        }`}
-                      >
-                        <p className="font-medium text-slate-800">
-                          {alert.message}
-                        </p>
-                        {alert.sub && (
-                          <p className="text-xs text-slate-500">{alert.sub}</p>
-                        )}
-                      </div>
-                    ))}
+                    {upcomingAlerts.map((alert) => {
+                      const style = ALERT_STYLES[alert.level] ?? ALERT_STYLES.info;
+                      return (
+                        <div
+                          key={alert.id}
+                          className={`flex items-start gap-2 rounded border px-3 py-2 text-sm ${style.row}`}
+                        >
+                          <span className="mt-0.5 shrink-0" style={{ color: style.icon }}>
+                            {alert.level === "info" ? <VehicleIcon /> : alert.level === "warning" ? <XCircleIcon /> : <AlertTriangleIcon />}
+                          </span>
+                          <div>
+                            <p className="font-medium text-slate-800">
+                              {alert.message}
+                            </p>
+                            {alert.sub && (
+                              <p className="text-xs text-slate-500">{alert.sub}</p>
+                            )}
+                          </div>
+                        </div>
+                      );
+                    })}
                   </div>
                 )}
               </div>

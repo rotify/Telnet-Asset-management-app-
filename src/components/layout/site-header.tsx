@@ -44,19 +44,30 @@ export function SiteHeader() {
     window.location.href = "/login";
   }
 
+  if (isAdminSection) {
+    // Figma's admin layout has no separate top bar — the logo lives in the
+    // sidebar instead. Keep only a slim mobile-only strip so small screens
+    // still have a way to open the sidebar drawer.
+    return (
+      <header className="flex h-12 items-center border-b border-slate-200 bg-white px-4 lg:hidden">
+        <button
+          type="button"
+          onClick={toggleSidebar}
+          aria-label="Toggle navigation menu"
+          className="flex h-8 w-8 items-center justify-center rounded-md text-slate-600 hover:bg-slate-100"
+        >
+          <MenuIcon />
+        </button>
+        <span className="ml-3 font-serif text-base font-bold text-[#50A5DB]">
+          TELNET
+        </span>
+      </header>
+    );
+  }
+
   return (
     <header className="flex h-14 items-center justify-between bg-[#10245c] px-6 text-white">
       <div className="flex items-center gap-3">
-        {isAdminSection && (
-          <button
-            type="button"
-            onClick={toggleSidebar}
-            aria-label="Toggle navigation menu"
-            className="flex h-8 w-8 items-center justify-center rounded-md bg-white/10 hover:bg-white/20 lg:hidden"
-          >
-            <MenuIcon />
-          </button>
-        )}
         <span className="font-serif text-lg font-bold text-[#50A5DB]">
           TELNET
         </span>

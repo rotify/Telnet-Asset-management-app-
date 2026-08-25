@@ -161,6 +161,10 @@ export function AdminSidebar() {
           isOpen ? "translate-x-0" : "-translate-x-full"
         }`}
       >
+        <span className="mb-6 px-3 font-serif text-xl font-bold text-[#50A5DB]">
+          TELNET
+        </span>
+
         <nav className="flex flex-1 flex-col gap-1">
           {NAV_ITEMS.map((item) => {
             const isActive = pathname === item.href;
