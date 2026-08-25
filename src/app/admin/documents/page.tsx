@@ -142,6 +142,27 @@ export default function DocumentsPage() {
     }
   }
 
+  function handleExport() {
+    const rows = [
+      ["Name", "Type", "Status", "Expiry Date", "Uploaded By"],
+      ...documents.map((doc) => [
+        doc.name,
+        doc.document_type,
+        statusFromExpiry(doc.expiry_date),
+        doc.expiry_date ?? "",
+        doc.responsible_person ?? "",
+      ]),
+    ];
+    const csv = rows.map((r) => r.map((v) => `"${v}"`).join(",")).join("\n");
+    const blob = new Blob([csv], { type: "text/csv" });
+    const url = URL.createObjectURL(blob);
+    const a = document.createElement("a");
+    a.href = url;
+    a.download = "documents.csv";
+    a.click();
+    URL.revokeObjectURL(url);
+  }
+
   if (!gateChecked) return null;
 
   return (
@@ -156,19 +177,29 @@ export default function DocumentsPage() {
             <div>
               <h1 className="text-2xl font-bold text-[#121B3B]">Documents</h1>
               <p className="mt-1 text-sm text-slate-500">
-                Live certificates, licences, and warranties.
+                Manage compliance certificates, licences, warranties, and
+                receipts.
               </p>
             </div>
-            <button
-              type="button"
-              onClick={() => {
-                setShowAddForm((v) => !v);
-                setAddError(null);
-              }}
-              className="rounded-lg bg-telnet-primary px-4 py-2 text-sm font-semibold text-white hover:bg-telnet-primaryHover"
-            >
-              {showAddForm ? "Cancel" : "+ Add Document"}
-            </button>
+            <div className="flex items-center gap-2">
+              <button
+                type="button"
+                onClick={handleExport}
+                className="flex items-center gap-1.5 rounded-lg border border-slate-200 bg-white px-3 py-1.5 text-xs font-semibold text-slate-600 hover:bg-slate-50"
+              >
+                Export
+              </button>
+              <button
+                type="button"
+                onClick={() => {
+                  setShowAddForm((v) => !v);
+                  setAddError(null);
+                }}
+                className="rounded-lg bg-telnet-primary px-4 py-2 text-sm font-semibold text-white hover:bg-telnet-primaryHover"
+              >
+                {showAddForm ? "Cancel" : "+ Upload"}
+              </button>
+            </div>
           </header>
 
           {showAddForm && (
@@ -297,6 +328,18 @@ export default function DocumentsPage() {
               <option value="Expiring">Status: Expiring</option>
               <option value="Expired">Status: Expired</option>
             </select>
+            {(search || statusFilter !== "All") && (
+              <button
+                type="button"
+                onClick={() => {
+                  setSearch("");
+                  setStatusFilter("All");
+                }}
+                className="text-sm font-semibold text-telnet-primary hover:underline"
+              >
+                Clear filter
+              </button>
+            )}
           </div>
 
           {isLoading && !error && (
