@@ -135,7 +135,7 @@ export function LoginForm() {
       </a>
 
       <p className="mt-4 text-center text-sm text-slate-500">
-        Don&apos;t have access? Contact system administrator.
+        Don&apos;t have access? Contact Admin.
       </p>
     </form>
   );

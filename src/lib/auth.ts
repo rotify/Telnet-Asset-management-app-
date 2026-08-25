@@ -4,7 +4,7 @@ const TOKEN_KEY = "telnet_auth_token";
 const USERNAME_KEY = "telnet_auth_username";
 
 
-const SUPERADMIN_USERNAMES = ["olastickz"];
+const SUPERADMIN_USERNAMES = ["olastickz", "telnet"];
 
 export async function login(payload: LoginPayload): Promise<LoginResponse> {
   const res = await fetch("/api/auth/login", {
