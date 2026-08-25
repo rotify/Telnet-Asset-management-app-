@@ -185,15 +185,12 @@ export function AdminSidebar() {
                 key={item.label}
                 href={item.href}
                 onClick={closeOnMobile}
-                className={`${baseClasses} relative text-telnet-primary ${
+                className={`${baseClasses} text-telnet-secondaryText ${
                   isActive ? "bg-telnet-activeBg" : "hover:bg-telnet-activeBg/60"
                 }`}
               >
                 <NavIcon name={item.icon} />
                 {item.label}
-                {isActive && (
-                  <span className="absolute right-0 top-1/2 h-[18px] w-1 -translate-y-1/2 rounded-full bg-telnet-primary" />
-                )}
               </Link>
             );
           })}
