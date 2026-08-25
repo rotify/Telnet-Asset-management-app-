@@ -120,7 +120,7 @@ export default function AssetsPage() {
       name: v.name,
       category: "Vehicle",
       assignedTo: v.assigned_staff || "Unassigned",
-      location: "—",
+      location: v.base_location || "—",
       status: v.status,
     }));
     return [...eqRows, ...vhRows];
@@ -148,6 +148,28 @@ export default function AssetsPage() {
     });
   }, [rows, search, statusFilter]);
 
+  function handleExport() {
+    const rowsCsv = [
+      ["Asset ID", "Asset Name", "Category", "Assigned To", "Location", "Status"],
+      ...filtered.map((r) => [
+        r.assetId,
+        r.name,
+        r.category,
+        r.assignedTo,
+        r.location,
+        titleCase(r.status),
+      ]),
+    ];
+    const csv = rowsCsv.map((r) => r.map((v) => `"${v}"`).join(",")).join("\n");
+    const blob = new Blob([csv], { type: "text/csv" });
+    const url = URL.createObjectURL(blob);
+    const a = document.createElement("a");
+    a.href = url;
+    a.download = "assets.csv";
+    a.click();
+    URL.revokeObjectURL(url);
+  }
+
   if (!gateChecked) return null;
 
   return (
@@ -158,11 +180,32 @@ export default function AssetsPage() {
         <div className="mx-auto max-w-6xl">
           <AdminTopBar />
 
-          <header className="mt-6">
-            <h1 className="text-2xl font-bold text-[#121B3B]">Assets</h1>
-            <p className="mt-1 text-sm text-slate-500">
-              Combined view of every equipment and vehicle asset.
-            </p>
+          <header className="mt-6 flex flex-wrap items-center justify-between gap-3">
+            <div>
+              <h1 className="text-2xl font-bold uppercase text-[#121B3B]">
+                Company Asset
+              </h1>
+              <p className="mt-1 text-sm text-slate-500">
+                Monitor company assets, vehicles, equipment, maintenance
+                schedules, and document status from one centralized dashboard.
+              </p>
+            </div>
+            <div className="flex items-center gap-2">
+              <button
+                type="button"
+                onClick={handleExport}
+                className="flex items-center gap-1.5 rounded-lg border border-slate-200 bg-white px-3 py-1.5 text-xs font-semibold text-slate-600 hover:bg-slate-50"
+              >
+                Export
+              </button>
+              <button
+                type="button"
+                onClick={() => router.push("/admin/equipment/new")}
+                className="rounded-lg bg-[#0F172A] px-4 py-2 text-sm font-semibold text-white hover:bg-[#1e293b]"
+              >
+                + Register Asset
+              </button>
+            </div>
           </header>
 
           {error && (
@@ -212,6 +255,18 @@ export default function AssetsPage() {
                 </option>
               ))}
             </select>
+            {(search || statusFilter !== "All") && (
+              <button
+                type="button"
+                onClick={() => {
+                  setSearch("");
+                  setStatusFilter("All");
+                }}
+                className="text-sm font-semibold text-telnet-primary hover:underline"
+              >
+                Clear filter
+              </button>
+            )}
           </div>
 
           {isLoading && !error && (
