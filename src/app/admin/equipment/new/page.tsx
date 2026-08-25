@@ -109,14 +109,16 @@ export default function AddEquipmentPage() {
         <div className="mx-auto max-w-4xl">
           <AdminTopBar />
 
-          <header className="mt-6">
-            <h1 className="text-2xl font-bold text-[#121B3B]">
-              Company Equipment
-            </h1>
-            <p className="mt-1 text-sm text-slate-500">
-              Add a new piece of equipment and record everything needed for
-              warranty claims and servicing.
-            </p>
+          <header className="mt-6 flex flex-wrap items-center justify-between gap-3">
+            <div>
+              <h1 className="text-2xl font-bold uppercase text-[#121B3B]">
+                Company Equipment
+              </h1>
+              <p className="mt-1 text-sm text-slate-500">
+                Add a new piece of equipment and record everything needed for
+                warranty claims and servicing.
+              </p>
+            </div>
           </header>
 
           {error && (
