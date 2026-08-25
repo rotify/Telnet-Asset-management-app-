@@ -50,6 +50,17 @@ function dueStatus(dueDate: string | null): { label: string; tone: StatusTone } 
   return { label: "Scheduled", tone: "green" };
 }
 
+function priorityFromDue(dueDate: string | null): { label: string; tone: StatusTone } {
+  if (!dueDate) return { label: "Low", tone: "slate" };
+  const days = Math.ceil(
+    (new Date(dueDate).getTime() - Date.now()) / 86400000
+  );
+  if (Number.isNaN(days)) return { label: "Low", tone: "slate" };
+  if (days < 0) return { label: "High", tone: "red" };
+  if (days <= 14) return { label: "Medium", tone: "orange" };
+  return { label: "Low", tone: "slate" };
+}
+
 const EMPTY_NEW_RECORD = {
   equipment: "",
   description: "",
@@ -66,6 +77,9 @@ export default function MaintenancePage() {
   const [isLoading, setIsLoading] = useState(true);
   const [error, setError] = useState<string | null>(null);
   const [search, setSearch] = useState("");
+  const [statusFilter, setStatusFilter] = useState<
+    "All" | "Overdue" | "Due Soon" | "Scheduled" | "No due date"
+  >("All");
 
   const [showAddForm, setShowAddForm] = useState(false);
   const [newRecord, setNewRecord] = useState(EMPTY_NEW_RECORD);
@@ -117,17 +131,25 @@ export default function MaintenancePage() {
     return map;
   }, [equipment]);
 
+  const equipmentById = useMemo(() => {
+    const map = new Map<number, Equipment>();
+    equipment.forEach((e) => map.set(e.id, e));
+    return map;
+  }, [equipment]);
+
   const filtered = useMemo(() => {
     const q = search.trim().toLowerCase();
-    if (!q) return records;
     return records.filter((r) => {
       const eqName = equipmentNameById.get(r.equipment) ?? "";
-      return (
+      const matchesSearch =
+        !q ||
         r.description?.toLowerCase().includes(q) ||
-        eqName.toLowerCase().includes(q)
-      );
+        eqName.toLowerCase().includes(q);
+      const matchesStatus =
+        statusFilter === "All" || dueStatus(r.due_date).label === statusFilter;
+      return matchesSearch && matchesStatus;
     });
-  }, [records, search, equipmentNameById]);
+  }, [records, search, statusFilter, equipmentNameById]);
 
   async function handleAdd() {
     setAddError(null);
@@ -156,6 +178,33 @@ export default function MaintenancePage() {
     }
   }
 
+  function handleExport() {
+    const rows = [
+      ["Machine Name", "Office location", "Category", "Report Name", "Priority", "Status"],
+      ...records.map((r) => {
+        const eq = equipmentById.get(r.equipment);
+        const priority = priorityFromDue(r.due_date);
+        const status = dueStatus(r.due_date);
+        return [
+          equipmentNameById.get(r.equipment) ?? `Equipment #${r.equipment}`,
+          eq?.regional_office || eq?.subsidiary || "",
+          eq?.equipment_type || "",
+          r.description,
+          priority.label,
+          status.label,
+        ];
+      }),
+    ];
+    const csv = rows.map((r) => r.map((v) => `"${v}"`).join(",")).join("\n");
+    const blob = new Blob([csv], { type: "text/csv" });
+    const url = URL.createObjectURL(blob);
+    const a = document.createElement("a");
+    a.href = url;
+    a.download = "maintenance.csv";
+    a.click();
+    URL.revokeObjectURL(url);
+  }
+
   if (!gateChecked) return null;
 
   return (
@@ -169,22 +218,32 @@ export default function MaintenancePage() {
           <header className="mt-6 flex flex-wrap items-center justify-between gap-3">
             <div>
               <h1 className="text-2xl font-bold text-[#121B3B]">
-                Maintenance
+                Maintenance Management
               </h1>
               <p className="mt-1 text-sm text-slate-500">
-                Live equipment maintenance.
+                Store and manage important company files such as insurance
+                certificates, licenses, warranties, and receipts.
               </p>
             </div>
-            <button
-              type="button"
-              onClick={() => {
-                setShowAddForm((v) => !v);
-                setAddError(null);
-              }}
-              className="rounded-lg bg-telnet-primary px-4 py-2 text-sm font-semibold text-white hover:bg-telnet-primaryHover"
-            >
-              {showAddForm ? "Cancel" : "+ Schedule Maintenance"}
-            </button>
+            <div className="flex items-center gap-2">
+              <button
+                type="button"
+                onClick={handleExport}
+                className="flex items-center gap-1.5 rounded-lg border border-slate-200 bg-white px-3 py-1.5 text-xs font-semibold text-slate-600 hover:bg-slate-50"
+              >
+                Export
+              </button>
+              <button
+                type="button"
+                onClick={() => {
+                  setShowAddForm((v) => !v);
+                  setAddError(null);
+                }}
+                className="rounded-lg bg-telnet-primary px-4 py-2 text-sm font-semibold text-white hover:bg-telnet-primaryHover"
+              >
+                {showAddForm ? "Cancel" : "+ Upload"}
+              </button>
+            </div>
           </header>
 
           {showAddForm && (
@@ -270,8 +329,8 @@ export default function MaintenancePage() {
             </div>
           )}
 
-          <div className="mt-6 max-w-sm">
-            <div className="relative">
+          <div className="mt-6 flex flex-col gap-3 sm:flex-row sm:items-center">
+            <div className="relative flex-1 sm:max-w-sm">
               <span className="pointer-events-none absolute left-3 top-1/2 -translate-y-1/2 text-slate-400">
                 <svg
                   width="16"
@@ -293,6 +352,38 @@ export default function MaintenancePage() {
                 className="w-full rounded-lg border border-slate-200 bg-white py-2 pl-9 pr-3 text-sm text-slate-700 placeholder:text-slate-400 focus:border-telnet-primary focus:outline-none"
               />
             </div>
+            <select
+              value={statusFilter}
+              onChange={(e) =>
+                setStatusFilter(
+                  e.target.value as
+                    | "All"
+                    | "Overdue"
+                    | "Due Soon"
+                    | "Scheduled"
+                    | "No due date"
+                )
+              }
+              className="rounded-lg border border-slate-200 bg-white px-3 py-2 text-sm text-slate-700 focus:border-telnet-primary focus:outline-none"
+            >
+              <option value="All">Status: All</option>
+              <option value="Overdue">Status: Overdue</option>
+              <option value="Due Soon">Status: Due Soon</option>
+              <option value="Scheduled">Status: Scheduled</option>
+              <option value="No due date">Status: No due date</option>
+            </select>
+            {(search || statusFilter !== "All") && (
+              <button
+                type="button"
+                onClick={() => {
+                  setSearch("");
+                  setStatusFilter("All");
+                }}
+                className="text-sm font-semibold text-telnet-primary hover:underline"
+              >
+                Clear filter
+              </button>
+            )}
           </div>
 
           {isLoading && !error && (
@@ -311,6 +402,8 @@ export default function MaintenancePage() {
             <div className="mt-6 space-y-3 md:hidden">
               {filtered.map((r) => {
                 const status = dueStatus(r.due_date);
+                const priority = priorityFromDue(r.due_date);
+                const eq = equipmentById.get(r.equipment);
                 return (
                   <div
                     key={r.id}
@@ -335,10 +428,26 @@ export default function MaintenancePage() {
 
                     <div className="mt-3 grid grid-cols-2 gap-x-3 gap-y-2 text-xs">
                       <div>
+                        <p className="text-slate-400">Office location</p>
+                        <p className="text-slate-700">
+                          {eq?.regional_office || eq?.subsidiary || "—"}
+                        </p>
+                      </div>
+                      <div>
+                        <p className="text-slate-400">Category</p>
+                        <p className="text-slate-700">
+                          {eq?.equipment_type || "—"}
+                        </p>
+                      </div>
+                      <div>
                         <p className="text-slate-400">Due Date</p>
                         <p className="text-slate-700">
                           {formatDate(r.due_date)}
                         </p>
+                      </div>
+                      <div>
+                        <p className="text-slate-400">Priority</p>
+                        <StatusDot label={priority.label} tone={priority.tone} />
                       </div>
                       <div>
                         <p className="text-slate-400">Cost</p>
@@ -365,14 +474,14 @@ export default function MaintenancePage() {
 
           {!isLoading && !error && filtered.length > 0 && (
             <div className="mt-6 hidden overflow-x-auto rounded-xl bg-white shadow-[0_1px_2px_rgba(16,24,64,0.06)] md:block">
-              <table className="w-full min-w-[800px] border-collapse text-left text-sm">
+              <table className="w-full min-w-[900px] border-collapse text-left text-sm">
                 <thead>
                   <tr className="border-b border-slate-100 bg-blue-50/60 text-xs font-semibold uppercase tracking-wide text-slate-500">
-                    <th className="px-4 py-3">Equipment</th>
-                    <th className="px-4 py-3">Description</th>
-                    <th className="px-4 py-3">Due Date</th>
-                    <th className="px-4 py-3">Cost</th>
-                    <th className="px-4 py-3">Notes</th>
+                    <th className="px-4 py-3">Machine Name</th>
+                    <th className="px-4 py-3">Office location</th>
+                    <th className="px-4 py-3">Category</th>
+                    <th className="px-4 py-3">Report Name</th>
+                    <th className="px-4 py-3">Priority</th>
                     <th className="px-4 py-3">Status</th>
                     <th className="px-4 py-3">Actions</th>
                   </tr>
@@ -390,6 +499,8 @@ export default function MaintenancePage() {
                   ) : (
                     filtered.map((r) => {
                       const status = dueStatus(r.due_date);
+                      const priority = priorityFromDue(r.due_date);
+                      const eq = equipmentById.get(r.equipment);
                       return (
                         <tr
                           key={r.id}
@@ -400,16 +511,16 @@ export default function MaintenancePage() {
                               `Equipment #${r.equipment}`}
                           </td>
                           <td className="px-4 py-3 text-slate-500">
+                            {eq?.regional_office || eq?.subsidiary || "—"}
+                          </td>
+                          <td className="px-4 py-3 text-slate-500">
+                            {eq?.equipment_type || "—"}
+                          </td>
+                          <td className="px-4 py-3 text-slate-500">
                             {r.description}
                           </td>
-                          <td className="px-4 py-3 text-slate-500">
-                            {formatDate(r.due_date)}
-                          </td>
-                          <td className="px-4 py-3 text-slate-500">
-                            {r.cost ? `₦${r.cost}` : "—"}
-                          </td>
-                          <td className="px-4 py-3 text-slate-500">
-                            {r.notes || "—"}
+                          <td className="px-4 py-3">
+                            <StatusDot label={priority.label} tone={priority.tone} />
                           </td>
                           <td className="px-4 py-3">
                             <StatusDot label={status.label} tone={status.tone} />
