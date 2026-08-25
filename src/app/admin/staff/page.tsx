@@ -17,6 +17,13 @@ interface EditableFields {
   is_active: boolean;
 }
 
+function formatDate(dateStr: string | null | undefined): string {
+  if (!dateStr) return "—";
+  const d = new Date(dateStr);
+  if (Number.isNaN(d.getTime())) return dateStr;
+  return d.toLocaleDateString("en-GB");
+}
+
 function toEditable(s: Staff): EditableFields {
   return {
     first_name: s.first_name ?? "",
@@ -72,6 +79,7 @@ export default function StaffPage() {
   const [isLoading, setIsLoading] = useState(true);
   const [error, setError] = useState<string | null>(null);
   const [search, setSearch] = useState("");
+  const [statusFilter, setStatusFilter] = useState<"All" | "Active" | "Suspended">("All");
 
   const [showAddForm, setShowAddForm] = useState(false);
   const [newStaff, setNewStaff] = useState(EMPTY_NEW_STAFF);
@@ -118,13 +126,18 @@ export default function StaffPage() {
 
   const filtered = useMemo(() => {
     const q = search.trim().toLowerCase();
-    if (!q) return staff;
-    return staff.filter((s) =>
-      `${s.first_name} ${s.last_name} ${s.staff_id} ${s.department ?? ""} ${s.branch ?? ""}`
-        .toLowerCase()
-        .includes(q)
-    );
-  }, [staff, search]);
+    return staff.filter((s) => {
+      const matchesStatus =
+        statusFilter === "All" ||
+        (statusFilter === "Active" ? s.is_active : !s.is_active);
+      const matchesSearch =
+        !q ||
+        `${s.first_name} ${s.last_name} ${s.staff_id} ${s.email ?? ""} ${s.department ?? ""} ${s.branch ?? ""}`
+          .toLowerCase()
+          .includes(q);
+      return matchesStatus && matchesSearch;
+    });
+  }, [staff, search, statusFilter]);
 
   async function handleAddStaff() {
     setAddError(null);
@@ -205,7 +218,8 @@ export default function StaffPage() {
                 Users &amp; Roles
               </h1>
               <p className="mt-1 text-sm text-slate-500">
-                Live staff records.
+                Monitor company assets, vehicles, equipment, maintenance
+                schedules, and document status from one centralized dashboard.
               </p>
             </div>
             <button
@@ -284,8 +298,8 @@ export default function StaffPage() {
             </div>
           )}
 
-          <div className="mt-6">
-            <div className="relative max-w-sm">
+          <div className="mt-6 flex flex-wrap items-center gap-3">
+            <div className="relative flex-1">
               <span className="pointer-events-none absolute left-3 top-1/2 -translate-y-1/2 text-slate-400">
                 <svg
                   width="16"
@@ -307,6 +321,29 @@ export default function StaffPage() {
                 className="w-full rounded-lg border border-slate-200 bg-white py-2 pl-9 pr-3 text-sm text-slate-700 placeholder:text-slate-400 focus:border-telnet-primary focus:outline-none"
               />
             </div>
+            <select
+              value={statusFilter}
+              onChange={(e) =>
+                setStatusFilter(e.target.value as "All" | "Active" | "Suspended")
+              }
+              className="rounded-lg border border-slate-200 bg-white px-3 py-2 text-sm text-slate-700 focus:border-telnet-primary focus:outline-none"
+            >
+              <option value="All">Status: All</option>
+              <option value="Active">Status: Active</option>
+              <option value="Suspended">Status: Suspended</option>
+            </select>
+            {(search || statusFilter !== "All") && (
+              <button
+                type="button"
+                onClick={() => {
+                  setSearch("");
+                  setStatusFilter("All");
+                }}
+                className="text-sm font-semibold text-telnet-primary hover:underline"
+              >
+                Clear filter
+              </button>
+            )}
           </div>
 
           {isLoading && !error && (
@@ -376,8 +413,8 @@ export default function StaffPage() {
                         </label>
                       ) : (
                         <StatusDot
-                          label={s.is_active ? "Active" : "Inactive"}
-                          tone={s.is_active ? "green" : "red"}
+                          label={s.is_active ? "Active" : "Suspended"}
+                          tone={s.is_active ? "navy" : "red"}
                           className="shrink-0"
                         />
                       )}
@@ -470,11 +507,12 @@ export default function StaffPage() {
               <table className="w-full min-w-[800px] border-collapse text-left text-sm">
                 <thead>
                   <tr className="border-b border-slate-100 bg-blue-50/60 text-xs font-semibold uppercase tracking-wide text-slate-500">
-                    <th className="px-4 py-3">Staff ID</th>
-                    <th className="px-4 py-3">Name</th>
+                    <th className="px-4 py-3">User</th>
+                    <th className="px-4 py-3">Email</th>
+                    <th className="px-4 py-3">Role</th>
                     <th className="px-4 py-3">Department</th>
-                    <th className="px-4 py-3">Branch</th>
-                    <th className="px-4 py-3">Active</th>
+                    <th className="px-4 py-3">Last Active</th>
+                    <th className="px-4 py-3">Status</th>
                     <th className="px-4 py-3">Actions</th>
                   </tr>
                 </thead>
@@ -482,7 +520,7 @@ export default function StaffPage() {
                   {filtered.length === 0 ? (
                     <tr>
                       <td
-                        colSpan={6}
+                        colSpan={7}
                         className="px-4 py-8 text-center text-sm text-slate-400"
                       >
                         No staff match your search.
@@ -497,9 +535,6 @@ export default function StaffPage() {
                           key={s.id}
                           className="border-b border-slate-50 last:border-0 hover:bg-slate-50"
                         >
-                          <td className="px-4 py-3 text-slate-500">
-                            {s.staff_id}
-                          </td>
                           <td className="px-4 py-3 font-medium text-slate-800">
                             {isEditing && editValues ? (
                               <div className="flex gap-2">
@@ -527,6 +562,12 @@ export default function StaffPage() {
                             )}
                           </td>
                           <td className="px-4 py-3 text-slate-500">
+                            {s.email || "—"}
+                          </td>
+                          <td className="px-4 py-3 text-slate-500">
+                            {s.driver_status || "Staff"}
+                          </td>
+                          <td className="px-4 py-3 text-slate-500">
                             {isEditing && editValues ? (
                               <input
                                 value={editValues.department}
@@ -542,19 +583,7 @@ export default function StaffPage() {
                             )}
                           </td>
                           <td className="px-4 py-3 text-slate-500">
-                            {isEditing && editValues ? (
-                              <input
-                                value={editValues.branch}
-                                onChange={(e) =>
-                                  setEditValues((v) =>
-                                    v ? { ...v, branch: e.target.value } : v
-                                  )
-                                }
-                                className="w-28 rounded border border-slate-200 px-2 py-1 text-sm focus:border-telnet-primary focus:outline-none"
-                              />
-                            ) : (
-                              s.branch || "—"
-                            )}
+                            {formatDate(s.updated_at)}
                           </td>
                           <td className="px-4 py-3">
                             {isEditing && editValues ? (
@@ -569,8 +598,8 @@ export default function StaffPage() {
                               />
                             ) : (
                               <StatusDot
-                                label={s.is_active ? "Active" : "Inactive"}
-                                tone={s.is_active ? "green" : "red"}
+                                label={s.is_active ? "Active" : "Suspended"}
+                                tone={s.is_active ? "navy" : "red"}
                               />
                             )}
                           </td>
