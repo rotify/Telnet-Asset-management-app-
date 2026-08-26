@@ -214,7 +214,7 @@ export default function AddStaffPage() {
                   onChange={(e) => update("department", e.target.value)}
                   className={inputClasses}
                 >
-                  <option value="">Enter full name</option>
+                 
                   <option value="Finance">Finance</option>
                   <option value="Operations">Operations</option>
                   <option value="HR">HR</option>
@@ -237,7 +237,7 @@ export default function AddStaffPage() {
                   onChange={(e) => update("system_role", e.target.value)}
                   className={inputClasses}
                 >
-                  <option value="">Enter employees email</option>
+                  
                   <option value="Super Admin">Super Admin</option>
                   <option value="Admin">Admin</option>
                   <option value="Driver">Driver</option>
@@ -250,7 +250,7 @@ export default function AddStaffPage() {
                   onChange={(e) => update("employment_type", e.target.value)}
                   className={inputClasses}
                 >
-                  <option value="">Enter employees phone number</option>
+                 
                   <option value="Full-time">Full-time</option>
                   <option value="Part-time">Part-time</option>
                   <option value="Contract">Contract</option>

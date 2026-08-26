@@ -38,16 +38,13 @@ function initials(name: string | null): string {
   return (first + last).toUpperCase() || "A";
 }
 
-function currentWeekRange(): string {
-  const now = new Date();
-  const day = now.getDay();
-  const monday = new Date(now);
-  monday.setDate(now.getDate() - ((day + 6) % 7));
-  const sunday = new Date(monday);
-  sunday.setDate(monday.getDate() + 6);
-  const fmt = (d: Date) =>
-    d.toLocaleDateString("en-US", { month: "short", day: "numeric" });
-  return `${fmt(monday)} - ${fmt(sunday)}, ${sunday.getFullYear()}`;
+function todayFormatted(): string {
+  return new Date().toLocaleDateString("en-US", {
+    weekday: "long",
+    month: "long",
+    day: "numeric",
+    year: "numeric",
+  });
 }
 
 interface AdminTopBarProps {
@@ -97,7 +94,7 @@ export function AdminTopBar({
       <div className="flex items-center gap-4">
         <div className="flex items-center gap-1.5 text-sm text-slate-600">
           <CalendarIcon />
-          {currentWeekRange()}
+          {todayFormatted()}
         </div>
         <button
           type="button"

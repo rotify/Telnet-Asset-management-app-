@@ -3,7 +3,13 @@
 import { useEffect, useMemo, useState } from "react";
 import { useRouter } from "next/navigation";
 import { getStoredToken, getStoredUsername, isSuperAdmin } from "@/lib/auth";
-import { getEquipment, getVehicles, getStaff } from "@/lib/api";
+import {
+  getEquipment,
+  getVehicles,
+  getStaff,
+  deleteEquipment,
+  deleteVehicle,
+} from "@/lib/api";
 import { AdminSidebar } from "@/components/layout/admin-sidebar";
 import { AdminTopBar } from "@/components/layout/admin-topbar";
 import { AssetActions } from "@/components/asset-actions";
@@ -14,6 +20,8 @@ import type { Staff } from "@/types/staff";
 interface AssetRow {
   key: string;
   asset: number;
+  id: number;
+  kind: "equipment" | "vehicle";
   assetId: string;
   name: string;
   category: string;
@@ -106,6 +114,8 @@ export default function AssetsPage() {
     const eqRows: AssetRow[] = equipment.map((e) => ({
       key: `eq-${e.id}`,
       asset: e.asset,
+      id: e.id,
+      kind: "equipment",
       assetId: `EQ-${e.id}`,
       name: e.name,
       category: e.equipment_type || "Equipment",
@@ -116,6 +126,8 @@ export default function AssetsPage() {
     const vhRows: AssetRow[] = vehicles.map((v) => ({
       key: `vh-${v.id}`,
       asset: v.asset,
+      id: v.id,
+      kind: "vehicle",
       assetId: `VH-${v.id}`,
       name: v.name,
       category: "Vehicle",
@@ -147,6 +159,18 @@ export default function AssetsPage() {
       return matchesStatus && matchesSearch;
     });
   }, [rows, search, statusFilter]);
+
+  function editHref(r: AssetRow): string {
+    return r.kind === "equipment"
+      ? `/admin/equipment/${r.id}/edit`
+      : `/admin/vehicles/${r.id}/edit`;
+  }
+
+  function deleteRow(r: AssetRow): Promise<void> {
+    return r.kind === "equipment"
+      ? deleteEquipment(r.id)
+      : deleteVehicle(r.id);
+  }
 
   function handleExport() {
     const rowsCsv = [
@@ -318,6 +342,9 @@ export default function AssetsPage() {
                         assetId={r.asset}
                         staffOptions={staffOptions}
                         onChanged={() => setRefreshKey((k) => k + 1)}
+                        onEdit={() => router.push(editHref(r))}
+                        onDelete={() => deleteRow(r)}
+                        deleteConfirmLabel={r.name}
                       />
                     </div>
                   </div>
