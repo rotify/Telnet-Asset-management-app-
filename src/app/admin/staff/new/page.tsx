@@ -270,7 +270,6 @@ export default function AddStaffPage() {
                   onChange={(e) => update("status", e.target.value)}
                   className={inputClasses}
                 >
-                  <option value="">Street, city, state</option>
                   <option value="Active">Active</option>
                   <option value="Suspended">Suspended</option>
                   <option value="Invited">Invited</option>

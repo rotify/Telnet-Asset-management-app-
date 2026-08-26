@@ -4,6 +4,33 @@ import type { Staff } from "@/types/staff";
 import type { DocumentRecord } from "@/types/document";
 import type { AssetHistoryEntry, MaintenanceRecord } from "@/types/maintenance";
 
+function extractErrorMessage(data: unknown, status: number): string {
+  if (!data || typeof data !== "object") {
+    return `Request failed (${status}).`;
+  }
+
+  const obj = data as Record<string, unknown>;
+
+  if (typeof obj.message === "string") return obj.message;
+  if (typeof obj.error === "string") return obj.error;
+  if (typeof obj.detail === "string") return obj.detail;
+
+  // Django REST Framework validation errors look like:
+  // { "driver_status": ["This field is required."], "email": ["Enter a valid email address."] }
+  const fieldMessages: string[] = [];
+  for (const [key, value] of Object.entries(obj)) {
+    if (Array.isArray(value)) {
+      const joined = value.filter((v) => typeof v === "string").join(" ");
+      if (joined) fieldMessages.push(`${key}: ${joined}`);
+    } else if (typeof value === "string") {
+      fieldMessages.push(`${key}: ${value}`);
+    }
+  }
+  if (fieldMessages.length > 0) return fieldMessages.join(" | ");
+
+  return `Request failed (${status}).`;
+}
+
 async function authedFetch<T>(path: string): Promise<T> {
   const token = getStoredToken();
   if (!token) {
@@ -18,10 +45,7 @@ async function authedFetch<T>(path: string): Promise<T> {
   const data = await res.json().catch(() => null);
 
   if (!res.ok) {
-    const message =
-      (data && (data.message ?? data.error)) ??
-      `Request failed (${res.status}).`;
-    throw new Error(message);
+    throw new Error(extractErrorMessage(data, res.status));
   }
 
   return data as T;
@@ -50,10 +74,7 @@ async function authedMutate<T>(
   const data = await res.json().catch(() => null);
 
   if (!res.ok) {
-    const message =
-      (data && (data.message ?? data.error)) ??
-      `Request failed (${res.status}).`;
-    throw new Error(message);
+    throw new Error(extractErrorMessage(data, res.status));
   }
 
   return data as T;
