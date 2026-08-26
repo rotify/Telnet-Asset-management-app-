@@ -54,11 +54,7 @@ interface AdminTopBarProps {
   hasNotifications?: boolean;
 }
 
-/**
- * Shared utility row rendered at the top of every admin page in Figma:
- * search box, current-week date display, notification bell, and the
- * signed-in profile avatar/name/role.
- */
+
 export function AdminTopBar({
   search,
   onSearchChange,

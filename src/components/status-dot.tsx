@@ -1,9 +1,5 @@
 // Status/priority indicator: a filled pill with a dot + colored text, matching Figma exactly.
-//   green  dot/text #2DB130, bg #ECF8ED -> active / valid / good / on track
-//   orange dot/text #F6AD3F, bg #FBEED8 -> pending / due soon / medium priority / fair
-//   red    dot/text #FD7072, bg #FFF3F3 -> inactive / overdue / expired / high priority
-//   slate  dot/text #576A77, bg #EBF1F5 -> neutral / low priority / no data
-//   navy   dot/text #222222, bg #F0FAFF -> completed
+
 
 export const STATUS_COLORS = {
   green: "#2DB130",

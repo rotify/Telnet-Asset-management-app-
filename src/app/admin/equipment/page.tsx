@@ -192,7 +192,7 @@ export default function EquipmentPage() {
               <button
                 type="button"
                 onClick={() => router.push("/admin/equipment/new")}
-                className="rounded-lg bg-telnet-primary px-4 py-2 text-sm font-semibold text-white hover:bg-telnet-primaryHover"
+                className="rounded-lg bg-[#0F172A] px-4 py-2 text-sm font-semibold text-white hover:bg-[#1e293b]"
               >
                 + Register Equipment
               </button>

@@ -313,9 +313,7 @@ export function exportEquipmentCsv(): Promise<string> {
 }
 
 // Asset assign / release / history
-// Note: the {id} these three endpoints expect is the record's generic
-// `asset` field (e.g. equipment.asset or vehicle.asset), not the
-// equipment/vehicle's own `id`.
+
 
 export function assignAsset(
   assetId: number,

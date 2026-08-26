@@ -45,9 +45,7 @@ export function SiteHeader() {
   }
 
   if (isAdminSection) {
-    // Figma's admin layout has no separate top bar — the logo lives in the
-    // sidebar instead. Keep only a slim mobile-only strip so small screens
-    // still have a way to open the sidebar drawer.
+  
     return (
       <header className="flex h-12 items-center border-b border-slate-200 bg-white px-4 lg:hidden">
         <button
