@@ -45,7 +45,7 @@ const ROLE_CARDS = [
     name: "Super Admin",
     members: 1,
     description: "Full control over assets, staff, roles and system settings.",
-    visiblePermissions: 6,
+    visiblePermissions: 1,
     morePermissions: 6,
   },
   {
@@ -53,7 +53,7 @@ const ROLE_CARDS = [
     members: 1,
     description:
       "Manage assets, assignments, maintenance and reporting for their department.",
-    visiblePermissions: 6,
+    visiblePermissions: 1,
     morePermissions: 2,
   },
   {

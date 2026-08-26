@@ -47,8 +47,100 @@ function DocIcon() {
       strokeLinecap="round"
       strokeLinejoin="round"
     >
-      <rect x="3" y="4" width="18" height="14" rx="2" />
-      <path d="M3 9h18M8 4v14" />
+      <path d="M3 8a2 2 0 0 1 2-2h11l5 4v9a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2Z" />
+      <path d="M15 12h3a1 1 0 0 1 1 1v2a1 1 0 0 1-1 1h-3a2 2 0 0 1 0-4Z" />
+    </svg>
+  );
+}
+
+function EyeIcon() {
+  return (
+    <svg
+      width="16"
+      height="16"
+      viewBox="0 0 24 24"
+      fill="none"
+      stroke="currentColor"
+      strokeWidth={1.8}
+      strokeLinecap="round"
+      strokeLinejoin="round"
+    >
+      <path d="M2 12s3.5-7 10-7 10 7 10 7-3.5 7-10 7-10-7-10-7Z" />
+      <circle cx="12" cy="12" r="3" />
+    </svg>
+  );
+}
+
+function EditIcon() {
+  return (
+    <svg
+      width="16"
+      height="16"
+      viewBox="0 0 24 24"
+      fill="none"
+      stroke="currentColor"
+      strokeWidth={1.8}
+      strokeLinecap="round"
+      strokeLinejoin="round"
+    >
+      <rect x="4" y="3" width="14" height="18" rx="2" />
+      <path d="M14 14h4a2 2 0 0 1 2 2v2a2 2 0 0 1-2 2h-2a2 2 0 0 1 0-4Z" />
+    </svg>
+  );
+}
+
+function ExportIcon() {
+  return (
+    <svg
+      width="16"
+      height="16"
+      viewBox="0 0 24 24"
+      fill="none"
+      stroke="currentColor"
+      strokeWidth={1.8}
+      strokeLinecap="round"
+      strokeLinejoin="round"
+    >
+      <path d="M12 3v12" />
+      <path d="m7 10 5 5 5-5" />
+      <path d="M5 21h14" />
+    </svg>
+  );
+}
+
+function CalendarIcon() {
+  return (
+    <svg
+      width="16"
+      height="16"
+      viewBox="0 0 24 24"
+      fill="none"
+      stroke="currentColor"
+      strokeWidth={1.8}
+      strokeLinecap="round"
+      strokeLinejoin="round"
+    >
+      <rect x="3" y="5" width="18" height="16" rx="2" />
+      <path d="M8 3v4M16 3v4M3 10h18" />
+    </svg>
+  );
+}
+
+function UploadIcon() {
+  return (
+    <svg
+      width="16"
+      height="16"
+      viewBox="0 0 24 24"
+      fill="none"
+      stroke="currentColor"
+      strokeWidth={1.8}
+      strokeLinecap="round"
+      strokeLinejoin="round"
+    >
+      <path d="M12 21V9" />
+      <path d="m7 14 5-5 5 5" />
+      <path d="M5 3h14" />
     </svg>
   );
 }
@@ -175,18 +267,21 @@ export default function DocumentsPage() {
 
           <header className="mt-6 flex flex-wrap items-center justify-between gap-3">
             <div>
-              <h1 className="text-2xl font-bold text-[#121B3B]">Documents</h1>
+              <h1 className="text-2xl font-bold text-[#121B3B]">
+                Document Management
+              </h1>
               <p className="mt-1 text-sm text-slate-500">
-                Manage compliance certificates, licences, warranties, and
-                receipts.
+                Store and manage important company files such as insurance
+                certificates, licenses, warranties, and receipts.
               </p>
             </div>
             <div className="flex items-center gap-2">
               <button
                 type="button"
                 onClick={handleExport}
-                className="flex items-center gap-1.5 rounded-lg border border-slate-200 bg-white px-3 py-1.5 text-xs font-semibold text-slate-600 hover:bg-slate-50"
+                className="flex items-center gap-1.5 rounded-lg border border-slate-200 bg-white px-3 py-1.5 text-sm font-semibold text-slate-600 hover:bg-slate-50"
               >
+                <ExportIcon />
                 Export
               </button>
               <button
@@ -195,9 +290,10 @@ export default function DocumentsPage() {
                   setShowAddForm((v) => !v);
                   setAddError(null);
                 }}
-                className="rounded-lg bg-telnet-primary px-4 py-2 text-sm font-semibold text-white hover:bg-telnet-primaryHover"
+                className="flex items-center gap-1.5 rounded-lg bg-[#0F172A] px-4 py-2 text-sm font-semibold text-white hover:bg-[#1e293b]"
               >
-                {showAddForm ? "Cancel" : "+ Upload"}
+                {showAddForm ? null : <UploadIcon />}
+                {showAddForm ? "Cancel" : "Upload"}
               </button>
             </div>
           </header>
@@ -293,7 +389,7 @@ export default function DocumentsPage() {
             </div>
           )}
 
-          <div className="mt-6 flex flex-col gap-3 sm:flex-row sm:items-center">
+          <div className="mt-6 flex flex-col gap-3 rounded-xl bg-white p-3 shadow-[0_1px_2px_rgba(16,24,64,0.06)] sm:flex-row sm:items-center">
             <div className="relative flex-1">
               <span className="pointer-events-none absolute left-3 top-1/2 -translate-y-1/2 text-slate-400">
                 <svg
@@ -312,22 +408,25 @@ export default function DocumentsPage() {
                 type="text"
                 value={search}
                 onChange={(e) => setSearch(e.target.value)}
-                placeholder="Search documents…"
-                className="w-full rounded-lg border border-slate-200 bg-white py-2 pl-9 pr-3 text-sm text-slate-700 placeholder:text-slate-400 focus:border-telnet-primary focus:outline-none"
+                placeholder="Search…"
+                className="w-full rounded-lg border-0 bg-slate-50 py-2 pl-9 pr-3 text-sm text-slate-700 placeholder:text-slate-400 focus:outline-none focus:ring-1 focus:ring-telnet-primary"
               />
             </div>
-            <select
-              value={statusFilter}
-              onChange={(e) =>
-                setStatusFilter(e.target.value as "All" | DocStatus)
-              }
-              className="rounded-lg border border-slate-200 bg-white px-3 py-2 text-sm text-slate-700 focus:border-telnet-primary focus:outline-none"
-            >
-              <option value="All">Status: All</option>
-              <option value="Valid">Status: Valid</option>
-              <option value="Expiring">Status: Expiring</option>
-              <option value="Expired">Status: Expired</option>
-            </select>
+            <div className="flex items-center gap-2 text-slate-400">
+              <CalendarIcon />
+              <select
+                value={statusFilter}
+                onChange={(e) =>
+                  setStatusFilter(e.target.value as "All" | DocStatus)
+                }
+                className="rounded-lg border border-slate-200 bg-white px-3 py-2 text-sm text-slate-700 focus:border-telnet-primary focus:outline-none"
+              >
+                <option value="All">Status: All</option>
+                <option value="Valid">Status: Valid</option>
+                <option value="Expiring">Status: Expiring</option>
+                <option value="Expired">Status: Expired</option>
+              </select>
+            </div>
             {(search || statusFilter !== "All") && (
               <button
                 type="button"
@@ -335,7 +434,7 @@ export default function DocumentsPage() {
                   setSearch("");
                   setStatusFilter("All");
                 }}
-                className="text-sm font-semibold text-telnet-primary hover:underline"
+                className="text-sm font-semibold text-red-400 hover:underline"
               >
                 Clear filter
               </button>
@@ -360,11 +459,11 @@ export default function DocumentsPage() {
                 return (
                   <div
                     key={doc.id}
-                    className="rounded-xl border-t-4 border-t-telnet-primary bg-white p-4 shadow-[0_1px_2px_rgba(16,24,64,0.06)]"
+                    className="rounded-xl bg-white p-4 shadow-[0_1px_2px_rgba(16,24,64,0.06)]"
                   >
                     <div className="flex items-start justify-between gap-3">
                       <div className="flex items-start gap-3">
-                        <span className="flex h-9 w-9 shrink-0 items-center justify-center rounded-lg bg-blue-50 text-telnet-primary">
+                        <span className="flex h-11 w-11 shrink-0 items-center justify-center rounded-full bg-telnet-activeBg text-[#222222]">
                           <DocIcon />
                         </span>
                         <div>
@@ -437,26 +536,29 @@ export default function DocumentsPage() {
                       </div>
                     )}
 
-                    <div className="mt-4 flex items-center gap-5 border-t border-slate-100 pt-3">
+                    <div className="mt-4 flex items-center gap-6 border-t border-slate-100 pt-3">
                       <button
                         type="button"
                         onClick={() =>
                           setExpandedId(isExpanded ? null : doc.id)
                         }
-                        className="text-sm font-medium text-slate-500 hover:text-telnet-primary"
+                        className="flex items-center gap-1.5 text-sm font-medium text-[#121B3B] hover:text-telnet-primary"
                       >
+                        <EyeIcon />
                         {isExpanded ? "Hide Details" : "View Details"}
                       </button>
                       <span
-                        title="No update/export endpoint on the API yet"
-                        className="text-sm font-medium text-slate-300"
+                        title="Editing documents isn't wired up yet"
+                        className="flex items-center gap-1.5 text-sm font-medium text-[#121B3B]"
                       >
+                        <EditIcon />
                         Edit
                       </span>
                       <span
-                        title="No update/export endpoint on the API yet"
-                        className="text-sm font-medium text-slate-300"
+                        title="Per-document export isn't wired up yet"
+                        className="flex items-center gap-1.5 text-sm font-medium text-[#121B3B]"
                       >
+                        <ExportIcon />
                         Export
                       </span>
                     </div>
