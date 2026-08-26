@@ -286,14 +286,17 @@ export default function AddStaffPage() {
                   className={inputClasses}
                 />
               </Field>
-              <Field label="Work Location">
-                <input
-                  type="text"
+              <Field label="Branch">
+                <select
                   value={form.work_location}
                   onChange={(e) => update("work_location", e.target.value)}
-                  placeholder="Street, city, state"
                   className={inputClasses}
-                />
+                >
+                  <option value="">Select a branch</option>
+                  <option value="LAGOS">Lagos</option>
+                  <option value="ABUJA">Abuja</option>
+                  <option value="PORT_HARCOURT">Port Harcourt</option>
+                </select>
               </Field>
             </div>
           </div>
