@@ -68,7 +68,7 @@ export function LoginForm() {
           placeholder="e.g. ewallace"
           aria-invalid={Boolean(errors.username)}
           aria-describedby={errors.username ? "username-error" : undefined}
-          className="mt-2 block w-full rounded-lg border border-slate-200 bg-white px-4 py-3 text-sm text-slate-900 placeholder:text-slate-400 focus:border-telnet-primary focus:outline-none"
+          className="mt-2 block w-full rounded-lg border border-slate-200 bg-white px-4 py-3 text-sm text-slate-900 placeholder:text-slate-400 focus:border-slate-400 focus:outline-none"
         />
         {errors.username && (
           <p id="username-error" className="mt-1.5 text-xs text-red-600">
@@ -92,7 +92,7 @@ export function LoginForm() {
             placeholder="Enter your password"
             aria-invalid={Boolean(errors.password)}
             aria-describedby={errors.password ? "password-error" : undefined}
-            className="block w-full rounded-lg border border-slate-200 bg-white px-4 py-3 pr-16 text-sm text-slate-900 placeholder:text-slate-400 focus:border-telnet-primary focus:outline-none"
+            className="block w-full rounded-lg border border-slate-200 bg-white px-4 py-3 pr-16 text-sm text-slate-900 placeholder:text-slate-400 focus:border-slate-400 focus:outline-none"
           />
           <button
             type="button"
@@ -114,7 +114,7 @@ export function LoginForm() {
           type="checkbox"
           checked={rememberMe}
           onChange={(e) => setRememberMe(e.target.checked)}
-          className="h-4 w-4 rounded border-slate-300 text-telnet-primary focus:ring-telnet-primary/30"
+          className="h-4 w-4 rounded border-slate-300 accent-slate-900"
         />
         Keep me logged in
       </label>
@@ -129,7 +129,7 @@ export function LoginForm() {
 
       <a
         href="/forgot-password"
-        className="mt-4 block text-center text-sm font-medium text-telnet-primary underline underline-offset-2 hover:text-telnet-primaryHover"
+        className="mt-4 block text-center text-sm font-medium text-slate-600 underline underline-offset-2 hover:text-slate-800"
       >
         Forgot password?
       </a>
