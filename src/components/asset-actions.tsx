@@ -14,6 +14,9 @@ interface AssetActionsProps {
   assetId: number;
   staffOptions: StaffOption[];
   onChanged?: () => void;
+  onEdit?: () => void;
+  onDelete?: () => Promise<void>;
+  deleteConfirmLabel?: string;
 }
 
 function formatTimestamp(value: unknown): string {
@@ -27,11 +30,15 @@ export function AssetActions({
   assetId,
   staffOptions,
   onChanged,
+  onEdit,
+  onDelete,
+  deleteConfirmLabel = "this record",
 }: AssetActionsProps) {
   const [mode, setMode] = useState<"menu" | "assigning" | "history">("menu");
   const [selectedStaff, setSelectedStaff] = useState("");
   const [busy, setBusy] = useState(false);
   const [error, setError] = useState<string | null>(null);
+  const [deleting, setDeleting] = useState(false);
 
   const [history, setHistory] = useState<AssetHistoryEntry[] | null>(null);
   const [historyLoading, setHistoryLoading] = useState(false);
@@ -71,6 +78,28 @@ export function AssetActions({
       setError(err instanceof Error ? err.message : "Couldn't release asset.");
     } finally {
       setBusy(false);
+    }
+  }
+
+  async function handleDelete(close: () => void) {
+    if (!onDelete) return;
+    if (
+      !window.confirm(
+        `Delete ${deleteConfirmLabel}? This can't be undone.`
+      )
+    ) {
+      return;
+    }
+    setDeleting(true);
+    setError(null);
+    try {
+      await onDelete();
+      close();
+      onChanged?.();
+    } catch (err) {
+      setError(err instanceof Error ? err.message : "Couldn't delete record.");
+    } finally {
+      setDeleting(false);
     }
   }
 
@@ -200,6 +229,7 @@ export function AssetActions({
 
         return (
           <div>
+            {onEdit && <MenuItem onClick={onEdit}>Edit</MenuItem>}
             <MenuItem
               onClick={() => {
                 setMode("assigning");
@@ -212,6 +242,14 @@ export function AssetActions({
               {busy ? "Releasing…" : "Release"}
             </MenuItem>
             <MenuItem onClick={handleShowHistory}>View History</MenuItem>
+            {onDelete && (
+              <MenuItem onClick={() => handleDelete(close)} tone="danger">
+                {deleting ? "Deleting…" : "Delete"}
+              </MenuItem>
+            )}
+            {error && (
+              <p className="mt-1 px-3 text-xs text-red-600">{error}</p>
+            )}
           </div>
         );
       }}

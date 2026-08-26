@@ -88,6 +88,17 @@ export function createEquipment(
   return authedMutate<Equipment>("/api/equipment", "POST", payload);
 }
 
+export function updateEquipment(
+  id: number,
+  payload: Partial<EquipmentPayload>
+): Promise<Equipment> {
+  return authedMutate<Equipment>(`/api/equipment/${id}`, "PUT", payload);
+}
+
+export function deleteEquipment(id: number): Promise<void> {
+  return authedMutate<void>(`/api/equipment/${id}`, "DELETE");
+}
+
 export function getVehicles(): Promise<Vehicle[]> {
   return authedFetch<Vehicle[]>("/api/vehicles");
 }
@@ -120,6 +131,17 @@ export interface VehiclePayload {
 
 export function createVehicle(payload: VehiclePayload): Promise<Vehicle> {
   return authedMutate<Vehicle>("/api/vehicles", "POST", payload);
+}
+
+export function updateVehicle(
+  id: number,
+  payload: Partial<VehiclePayload>
+): Promise<Vehicle> {
+  return authedMutate<Vehicle>(`/api/vehicles/${id}`, "PUT", payload);
+}
+
+export function deleteVehicle(id: number): Promise<void> {
+  return authedMutate<void>(`/api/vehicles/${id}`, "DELETE");
 }
 
 export function getStaff(): Promise<Staff[]> {
@@ -175,6 +197,10 @@ export interface DocumentPayload {
   issuing_authority?: string;
   issue_date?: string;
   expiry_date?: string;
+  status?: string;
+  document_number?: string;
+  notify_days_before?: number;
+  location?: string;
 }
 
 export function getDocuments(): Promise<DocumentRecord[]> {
@@ -185,6 +211,17 @@ export function createDocument(
   payload: DocumentPayload
 ): Promise<DocumentRecord> {
   return authedMutate<DocumentRecord>("/api/documents", "POST", payload);
+}
+
+export function updateDocument(
+  id: number,
+  payload: Partial<DocumentPayload>
+): Promise<DocumentRecord> {
+  return authedMutate<DocumentRecord>(`/api/documents/${id}`, "PUT", payload);
+}
+
+export function deleteDocument(id: number): Promise<void> {
+  return authedMutate<void>(`/api/documents/${id}`, "DELETE");
 }
 
 // Equipment maintenance
@@ -209,6 +246,49 @@ export function createEquipmentMaintenance(
     "POST",
     payload
   );
+}
+
+export function updateEquipmentMaintenance(
+  id: number,
+  payload: Partial<MaintenancePayload>
+): Promise<MaintenanceRecord> {
+  return authedMutate<MaintenanceRecord>(
+    `/api/equipment-maintenance/${id}`,
+    "PUT",
+    payload
+  );
+}
+
+export function deleteEquipmentMaintenance(id: number): Promise<void> {
+  return authedMutate<void>(`/api/equipment-maintenance/${id}`, "DELETE");
+}
+
+// CSV exports (server-generated)
+
+async function authedFetchText(path: string): Promise<string> {
+  const token = getStoredToken();
+  if (!token) {
+    throw new Error("You're not signed in.");
+  }
+
+  const res = await fetch(path, {
+    headers: { Authorization: `Token ${token}` },
+    cache: "no-store",
+  });
+
+  if (!res.ok) {
+    throw new Error(`Request failed (${res.status}).`);
+  }
+
+  return res.text();
+}
+
+export function exportVehiclesCsv(): Promise<string> {
+  return authedFetchText("/api/export/vehicles/csv");
+}
+
+export function exportEquipmentCsv(): Promise<string> {
+  return authedFetchText("/api/export/equipment/csv");
 }
 
 // Asset assign / release / history

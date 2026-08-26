@@ -3,7 +3,12 @@
 import { useEffect, useMemo, useState } from "react";
 import { useRouter } from "next/navigation";
 import { getStoredToken, getStoredUsername, isSuperAdmin } from "@/lib/auth";
-import { getEquipment, getStaff } from "@/lib/api";
+import {
+  deleteEquipment,
+  exportEquipmentCsv,
+  getEquipment,
+  getStaff,
+} from "@/lib/api";
 import { AdminSidebar } from "@/components/layout/admin-sidebar";
 import { AdminTopBar } from "@/components/layout/admin-topbar";
 import { AssetActions } from "@/components/asset-actions";
@@ -56,6 +61,8 @@ export default function EquipmentPage() {
   const [search, setSearch] = useState("");
   const [statusFilter, setStatusFilter] = useState("All");
   const [refreshKey, setRefreshKey] = useState(0);
+  const [isExporting, setIsExporting] = useState(false);
+  const [exportError, setExportError] = useState<string | null>(null);
 
   useEffect(() => {
     const token = getStoredToken();
@@ -132,6 +139,27 @@ export default function EquipmentPage() {
     });
   }, [equipment, search, statusFilter]);
 
+  async function handleExport() {
+    setExportError(null);
+    setIsExporting(true);
+    try {
+      const csv = await exportEquipmentCsv();
+      const blob = new Blob([csv], { type: "text/csv" });
+      const url = URL.createObjectURL(blob);
+      const a = document.createElement("a");
+      a.href = url;
+      a.download = "equipment.csv";
+      a.click();
+      URL.revokeObjectURL(url);
+    } catch (err) {
+      setExportError(
+        err instanceof Error ? err.message : "Couldn't export equipment."
+      );
+    } finally {
+      setIsExporting(false);
+    }
+  }
+
   if (!gateChecked) return null;
 
   return (
@@ -152,14 +180,30 @@ export default function EquipmentPage() {
                 schedules, and document status from one centralized dashboard.
               </p>
             </div>
-            <button
-              type="button"
-              onClick={() => router.push("/admin/equipment/new")}
-              className="rounded-lg bg-telnet-primary px-4 py-2 text-sm font-semibold text-white hover:bg-telnet-primaryHover"
-            >
-              + Register Equipment
-            </button>
+            <div className="flex items-center gap-2">
+              <button
+                type="button"
+                onClick={handleExport}
+                disabled={isExporting}
+                className="flex items-center gap-1.5 rounded-lg border border-slate-200 bg-white px-3 py-1.5 text-sm font-semibold text-slate-600 hover:bg-slate-50 disabled:opacity-60"
+              >
+                {isExporting ? "Exporting…" : "Export"}
+              </button>
+              <button
+                type="button"
+                onClick={() => router.push("/admin/equipment/new")}
+                className="rounded-lg bg-telnet-primary px-4 py-2 text-sm font-semibold text-white hover:bg-telnet-primaryHover"
+              >
+                + Register Equipment
+              </button>
+            </div>
           </header>
+
+          {exportError && (
+            <div className="mt-4 rounded-lg border border-red-200 bg-red-50 px-4 py-3 text-sm text-red-700">
+              {exportError}
+            </div>
+          )}
 
           {error && (
             <div className="mt-6 flex items-center justify-between rounded-lg border border-red-200 bg-red-50 px-4 py-3 text-sm text-red-700">
@@ -297,6 +341,9 @@ export default function EquipmentPage() {
                         assetId={e.asset}
                         staffOptions={staffOptions}
                         onChanged={() => setRefreshKey((k) => k + 1)}
+                        onEdit={() => router.push(`/admin/equipment/${e.id}/edit`)}
+                        onDelete={() => deleteEquipment(e.id)}
+                        deleteConfirmLabel={e.name}
                       />
                     </div>
                   </div>
@@ -372,6 +419,11 @@ export default function EquipmentPage() {
                               assetId={e.asset}
                               staffOptions={staffOptions}
                               onChanged={() => setRefreshKey((k) => k + 1)}
+                              onEdit={() =>
+                                router.push(`/admin/equipment/${e.id}/edit`)
+                              }
+                              onDelete={() => deleteEquipment(e.id)}
+                              deleteConfirmLabel={e.name}
                             />
                           </td>
                         </tr>

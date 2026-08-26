@@ -5,8 +5,10 @@ import { useRouter } from "next/navigation";
 import { getStoredToken, getStoredUsername, isSuperAdmin } from "@/lib/auth";
 import {
   createEquipmentMaintenance,
+  deleteEquipmentMaintenance,
   getEquipment,
   getEquipmentMaintenance,
+  updateEquipmentMaintenance,
 } from "@/lib/api";
 import { AdminSidebar } from "@/components/layout/admin-sidebar";
 import { AdminTopBar } from "@/components/layout/admin-topbar";
@@ -15,17 +17,54 @@ import { ThreeDotMenu, MenuItem } from "@/components/three-dot-menu";
 import type { Equipment } from "@/types/asset";
 import type { MaintenanceRecord } from "@/types/maintenance";
 
-function RecordActions() {
+function RecordActions({
+  onEdit,
+  onDelete,
+  deleteLabel,
+}: {
+  onEdit: () => void;
+  onDelete: () => Promise<void>;
+  deleteLabel: string;
+}) {
+  const [deleting, setDeleting] = useState(false);
+  const [error, setError] = useState<string | null>(null);
+
+  async function handleClickDelete(close: () => void) {
+    if (
+      !window.confirm(
+        `Delete the maintenance record for ${deleteLabel}? This can't be undone.`
+      )
+    ) {
+      return;
+    }
+    setDeleting(true);
+    setError(null);
+    try {
+      await onDelete();
+      close();
+    } catch (err) {
+      setError(err instanceof Error ? err.message : "Couldn't delete record.");
+    } finally {
+      setDeleting(false);
+    }
+  }
+
   return (
     <ThreeDotMenu>
-      {() => (
+      {(close) => (
         <div>
-          <MenuItem disabled tone="muted">
-            Edit (no update endpoint yet)
+          <MenuItem
+            onClick={() => {
+              onEdit();
+              close();
+            }}
+          >
+            Edit
           </MenuItem>
-          <MenuItem disabled tone="muted">
-            Delete (no delete endpoint yet)
+          <MenuItem onClick={() => handleClickDelete(close)} tone="danger">
+            {deleting ? "Deleting…" : "Delete"}
           </MenuItem>
+          {error && <p className="mt-1 px-3 text-xs text-red-600">{error}</p>}
         </div>
       )}
     </ThreeDotMenu>
@@ -85,6 +124,11 @@ export default function MaintenancePage() {
   const [newRecord, setNewRecord] = useState(EMPTY_NEW_RECORD);
   const [addError, setAddError] = useState<string | null>(null);
   const [isAdding, setIsAdding] = useState(false);
+
+  const [editingId, setEditingId] = useState<number | null>(null);
+  const [editForm, setEditForm] = useState(EMPTY_NEW_RECORD);
+  const [editError, setEditError] = useState<string | null>(null);
+  const [isSavingEdit, setIsSavingEdit] = useState(false);
 
   useEffect(() => {
     const token = getStoredToken();
@@ -176,6 +220,61 @@ export default function MaintenancePage() {
     } finally {
       setIsAdding(false);
     }
+  }
+
+  function startEdit(r: MaintenanceRecord) {
+    setEditingId(r.id);
+    setEditForm({
+      equipment: String(r.equipment),
+      description: r.description ?? "",
+      due_date: r.due_date ?? "",
+      cost: r.cost ?? "",
+      notes: r.notes ?? "",
+    });
+    setEditError(null);
+  }
+
+  function cancelEdit() {
+    setEditingId(null);
+    setEditError(null);
+  }
+
+  async function saveEdit() {
+    if (editingId == null) return;
+    setEditError(null);
+    if (
+      !editForm.equipment ||
+      !editForm.description.trim() ||
+      !editForm.due_date
+    ) {
+      setEditError("Equipment, description, and due date are required.");
+      return;
+    }
+    setIsSavingEdit(true);
+    try {
+      const updated = await updateEquipmentMaintenance(editingId, {
+        equipment: Number(editForm.equipment),
+        description: editForm.description,
+        due_date: editForm.due_date,
+        cost: editForm.cost || undefined,
+        notes: editForm.notes || undefined,
+      });
+      setRecords((prev) =>
+        prev.map((r) => (r.id === editingId ? updated : r))
+      );
+      setEditingId(null);
+    } catch (err) {
+      setEditError(
+        err instanceof Error ? err.message : "Couldn't update maintenance record."
+      );
+    } finally {
+      setIsSavingEdit(false);
+    }
+  }
+
+  async function handleDeleteRecord(id: number) {
+    await deleteEquipmentMaintenance(id);
+    setRecords((prev) => prev.filter((r) => r.id !== id));
   }
 
   function handleExport() {
@@ -404,6 +503,105 @@ export default function MaintenancePage() {
                 const status = dueStatus(r.due_date);
                 const priority = priorityFromDue(r.due_date);
                 const eq = equipmentById.get(r.equipment);
+
+                if (editingId === r.id) {
+                  return (
+                    <div
+                      key={r.id}
+                      className="rounded-xl bg-white p-4 shadow-[0_1px_2px_rgba(16,24,64,0.06)]"
+                    >
+                      <p className="text-sm font-semibold text-[#121B3B]">
+                        Edit maintenance record
+                      </p>
+                      <div className="mt-3 grid grid-cols-1 gap-3 sm:grid-cols-2">
+                        <select
+                          value={editForm.equipment}
+                          onChange={(e) =>
+                            setEditForm((v) => ({
+                              ...v,
+                              equipment: e.target.value,
+                            }))
+                          }
+                          className="rounded-lg border border-slate-200 px-3 py-2 text-sm focus:border-telnet-primary focus:outline-none"
+                        >
+                          <option value="">Select equipment…</option>
+                          {equipment.map((e) => (
+                            <option key={e.id} value={e.id}>
+                              {e.name}
+                            </option>
+                          ))}
+                        </select>
+                        <input
+                          type="text"
+                          placeholder="Description"
+                          value={editForm.description}
+                          onChange={(e) =>
+                            setEditForm((v) => ({
+                              ...v,
+                              description: e.target.value,
+                            }))
+                          }
+                          className="rounded-lg border border-slate-200 px-3 py-2 text-sm focus:border-telnet-primary focus:outline-none"
+                        />
+                        <input
+                          type="date"
+                          value={editForm.due_date}
+                          onChange={(e) =>
+                            setEditForm((v) => ({
+                              ...v,
+                              due_date: e.target.value,
+                            }))
+                          }
+                          className="rounded-lg border border-slate-200 px-3 py-2 text-sm focus:border-telnet-primary focus:outline-none"
+                        />
+                        <input
+                          type="text"
+                          placeholder="Cost (e.g. 150.00)"
+                          value={editForm.cost}
+                          onChange={(e) =>
+                            setEditForm((v) => ({ ...v, cost: e.target.value }))
+                          }
+                          className="rounded-lg border border-slate-200 px-3 py-2 text-sm focus:border-telnet-primary focus:outline-none"
+                        />
+                        <input
+                          type="text"
+                          placeholder="Notes"
+                          value={editForm.notes}
+                          onChange={(e) =>
+                            setEditForm((v) => ({
+                              ...v,
+                              notes: e.target.value,
+                            }))
+                          }
+                          className="rounded-lg border border-slate-200 px-3 py-2 text-sm focus:border-telnet-primary focus:outline-none sm:col-span-2"
+                        />
+                      </div>
+                      {editError && (
+                        <p className="mt-2 text-sm text-red-600">
+                          {editError}
+                        </p>
+                      )}
+                      <div className="mt-3 flex gap-3">
+                        <button
+                          type="button"
+                          onClick={saveEdit}
+                          disabled={isSavingEdit}
+                          className="rounded-lg bg-telnet-primary px-4 py-2 text-sm font-semibold text-white hover:bg-telnet-primaryHover disabled:opacity-60"
+                        >
+                          {isSavingEdit ? "Saving…" : "Save"}
+                        </button>
+                        <button
+                          type="button"
+                          onClick={cancelEdit}
+                          className="text-sm font-medium text-slate-500 hover:text-slate-700"
+                        >
+                          Cancel
+                        </button>
+                      </div>
+                    </div>
+                  );
+                }
+
                 return (
                   <div
                     key={r.id}
@@ -464,7 +662,13 @@ export default function MaintenancePage() {
                     </div>
 
                     <div className="mt-3 flex justify-end border-t border-slate-100 pt-2">
-                      <RecordActions />
+                      <RecordActions
+                        onEdit={() => startEdit(r)}
+                        onDelete={() => handleDeleteRecord(r.id)}
+                        deleteLabel={
+                          equipmentNameById.get(r.equipment) ?? "this record"
+                        }
+                      />
                     </div>
                   </div>
                 );
@@ -501,6 +705,107 @@ export default function MaintenancePage() {
                       const status = dueStatus(r.due_date);
                       const priority = priorityFromDue(r.due_date);
                       const eq = equipmentById.get(r.equipment);
+
+                      if (editingId === r.id) {
+                        return (
+                          <tr key={r.id} className="border-b border-slate-50 last:border-0">
+                            <td colSpan={7} className="px-4 py-4">
+                              <p className="text-sm font-semibold text-[#121B3B]">
+                                Edit maintenance record
+                              </p>
+                              <div className="mt-3 grid grid-cols-1 gap-3 sm:grid-cols-3">
+                                <select
+                                  value={editForm.equipment}
+                                  onChange={(e) =>
+                                    setEditForm((v) => ({
+                                      ...v,
+                                      equipment: e.target.value,
+                                    }))
+                                  }
+                                  className="rounded-lg border border-slate-200 px-3 py-2 text-sm focus:border-telnet-primary focus:outline-none"
+                                >
+                                  <option value="">Select equipment…</option>
+                                  {equipment.map((e) => (
+                                    <option key={e.id} value={e.id}>
+                                      {e.name}
+                                    </option>
+                                  ))}
+                                </select>
+                                <input
+                                  type="text"
+                                  placeholder="Description"
+                                  value={editForm.description}
+                                  onChange={(e) =>
+                                    setEditForm((v) => ({
+                                      ...v,
+                                      description: e.target.value,
+                                    }))
+                                  }
+                                  className="rounded-lg border border-slate-200 px-3 py-2 text-sm focus:border-telnet-primary focus:outline-none"
+                                />
+                                <input
+                                  type="date"
+                                  value={editForm.due_date}
+                                  onChange={(e) =>
+                                    setEditForm((v) => ({
+                                      ...v,
+                                      due_date: e.target.value,
+                                    }))
+                                  }
+                                  className="rounded-lg border border-slate-200 px-3 py-2 text-sm focus:border-telnet-primary focus:outline-none"
+                                />
+                                <input
+                                  type="text"
+                                  placeholder="Cost (e.g. 150.00)"
+                                  value={editForm.cost}
+                                  onChange={(e) =>
+                                    setEditForm((v) => ({
+                                      ...v,
+                                      cost: e.target.value,
+                                    }))
+                                  }
+                                  className="rounded-lg border border-slate-200 px-3 py-2 text-sm focus:border-telnet-primary focus:outline-none"
+                                />
+                                <input
+                                  type="text"
+                                  placeholder="Notes"
+                                  value={editForm.notes}
+                                  onChange={(e) =>
+                                    setEditForm((v) => ({
+                                      ...v,
+                                      notes: e.target.value,
+                                    }))
+                                  }
+                                  className="rounded-lg border border-slate-200 px-3 py-2 text-sm focus:border-telnet-primary focus:outline-none sm:col-span-2"
+                                />
+                              </div>
+                              {editError && (
+                                <p className="mt-2 text-sm text-red-600">
+                                  {editError}
+                                </p>
+                              )}
+                              <div className="mt-3 flex gap-3">
+                                <button
+                                  type="button"
+                                  onClick={saveEdit}
+                                  disabled={isSavingEdit}
+                                  className="rounded-lg bg-telnet-primary px-4 py-2 text-sm font-semibold text-white hover:bg-telnet-primaryHover disabled:opacity-60"
+                                >
+                                  {isSavingEdit ? "Saving…" : "Save"}
+                                </button>
+                                <button
+                                  type="button"
+                                  onClick={cancelEdit}
+                                  className="text-sm font-medium text-slate-500 hover:text-slate-700"
+                                >
+                                  Cancel
+                                </button>
+                              </div>
+                            </td>
+                          </tr>
+                        );
+                      }
+
                       return (
                         <tr
                           key={r.id}
@@ -526,7 +831,14 @@ export default function MaintenancePage() {
                             <StatusDot label={status.label} tone={status.tone} />
                           </td>
                           <td className="px-4 py-3">
-                            <RecordActions />
+                            <RecordActions
+                              onEdit={() => startEdit(r)}
+                              onDelete={() => handleDeleteRecord(r.id)}
+                              deleteLabel={
+                                equipmentNameById.get(r.equipment) ??
+                                "this record"
+                              }
+                            />
                           </td>
                         </tr>
                       );

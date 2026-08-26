@@ -3,7 +3,12 @@
 import { useEffect, useMemo, useState } from "react";
 import { useRouter } from "next/navigation";
 import { getStoredToken, getStoredUsername, isSuperAdmin } from "@/lib/auth";
-import { createDocument, getDocuments } from "@/lib/api";
+import {
+  createDocument,
+  deleteDocument,
+  getDocuments,
+  updateDocument,
+} from "@/lib/api";
 import { AdminSidebar } from "@/components/layout/admin-sidebar";
 import { AdminTopBar } from "@/components/layout/admin-topbar";
 import { StatusDot, type StatusTone } from "@/components/status-dot";
@@ -154,6 +159,17 @@ const EMPTY_NEW_DOC = {
   expiry_date: "",
 };
 
+const EMPTY_EDIT_DOC = {
+  name: "",
+  document_type: "",
+  description: "",
+  issuing_authority: "",
+  issue_date: "",
+  expiry_date: "",
+  document_number: "",
+  location: "",
+};
+
 export default function DocumentsPage() {
   const router = useRouter();
   const [gateChecked, setGateChecked] = useState(false);
@@ -168,6 +184,12 @@ export default function DocumentsPage() {
   const [newDoc, setNewDoc] = useState(EMPTY_NEW_DOC);
   const [addError, setAddError] = useState<string | null>(null);
   const [isAdding, setIsAdding] = useState(false);
+
+  const [editingId, setEditingId] = useState<number | null>(null);
+  const [editDoc, setEditDoc] = useState(EMPTY_EDIT_DOC);
+  const [editError, setEditError] = useState<string | null>(null);
+  const [isSavingEdit, setIsSavingEdit] = useState(false);
+  const [deletingId, setDeletingId] = useState<number | null>(null);
 
   useEffect(() => {
     const token = getStoredToken();
@@ -231,6 +253,65 @@ export default function DocumentsPage() {
       );
     } finally {
       setIsAdding(false);
+    }
+  }
+
+  function startEdit(doc: DocumentRecord) {
+    setEditingId(doc.id);
+    setEditDoc({
+      name: doc.name ?? "",
+      document_type: doc.document_type ?? "",
+      description: doc.description ?? "",
+      issuing_authority: doc.issuing_authority ?? "",
+      issue_date: doc.issue_date ?? "",
+      expiry_date: doc.expiry_date ?? "",
+      document_number: doc.document_number ?? "",
+      location: doc.location ?? "",
+    });
+    setEditError(null);
+  }
+
+  function cancelEdit() {
+    setEditingId(null);
+    setEditError(null);
+  }
+
+  async function saveEdit() {
+    if (editingId == null) return;
+    setEditError(null);
+    if (!editDoc.name.trim() || !editDoc.document_type.trim()) {
+      setEditError("Name and document type are required.");
+      return;
+    }
+    setIsSavingEdit(true);
+    try {
+      const updated = await updateDocument(editingId, editDoc);
+      setDocuments((prev) =>
+        prev.map((d) => (d.id === editingId ? updated : d))
+      );
+      setEditingId(null);
+    } catch (err) {
+      setEditError(
+        err instanceof Error ? err.message : "Couldn't update document."
+      );
+    } finally {
+      setIsSavingEdit(false);
+    }
+  }
+
+  async function handleDeleteDocument(id: number, label: string) {
+    if (!window.confirm(`Delete "${label}"? This can't be undone.`)) return;
+    setDeletingId(id);
+    try {
+      await deleteDocument(id);
+      setDocuments((prev) => prev.filter((d) => d.id !== id));
+      if (editingId === id) setEditingId(null);
+    } catch (err) {
+      setEditError(
+        err instanceof Error ? err.message : "Couldn't delete document."
+      );
+    } finally {
+      setDeletingId(null);
     }
   }
 
@@ -536,6 +617,140 @@ export default function DocumentsPage() {
                       </div>
                     )}
 
+                    {editingId === doc.id && (
+                      <div className="mt-3 space-y-3 border-t border-slate-100 pt-3">
+                        <p className="text-sm font-semibold text-[#121B3B]">
+                          Edit document
+                        </p>
+                        <div className="grid grid-cols-1 gap-3 sm:grid-cols-2">
+                          <input
+                            type="text"
+                            placeholder="Document name"
+                            value={editDoc.name}
+                            onChange={(e) =>
+                              setEditDoc((v) => ({
+                                ...v,
+                                name: e.target.value,
+                              }))
+                            }
+                            className="rounded-lg border border-slate-200 px-3 py-2 text-sm focus:border-telnet-primary focus:outline-none"
+                          />
+                          <input
+                            type="text"
+                            placeholder="Type (e.g. compliance, licence)"
+                            value={editDoc.document_type}
+                            onChange={(e) =>
+                              setEditDoc((v) => ({
+                                ...v,
+                                document_type: e.target.value,
+                              }))
+                            }
+                            className="rounded-lg border border-slate-200 px-3 py-2 text-sm focus:border-telnet-primary focus:outline-none"
+                          />
+                          <input
+                            type="text"
+                            placeholder="Issuing authority"
+                            value={editDoc.issuing_authority}
+                            onChange={(e) =>
+                              setEditDoc((v) => ({
+                                ...v,
+                                issuing_authority: e.target.value,
+                              }))
+                            }
+                            className="rounded-lg border border-slate-200 px-3 py-2 text-sm focus:border-telnet-primary focus:outline-none"
+                          />
+                          <input
+                            type="text"
+                            placeholder="Document number"
+                            value={editDoc.document_number}
+                            onChange={(e) =>
+                              setEditDoc((v) => ({
+                                ...v,
+                                document_number: e.target.value,
+                              }))
+                            }
+                            className="rounded-lg border border-slate-200 px-3 py-2 text-sm focus:border-telnet-primary focus:outline-none"
+                          />
+                          <input
+                            type="date"
+                            value={editDoc.issue_date}
+                            onChange={(e) =>
+                              setEditDoc((v) => ({
+                                ...v,
+                                issue_date: e.target.value,
+                              }))
+                            }
+                            className="rounded-lg border border-slate-200 px-3 py-2 text-sm focus:border-telnet-primary focus:outline-none"
+                          />
+                          <input
+                            type="date"
+                            value={editDoc.expiry_date}
+                            onChange={(e) =>
+                              setEditDoc((v) => ({
+                                ...v,
+                                expiry_date: e.target.value,
+                              }))
+                            }
+                            className="rounded-lg border border-slate-200 px-3 py-2 text-sm focus:border-telnet-primary focus:outline-none"
+                          />
+                          <input
+                            type="text"
+                            placeholder="Location"
+                            value={editDoc.location}
+                            onChange={(e) =>
+                              setEditDoc((v) => ({
+                                ...v,
+                                location: e.target.value,
+                              }))
+                            }
+                            className="rounded-lg border border-slate-200 px-3 py-2 text-sm focus:border-telnet-primary focus:outline-none"
+                          />
+                          <input
+                            type="text"
+                            placeholder="Description"
+                            value={editDoc.description}
+                            onChange={(e) =>
+                              setEditDoc((v) => ({
+                                ...v,
+                                description: e.target.value,
+                              }))
+                            }
+                            className="rounded-lg border border-slate-200 px-3 py-2 text-sm focus:border-telnet-primary focus:outline-none"
+                          />
+                        </div>
+                        {editError && (
+                          <p className="text-sm text-red-600">{editError}</p>
+                        )}
+                        <div className="flex items-center gap-4">
+                          <button
+                            type="button"
+                            onClick={saveEdit}
+                            disabled={isSavingEdit}
+                            className="rounded-lg bg-telnet-primary px-4 py-2 text-sm font-semibold text-white hover:bg-telnet-primaryHover disabled:opacity-60"
+                          >
+                            {isSavingEdit ? "Saving…" : "Save"}
+                          </button>
+                          <button
+                            type="button"
+                            onClick={cancelEdit}
+                            className="text-sm font-medium text-slate-500 hover:text-slate-700"
+                          >
+                            Cancel
+                          </button>
+                          <button
+                            type="button"
+                            onClick={() =>
+                              handleDeleteDocument(doc.id, doc.name)
+                            }
+                            disabled={deletingId === doc.id}
+                            className="ml-auto text-sm font-medium text-red-600 hover:text-red-700 disabled:opacity-60"
+                          >
+                            {deletingId === doc.id ? "Deleting…" : "Delete"}
+                          </button>
+                        </div>
+                      </div>
+                    )}
+
                     <div className="mt-4 flex items-center gap-6 border-t border-slate-100 pt-3">
                       <button
                         type="button"
@@ -547,13 +762,16 @@ export default function DocumentsPage() {
                         <EyeIcon />
                         {isExpanded ? "Hide Details" : "View Details"}
                       </button>
-                      <span
-                        title="Editing documents isn't wired up yet"
-                        className="flex items-center gap-1.5 text-sm font-medium text-[#121B3B]"
+                      <button
+                        type="button"
+                        onClick={() =>
+                          editingId === doc.id ? cancelEdit() : startEdit(doc)
+                        }
+                        className="flex items-center gap-1.5 text-sm font-medium text-[#121B3B] hover:text-telnet-primary"
                       >
                         <EditIcon />
-                        Edit
-                      </span>
+                        {editingId === doc.id ? "Close" : "Edit"}
+                      </button>
                       <span
                         title="Per-document export isn't wired up yet"
                         className="flex items-center gap-1.5 text-sm font-medium text-[#121B3B]"

@@ -3,7 +3,12 @@
 import { useEffect, useMemo, useState } from "react";
 import { useRouter } from "next/navigation";
 import { getStoredToken, getStoredUsername, isSuperAdmin } from "@/lib/auth";
-import { getVehicles, getStaff } from "@/lib/api";
+import {
+  getVehicles,
+  getStaff,
+  deleteVehicle,
+  exportVehiclesCsv,
+} from "@/lib/api";
 import { AdminSidebar } from "@/components/layout/admin-sidebar";
 import { AdminTopBar } from "@/components/layout/admin-topbar";
 import { AssetActions } from "@/components/asset-actions";
@@ -47,6 +52,8 @@ export default function VehiclesPage() {
   const [search, setSearch] = useState("");
   const [statusFilter, setStatusFilter] = useState("All");
   const [refreshKey, setRefreshKey] = useState(0);
+  const [isExporting, setIsExporting] = useState(false);
+  const [exportError, setExportError] = useState<string | null>(null);
 
   useEffect(() => {
     const token = getStoredToken();
@@ -123,28 +130,25 @@ export default function VehiclesPage() {
     });
   }, [vehicles, search, statusFilter]);
 
-  function handleExport() {
-    const rows = [
-      ["Name", "Plate / VIN", "Status", "Fuel Type", "Current Driver", "Mileage", "Insurance", "Road Worthiness"],
-      ...vehicles.map((v) => [
-        v.name,
-        v.license_plate || v.vin_number || "",
-        titleCase(v.status),
-        v.fuel_type ?? "",
-        v.assigned_staff ?? "",
-        v.current_mileage ?? "",
-        v.insurance_expiry ?? "",
-        v.roadworthy_expiry ?? "",
-      ]),
-    ];
-    const csv = rows.map((r) => r.map((v) => `"${v}"`).join(",")).join("\n");
-    const blob = new Blob([csv], { type: "text/csv" });
-    const url = URL.createObjectURL(blob);
-    const a = document.createElement("a");
-    a.href = url;
-    a.download = "vehicles.csv";
-    a.click();
-    URL.revokeObjectURL(url);
+  async function handleExport() {
+    setExportError(null);
+    setIsExporting(true);
+    try {
+      const csv = await exportVehiclesCsv();
+      const blob = new Blob([csv], { type: "text/csv" });
+      const url = URL.createObjectURL(blob);
+      const a = document.createElement("a");
+      a.href = url;
+      a.download = "vehicles.csv";
+      a.click();
+      URL.revokeObjectURL(url);
+    } catch (err) {
+      setExportError(
+        err instanceof Error ? err.message : "Couldn't export vehicles."
+      );
+    } finally {
+      setIsExporting(false);
+    }
   }
 
   if (!gateChecked) return null;
@@ -171,9 +175,10 @@ export default function VehiclesPage() {
               <button
                 type="button"
                 onClick={handleExport}
-                className="flex items-center gap-1.5 rounded-lg border border-slate-200 bg-white px-3 py-1.5 text-xs font-semibold text-slate-600 hover:bg-slate-50"
+                disabled={isExporting}
+                className="flex items-center gap-1.5 rounded-lg border border-slate-200 bg-white px-3 py-1.5 text-xs font-semibold text-slate-600 hover:bg-slate-50 disabled:opacity-60"
               >
-                Export
+                {isExporting ? "Exporting…" : "Export"}
               </button>
               <button
                 type="button"
@@ -198,6 +203,12 @@ export default function VehiclesPage() {
               >
                 Retry
               </button>
+            </div>
+          )}
+
+          {exportError && (
+            <div className="mt-4 rounded-lg border border-red-200 bg-red-50 px-4 py-3 text-sm text-red-700">
+              {exportError}
             </div>
           )}
 
@@ -343,6 +354,9 @@ export default function VehiclesPage() {
                         assetId={v.asset}
                         staffOptions={staffOptions}
                         onChanged={() => setRefreshKey((k) => k + 1)}
+                        onEdit={() => router.push(`/admin/vehicles/${v.id}/edit`)}
+                        onDelete={() => deleteVehicle(v.id)}
+                        deleteConfirmLabel={v.name}
                       />
                     </div>
                   </div>
