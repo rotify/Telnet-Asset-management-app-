@@ -88,7 +88,12 @@ export default function AddEquipmentPage() {
     }
     setIsSaving(true);
     try {
-      await createEquipment(form);
+      await createEquipment({
+        ...form,
+        assigned_staff: form.assigned_staff
+          ? Number(form.assigned_staff)
+          : undefined,
+      });
       router.push("/admin/equipment");
     } catch (err) {
       setError(
@@ -142,13 +147,19 @@ export default function AddEquipmentPage() {
                 />
               </Field>
               <Field label="Category">
-                <input
-                  type="text"
+                <select
                   value={form.equipment_type}
                   onChange={(e) => update("equipment_type", e.target.value)}
-                  placeholder="Select a category"
                   className={inputClasses}
-                />
+                >
+                  <option value="">Select a category</option>
+                  <option value="LAPTOP">Laptop</option>
+                  <option value="DESKTOP">Desktop</option>
+                  <option value="PHONE">Phone</option>
+                  <option value="PRINTER">Printer</option>
+                  <option value="FURNITURE">Furniture</option>
+                  <option value="OTHER">Other</option>
+                </select>
               </Field>
               <Field label="Serial Number">
                 <input
@@ -265,7 +276,7 @@ export default function AddEquipmentPage() {
                 >
                   <option value="">Unassigned</option>
                   {staff.map((s) => (
-                    <option key={s.id} value={`${s.first_name} ${s.last_name}`}>
+                    <option key={s.id} value={s.id}>
                       {s.first_name} {s.last_name}
                     </option>
                   ))}

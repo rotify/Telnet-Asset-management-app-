@@ -80,17 +80,18 @@ export default function EditVehiclePage() {
 
   useEffect(() => {
     if (!gateChecked) return;
-    getStaff()
-      .then(setStaff)
-      .catch(() => setStaff([]));
 
-    getVehicles()
-      .then((list) => {
+    Promise.all([getStaff(), getVehicles()])
+      .then(([staffList, list]) => {
+        setStaff(staffList);
         const record = list.find((v) => v.id === vehicleId);
         if (!record) {
           setError("Couldn't find that vehicle record.");
           return;
         }
+        const matchedStaff = staffList.find(
+          (s) => `${s.first_name} ${s.last_name}` === (record.assigned_staff ?? "")
+        );
         setForm({
           license_plate: record.license_plate ?? "",
           asset_type: record.asset_type ?? "",
@@ -102,7 +103,7 @@ export default function EditVehiclePage() {
           fuel_type: record.fuel_type ?? "",
           color: record.color ?? "",
           status: record.status ?? "",
-          assigned_staff: record.assigned_staff ?? "",
+          assigned_staff: matchedStaff ? String(matchedStaff.id) : "",
           department: record.department ?? "",
           current_mileage: record.current_mileage ?? "",
           service_interval_km: record.service_interval_km ?? "",
@@ -139,7 +140,13 @@ export default function EditVehiclePage() {
       const name =
         [form.make, form.model].filter(Boolean).join(" ") ||
         form.license_plate;
-      await updateVehicle(vehicleId, { ...form, name });
+      await updateVehicle(vehicleId, {
+        ...form,
+        name,
+        assigned_staff: form.assigned_staff
+          ? Number(form.assigned_staff)
+          : undefined,
+      });
       router.push("/admin/vehicles");
     } catch (err) {
       setError(
@@ -297,10 +304,7 @@ export default function EditVehiclePage() {
                     >
                       <option value="">Unassigned</option>
                       {staff.map((s) => (
-                        <option
-                          key={s.id}
-                          value={`${s.first_name} ${s.last_name}`}
-                        >
+                        <option key={s.id} value={s.id}>
                           {s.first_name} {s.last_name}
                         </option>
                       ))}

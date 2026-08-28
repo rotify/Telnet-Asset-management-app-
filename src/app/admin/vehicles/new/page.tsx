@@ -97,7 +97,13 @@ export default function AddVehiclePage() {
       const name =
         [form.make, form.model].filter(Boolean).join(" ") ||
         form.license_plate;
-      await createVehicle({ ...form, name });
+      await createVehicle({
+        ...form,
+        name,
+        assigned_staff: form.assigned_staff
+          ? Number(form.assigned_staff)
+          : undefined,
+      });
       router.push("/admin/vehicles");
     } catch (err) {
       setError(
@@ -246,7 +252,7 @@ export default function AddVehiclePage() {
                 >
                   <option value="">Unassigned</option>
                   {staff.map((s) => (
-                    <option key={s.id} value={`${s.first_name} ${s.last_name}`}>
+                    <option key={s.id} value={s.id}>
                       {s.first_name} {s.last_name}
                     </option>
                   ))}

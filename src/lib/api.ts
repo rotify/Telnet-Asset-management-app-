@@ -97,7 +97,7 @@ export interface EquipmentPayload {
   warranty_expiry?: string;
   service_interval_months?: string;
   next_service_date?: string;
-  assigned_staff?: string;
+  assigned_staff?: number | null;
   department?: string;
   location?: string;
   notes?: string;
@@ -136,7 +136,7 @@ export interface VehiclePayload {
   fuel_type?: string;
   color?: string;
   status?: string;
-  assigned_staff?: string;
+  assigned_staff?: number | null;
   department?: string;
   current_mileage?: string;
   service_interval_km?: string;

@@ -74,17 +74,19 @@ export default function EditEquipmentPage() {
 
   useEffect(() => {
     if (!gateChecked) return;
-    getStaff()
-      .then(setStaff)
-      .catch(() => setStaff([]));
 
-    getEquipment()
-      .then((list) => {
+    Promise.all([getStaff(), getEquipment()])
+      .then(([staffList, list]) => {
+        setStaff(staffList);
         const record = list.find((e) => e.id === equipmentId);
         if (!record) {
           setError("Couldn't find that equipment record.");
           return;
         }
+        const assignedName = record.assigned_staff ?? record.assigned_user ?? "";
+        const matchedStaff = staffList.find(
+          (s) => `${s.first_name} ${s.last_name}` === assignedName
+        );
         setForm({
           name: record.name ?? "",
           equipment_type: record.equipment_type ?? "",
@@ -98,7 +100,7 @@ export default function EditEquipmentPage() {
           warranty_expiry: record.warranty_expiry ?? "",
           service_interval_months: "",
           next_service_date: "",
-          assigned_staff: record.assigned_staff ?? record.assigned_user ?? "",
+          assigned_staff: matchedStaff ? String(matchedStaff.id) : "",
           department: record.regional_office ?? record.subsidiary ?? "",
           location: record.location ?? "",
           notes: record.notes ?? "",
@@ -124,7 +126,12 @@ export default function EditEquipmentPage() {
     }
     setIsSaving(true);
     try {
-      await updateEquipment(equipmentId, form);
+      await updateEquipment(equipmentId, {
+        ...form,
+        assigned_staff: form.assigned_staff
+          ? Number(form.assigned_staff)
+          : undefined,
+      });
       router.push("/admin/equipment");
     } catch (err) {
       setError(
@@ -181,15 +188,21 @@ export default function EditEquipmentPage() {
                     />
                   </Field>
                   <Field label="Category">
-                    <input
-                      type="text"
+                    <select
                       value={form.equipment_type}
                       onChange={(e) =>
                         update("equipment_type", e.target.value)
                       }
-                      placeholder="Select a category"
                       className={inputClasses}
-                    />
+                    >
+                      <option value="">Select a category</option>
+                      <option value="LAPTOP">Laptop</option>
+                      <option value="DESKTOP">Desktop</option>
+                      <option value="PHONE">Phone</option>
+                      <option value="PRINTER">Printer</option>
+                      <option value="FURNITURE">Furniture</option>
+                      <option value="OTHER">Other</option>
+                    </select>
                   </Field>
                   <Field label="Serial Number">
                     <input
@@ -318,10 +331,7 @@ export default function EditEquipmentPage() {
                     >
                       <option value="">Unassigned</option>
                       {staff.map((s) => (
-                        <option
-                          key={s.id}
-                          value={`${s.first_name} ${s.last_name}`}
-                        >
+                        <option key={s.id} value={s.id}>
                           {s.first_name} {s.last_name}
                         </option>
                       ))}
