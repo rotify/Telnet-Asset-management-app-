@@ -214,12 +214,12 @@ export default function AddStaffPage() {
                   onChange={(e) => update("department", e.target.value)}
                   className={inputClasses}
                 >
-                 
-                  <option value="Finance">Finance</option>
-                  <option value="Operations">Operations</option>
+                  <option value="">Select a department</option>
+                  <option value="FINANCE">Finance</option>
+                  <option value="OPERATIONS">Operations</option>
                   <option value="HR">HR</option>
                   <option value="IT">IT</option>
-                  <option value="Logistics">Logistics</option>
+                  <option value="LOGISTICS">Logistics</option>
                 </select>
               </Field>
               <Field label="Job Title">
