@@ -36,7 +36,7 @@ export function LoginForm() {
       router.refresh();
     } catch (err) {
       setErrors({
-        form: err instanceof Error ? err.message : "Something went wrong.",
+        form: err instanceof Error ? err.message : "Wrong username or password. Please try again.",
       });
     } finally {
       setIsSubmitting(false);
@@ -135,7 +135,7 @@ export function LoginForm() {
       </a>
 
       <p className="mt-4 text-center text-sm text-slate-500">
-        Don&apos;t have access? Contact Admin.
+        Don't have access? Contact Admin.
       </p>
     </form>
   );
