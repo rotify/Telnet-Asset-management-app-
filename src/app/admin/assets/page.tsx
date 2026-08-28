@@ -132,7 +132,7 @@ export default function AssetsPage() {
       name: v.name,
       category: "Vehicle",
       assignedTo: v.assigned_staff || "Unassigned",
-      location: v.base_location || "—",
+      location: v.license_plate || "—",
       status: v.status,
     }));
     return [...eqRows, ...vhRows];

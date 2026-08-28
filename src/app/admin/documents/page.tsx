@@ -4,10 +4,12 @@ import { useEffect, useMemo, useState } from "react";
 import { useRouter } from "next/navigation";
 import { getStoredToken, getStoredUsername, isSuperAdmin } from "@/lib/auth";
 import {
-  createDocument,
+  createDocumentWithFile,
   deleteDocument,
+  documentFileUrl,
   getDocuments,
   updateDocument,
+  updateDocumentWithFile,
 } from "@/lib/api";
 import { AdminSidebar } from "@/components/layout/admin-sidebar";
 import { AdminTopBar } from "@/components/layout/admin-topbar";
@@ -182,14 +184,25 @@ export default function DocumentsPage() {
 
   const [showAddForm, setShowAddForm] = useState(false);
   const [newDoc, setNewDoc] = useState(EMPTY_NEW_DOC);
+  const [newDocFile, setNewDocFile] = useState<File | null>(null);
   const [addError, setAddError] = useState<string | null>(null);
   const [isAdding, setIsAdding] = useState(false);
 
   const [editingId, setEditingId] = useState<number | null>(null);
   const [editDoc, setEditDoc] = useState(EMPTY_EDIT_DOC);
+  const [editDocFile, setEditDocFile] = useState<File | null>(null);
   const [editError, setEditError] = useState<string | null>(null);
   const [isSavingEdit, setIsSavingEdit] = useState(false);
   const [deletingId, setDeletingId] = useState<number | null>(null);
+
+  const ACCEPTED_FILE_TYPES = ".pdf,.doc,.docx";
+
+  function validateFile(file: File | null): string | null {
+    if (!file) return null;
+    const ok = /\.(pdf|docx?)$/i.test(file.name);
+    if (!ok) return "Only PDF, DOC, or DOCX files are allowed.";
+    return null;
+  }
 
   useEffect(() => {
     const token = getStoredToken();
@@ -241,11 +254,17 @@ export default function DocumentsPage() {
       setAddError("Name and document type are required.");
       return;
     }
+    const fileError = validateFile(newDocFile);
+    if (fileError) {
+      setAddError(fileError);
+      return;
+    }
     setIsAdding(true);
     try {
-      const created = await createDocument(newDoc);
+      const created = await createDocumentWithFile(newDoc, newDocFile);
       setDocuments((prev) => [created, ...prev]);
       setNewDoc(EMPTY_NEW_DOC);
+      setNewDocFile(null);
       setShowAddForm(false);
     } catch (err) {
       setAddError(
@@ -268,11 +287,13 @@ export default function DocumentsPage() {
       document_number: doc.document_number ?? "",
       location: doc.location ?? "",
     });
+    setEditDocFile(null);
     setEditError(null);
   }
 
   function cancelEdit() {
     setEditingId(null);
+    setEditDocFile(null);
     setEditError(null);
   }
 
@@ -283,13 +304,21 @@ export default function DocumentsPage() {
       setEditError("Name and document type are required.");
       return;
     }
+    const fileError = validateFile(editDocFile);
+    if (fileError) {
+      setEditError(fileError);
+      return;
+    }
     setIsSavingEdit(true);
     try {
-      const updated = await updateDocument(editingId, editDoc);
+      const updated = editDocFile
+        ? await updateDocumentWithFile(editingId, editDoc, editDocFile)
+        : await updateDocument(editingId, editDoc);
       setDocuments((prev) =>
         prev.map((d) => (d.id === editingId ? updated : d))
       );
       setEditingId(null);
+      setEditDocFile(null);
     } catch (err) {
       setEditError(
         err instanceof Error ? err.message : "Couldn't update document."
@@ -370,6 +399,7 @@ export default function DocumentsPage() {
                 onClick={() => {
                   setShowAddForm((v) => !v);
                   setAddError(null);
+                  setNewDocFile(null);
                 }}
                 className="flex items-center gap-1.5 rounded-lg bg-[#0F172A] px-4 py-2 text-sm font-semibold text-white hover:bg-[#1e293b]"
               >
@@ -442,6 +472,24 @@ export default function DocumentsPage() {
                   }
                   className="rounded-lg border border-slate-200 px-3 py-2 text-sm focus:border-telnet-primary focus:outline-none"
                 />
+                <div className="sm:col-span-3">
+                  <label className="mb-1.5 block text-sm font-medium text-[#121B3B]">
+                    File (PDF, DOC, or DOCX)
+                  </label>
+                  <input
+                    type="file"
+                    accept={ACCEPTED_FILE_TYPES}
+                    onChange={(e) =>
+                      setNewDocFile(e.target.files?.[0] ?? null)
+                    }
+                    className="w-full rounded-lg border border-slate-200 px-3 py-2 text-sm text-slate-600 file:mr-3 file:rounded-md file:border-0 file:bg-slate-100 file:px-3 file:py-1.5 file:text-sm file:font-semibold file:text-slate-700 hover:file:bg-slate-200"
+                  />
+                  {newDocFile && (
+                    <p className="mt-1 text-xs text-slate-400">
+                      {newDocFile.name}
+                    </p>
+                  )}
+                </div>
               </div>
               {addError && (
                 <p className="mt-2 text-sm text-red-600">{addError}</p>
@@ -717,6 +765,24 @@ export default function DocumentsPage() {
                             }
                             className="rounded-lg border border-slate-200 px-3 py-2 text-sm focus:border-telnet-primary focus:outline-none"
                           />
+                          <div className="sm:col-span-2">
+                            <label className="mb-1.5 block text-xs font-medium text-slate-500">
+                              Replace file (optional)
+                            </label>
+                            <input
+                              type="file"
+                              accept=".pdf,.doc,.docx"
+                              onChange={(e) =>
+                                setEditDocFile(e.target.files?.[0] ?? null)
+                              }
+                              className="w-full rounded-lg border border-slate-200 px-3 py-2 text-sm text-slate-600 file:mr-3 file:rounded-md file:border-0 file:bg-slate-100 file:px-3 file:py-1.5 file:text-sm file:font-semibold file:text-slate-700 hover:file:bg-slate-200"
+                            />
+                            {editDocFile && (
+                              <p className="mt-1 text-xs text-slate-400">
+                                {editDocFile.name}
+                              </p>
+                            )}
+                          </div>
                         </div>
                         {editError && (
                           <p className="text-sm text-red-600">{editError}</p>
@@ -772,13 +838,25 @@ export default function DocumentsPage() {
                         <EditIcon />
                         {editingId === doc.id ? "Close" : "Edit"}
                       </button>
-                      <span
-                        title="Per-document export isn't wired up yet"
-                        className="flex items-center gap-1.5 text-sm font-medium text-[#121B3B]"
-                      >
-                        <ExportIcon />
-                        Export
-                      </span>
+                      {doc.document_file ? (
+                        <a
+                          href={documentFileUrl(doc.document_file)}
+                          target="_blank"
+                          rel="noopener noreferrer"
+                          className="flex items-center gap-1.5 text-sm font-medium text-[#121B3B] hover:text-telnet-primary"
+                        >
+                          <ExportIcon />
+                          View File
+                        </a>
+                      ) : (
+                        <span
+                          title="No file has been uploaded for this document"
+                          className="flex items-center gap-1.5 text-sm font-medium text-slate-300"
+                        >
+                          <ExportIcon />
+                          No File
+                        </span>
+                      )}
                     </div>
                   </div>
                 );

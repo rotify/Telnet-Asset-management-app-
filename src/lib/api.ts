@@ -127,27 +127,17 @@ export function getVehicles(): Promise<Vehicle[]> {
 export interface VehiclePayload {
   name: string;
   license_plate?: string;
-  asset_type?: string;
+  vin_number?: string;
   make?: string;
   model?: string;
-  year_of_manufacture?: string;
-  vin_number?: string;
-  engine_number?: string;
-  fuel_type?: string;
-  color?: string;
+  asset_type?: string;
   status?: string;
-  assigned_staff?: number | null;
-  department?: string;
-  current_mileage?: string;
-  service_interval_km?: string;
-  base_location?: string;
-  next_service_date?: string;
-  insurance_provider?: string;
-  insurance_policy_number?: string;
+  insurance_expiry?: string;
   roadworthy_expiry?: string;
   license_expiry?: string;
+  hackney_permit?: string;
   cost?: string;
-  notes?: string;
+  assigned_staff?: number | null;
 }
 
 export function createVehicle(payload: VehiclePayload): Promise<Vehicle> {
@@ -243,6 +233,83 @@ export function updateDocument(
 
 export function deleteDocument(id: number): Promise<void> {
   return authedMutate<void>(`/api/documents/${id}`, "DELETE");
+}
+
+// Document file upload — needs multipart/form-data, so it bypasses
+// authedMutate (which always JSON-encodes) and builds its own request.
+async function authedMutateFormData<T>(
+  path: string,
+  method: "POST" | "PUT",
+  formData: FormData
+): Promise<T> {
+  const token = getStoredToken();
+  if (!token) {
+    throw new Error("You're not signed in.");
+  }
+
+  const res = await fetch(path, {
+    method,
+    headers: { Authorization: `Token ${token}` },
+    body: formData,
+    cache: "no-store",
+  });
+
+  const data = await res.json().catch(() => null);
+
+  if (!res.ok) {
+    throw new Error(extractErrorMessage(data, res.status));
+  }
+
+  return data as T;
+}
+
+export function createDocumentWithFile(
+  payload: DocumentPayload,
+  file: File | null
+): Promise<DocumentRecord> {
+  const formData = new FormData();
+  Object.entries(payload).forEach(([key, value]) => {
+    if (value !== undefined && value !== null && value !== "") {
+      formData.append(key, String(value));
+    }
+  });
+  if (file) {
+    formData.append("document_file", file);
+  }
+  return authedMutateFormData<DocumentRecord>(
+    "/api/documents",
+    "POST",
+    formData
+  );
+}
+
+export function updateDocumentWithFile(
+  id: number,
+  payload: Partial<DocumentPayload>,
+  file: File | null
+): Promise<DocumentRecord> {
+  const formData = new FormData();
+  Object.entries(payload).forEach(([key, value]) => {
+    if (value !== undefined && value !== null && value !== "") {
+      formData.append(key, String(value));
+    }
+  });
+  if (file) {
+    formData.append("document_file", file);
+  }
+  return authedMutateFormData<DocumentRecord>(
+    `/api/documents/${id}`,
+    "PUT",
+    formData
+  );
+}
+
+// The backend returns document_file as a relative /media/... path.
+const DOCUMENT_MEDIA_ORIGIN = "http://207.180.246.69:7038";
+
+export function documentFileUrl(path: string): string {
+  if (/^https?:\/\//.test(path)) return path;
+  return `${DOCUMENT_MEDIA_ORIGIN}${path}`;
 }
 
 // Equipment maintenance

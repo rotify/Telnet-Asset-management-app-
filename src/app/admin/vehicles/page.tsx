@@ -316,9 +316,9 @@ export default function VehiclesPage() {
 
                     <div className="mt-4 grid grid-cols-3 gap-x-3 gap-y-2 border-t border-slate-100 pt-3 text-xs">
                       <div>
-                        <p className="text-slate-400">Fuel Type</p>
-                        <p className="font-medium text-slate-700">
-                          {v.fuel_type || "—"}
+                        <p className="text-slate-400">Vehicle Type</p>
+                        <p className="font-medium capitalize text-slate-700">
+                          {v.asset_type || "—"}
                         </p>
                       </div>
                       <div>
@@ -328,9 +328,9 @@ export default function VehiclesPage() {
                         </p>
                       </div>
                       <div>
-                        <p className="text-slate-400">Mileage</p>
+                        <p className="text-slate-400">Cost</p>
                         <p className="font-medium text-slate-700">
-                          {v.current_mileage ? `${v.current_mileage} km` : "—"}
+                          {v.cost || "—"}
                         </p>
                       </div>
                     </div>

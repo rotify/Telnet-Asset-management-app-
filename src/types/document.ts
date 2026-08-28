@@ -13,6 +13,7 @@ export interface DocumentRecord {
   location: string | null;
   responsible_person: string | null;
   notes: string | null;
+  document_file: string | null;
   created_at: string;
   updated_at: string;
   related_vehicle: number | null;

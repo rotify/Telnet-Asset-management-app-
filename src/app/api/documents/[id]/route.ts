@@ -17,6 +17,22 @@ export async function PUT(
     );
   }
 
+  const contentType = request.headers.get("content-type") ?? "";
+
+  if (contentType.includes("multipart/form-data")) {
+    const formData = await request.formData();
+
+    const upstream = await fetch(`${API_BASE_URL}/documents/${params.id}/`, {
+      method: "PUT",
+      headers: { Authorization: authHeader, Accept: "application/json" },
+      body: formData,
+      cache: "no-store",
+    });
+
+    const data = await upstream.json().catch(() => ({}));
+    return NextResponse.json(data, { status: upstream.status });
+  }
+
   const body = await request.json().catch(() => ({}));
 
   const upstream = await fetch(`${API_BASE_URL}/documents/${params.id}/`, {

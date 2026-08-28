@@ -28,29 +28,21 @@ function Field({
 const inputClasses =
   "w-full rounded-lg border border-slate-200 bg-white px-3 py-2 text-sm text-slate-700 placeholder:text-slate-400 focus:border-telnet-primary focus:outline-none";
 
+// Only fields the backend's Vehicle serializer actually accepts, confirmed
+// against the live DRF API (http://207.180.246.69:7038/api/vehicles/).
 const EMPTY = {
   license_plate: "",
   asset_type: "",
   make: "",
   model: "",
-  year_of_manufacture: "",
   vin_number: "",
-  engine_number: "",
-  fuel_type: "",
-  color: "",
   status: "",
   assigned_staff: "",
-  department: "",
-  current_mileage: "",
-  service_interval_km: "",
-  base_location: "",
-  next_service_date: "",
-  insurance_provider: "",
-  insurance_policy_number: "",
+  insurance_expiry: "",
   roadworthy_expiry: "",
   license_expiry: "",
+  hackney_permit: "",
   cost: "",
-  notes: "",
 };
 
 export default function AddVehiclePage() {
@@ -186,49 +178,12 @@ export default function AddVehiclePage() {
                   className={inputClasses}
                 />
               </Field>
-              <Field label="Year Of Manufacture">
-                <input
-                  type="date"
-                  value={form.year_of_manufacture}
-                  onChange={(e) =>
-                    update("year_of_manufacture", e.target.value)
-                  }
-                  className={inputClasses}
-                />
-              </Field>
               <Field label="Serial / VIN Number">
                 <input
                   type="text"
                   value={form.vin_number}
                   onChange={(e) => update("vin_number", e.target.value)}
                   placeholder="Enter VIN number"
-                  className={inputClasses}
-                />
-              </Field>
-              <Field label="Engine Number">
-                <input
-                  type="text"
-                  value={form.engine_number}
-                  onChange={(e) => update("engine_number", e.target.value)}
-                  placeholder="Enter engine number"
-                  className={inputClasses}
-                />
-              </Field>
-              <Field label="Fuel Type">
-                <input
-                  type="text"
-                  value={form.fuel_type}
-                  onChange={(e) => update("fuel_type", e.target.value)}
-                  placeholder="Select a vehicle type"
-                  className={inputClasses}
-                />
-              </Field>
-              <Field label="Color">
-                <input
-                  type="text"
-                  value={form.color}
-                  onChange={(e) => update("color", e.target.value)}
-                  placeholder="Enter color"
                   className={inputClasses}
                 />
               </Field>
@@ -251,7 +206,7 @@ export default function AddVehiclePage() {
 
           <div className="mt-6 rounded-xl bg-white p-6 shadow-[0_1px_2px_rgba(16,24,64,0.06)]">
             <h2 className="border-b border-slate-100 pb-3 text-sm font-semibold text-[#121B3B]">
-              Assignment &amp; Usage
+              Assignment
             </h2>
             <div className="mt-4 grid grid-cols-1 gap-4 sm:grid-cols-2">
               <Field label="Assigned Driver">
@@ -268,51 +223,12 @@ export default function AddVehiclePage() {
                   ))}
                 </select>
               </Field>
-              <Field label="Department">
+              <Field label="Purchase Cost">
                 <input
                   type="text"
-                  value={form.department}
-                  onChange={(e) => update("department", e.target.value)}
-                  placeholder="Select a Department"
-                  className={inputClasses}
-                />
-              </Field>
-              <Field label="Current Millage (Km)">
-                <input
-                  type="text"
-                  value={form.current_mileage}
-                  onChange={(e) => update("current_mileage", e.target.value)}
-                  placeholder="1000"
-                  className={inputClasses}
-                />
-              </Field>
-              <Field label="Service Interval ( Km )">
-                <input
-                  type="text"
-                  value={form.service_interval_km}
-                  onChange={(e) =>
-                    update("service_interval_km", e.target.value)
-                  }
-                  placeholder="1000"
-                  className={inputClasses}
-                />
-              </Field>
-              <Field label="Base Location">
-                <input
-                  type="text"
-                  value={form.base_location}
-                  onChange={(e) => update("base_location", e.target.value)}
-                  placeholder="Enter location"
-                  className={inputClasses}
-                />
-              </Field>
-              <Field label="Next Service Date">
-                <input
-                  type="date"
-                  value={form.next_service_date}
-                  onChange={(e) =>
-                    update("next_service_date", e.target.value)
-                  }
+                  value={form.cost}
+                  onChange={(e) => update("cost", e.target.value)}
+                  placeholder="0.00"
                   className={inputClasses}
                 />
               </Field>
@@ -324,34 +240,11 @@ export default function AddVehiclePage() {
               Compliance Documents
             </h2>
             <div className="mt-4 grid grid-cols-1 gap-4 sm:grid-cols-2">
-              <Field label="Insurance Provider">
+              <Field label="Insurance Expiry">
                 <input
-                  type="text"
-                  value={form.insurance_provider}
-                  onChange={(e) =>
-                    update("insurance_provider", e.target.value)
-                  }
-                  placeholder="E.g Iteco insurance"
-                  className={inputClasses}
-                />
-              </Field>
-              <Field label="Insurance Policy Number">
-                <input
-                  type="text"
-                  value={form.insurance_policy_number}
-                  onChange={(e) =>
-                    update("insurance_policy_number", e.target.value)
-                  }
-                  placeholder="Enter policy number"
-                  className={inputClasses}
-                />
-              </Field>
-              <Field label="Current Millage (Km)">
-                <input
-                  type="text"
-                  value={form.current_mileage}
-                  onChange={(e) => update("current_mileage", e.target.value)}
-                  placeholder="1000"
+                  type="date"
+                  value={form.insurance_expiry}
+                  onChange={(e) => update("insurance_expiry", e.target.value)}
                   className={inputClasses}
                 />
               </Field>
@@ -367,32 +260,20 @@ export default function AddVehiclePage() {
               </Field>
               <Field label="Licence Expiry">
                 <input
-                  type="text"
+                  type="date"
                   value={form.license_expiry}
                   onChange={(e) => update("license_expiry", e.target.value)}
-                  placeholder="Enter location"
                   className={inputClasses}
                 />
               </Field>
-              <Field label="Purchase Cost">
+              <Field label="Hackney Permit Expiry">
                 <input
                   type="date"
-                  value={form.cost}
-                  onChange={(e) => update("cost", e.target.value)}
+                  value={form.hackney_permit}
+                  onChange={(e) => update("hackney_permit", e.target.value)}
                   className={inputClasses}
                 />
               </Field>
-              <div className="sm:col-span-2">
-                <Field label="Emergency Contact Name">
-                  <textarea
-                    value={form.notes}
-                    onChange={(e) => update("notes", e.target.value)}
-                    placeholder="certification, restrictions, onboarding note …."
-                    rows={3}
-                    className={inputClasses}
-                  />
-                </Field>
-              </div>
             </div>
           </div>
 
