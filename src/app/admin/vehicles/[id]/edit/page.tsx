@@ -203,13 +203,18 @@ export default function EditVehiclePage() {
                     />
                   </Field>
                   <Field label="Vehicle Type">
-                    <input
-                      type="text"
+                    <select
                       value={form.asset_type}
                       onChange={(e) => update("asset_type", e.target.value)}
-                      placeholder="Select a vehicle type"
                       className={inputClasses}
-                    />
+                    >
+                      <option value="">Select a vehicle type</option>
+                      <option value="car">Car</option>
+                      <option value="truck">Truck</option>
+                      <option value="van">Van</option>
+                      <option value="bus">Bus</option>
+                      <option value="motorbike">Motorbike</option>
+                    </select>
                   </Field>
                   <Field label="Manufacturer">
                     <input
@@ -278,13 +283,18 @@ export default function EditVehiclePage() {
                     />
                   </Field>
                   <Field label="Condition">
-                    <input
-                      type="text"
+                    <select
                       value={form.status}
                       onChange={(e) => update("status", e.target.value)}
-                      placeholder="Select vehicle condition"
                       className={inputClasses}
-                    />
+                    >
+                      <option value="">Select vehicle condition</option>
+                      <option value="active">Active</option>
+                      <option value="pending_certification">
+                        Pending Certification
+                      </option>
+                      <option value="inactive">Inactive</option>
+                    </select>
                   </Field>
                 </div>
               </div>

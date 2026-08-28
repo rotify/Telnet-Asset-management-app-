@@ -215,11 +215,11 @@ export default function AddStaffPage() {
                   className={inputClasses}
                 >
                   <option value="">Select a department</option>
-                  <option value="FINANCE">Finance</option>
-                  <option value="OPERATIONS">Operations</option>
+                  <option value="ABS">ABS</option>
+                  <option value="ITECO">ITECO</option>
+                  <option value="SOFTWORKS">SOFTWORKS</option>
                   <option value="HR">HR</option>
-                  <option value="IT">IT</option>
-                  <option value="LOGISTICS">Logistics</option>
+                  <option value="MANAGEMENT">MANAGEMENT</option>
                 </select>
               </Field>
               <Field label="Job Title">

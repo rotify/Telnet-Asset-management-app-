@@ -90,7 +90,7 @@ export interface EquipmentPayload {
   serial_number?: string;
   manufacturer?: string;
   model_number?: string;
-  condition?: string;
+  status?: string;
   purchase_date?: string;
   cost?: string;
   supplier?: string;
@@ -98,7 +98,7 @@ export interface EquipmentPayload {
   service_interval_months?: string;
   next_service_date?: string;
   assigned_staff?: number | null;
-  department?: string;
+  regional_office?: string;
   location?: string;
   notes?: string;
 }

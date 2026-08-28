@@ -34,7 +34,7 @@ const EMPTY = {
   serial_number: "",
   manufacturer: "",
   model_number: "",
-  condition: "",
+  status: "",
   purchase_date: "",
   cost: "",
   supplier: "",
@@ -42,7 +42,7 @@ const EMPTY = {
   service_interval_months: "",
   next_service_date: "",
   assigned_staff: "",
-  department: "",
+  regional_office: "",
   location: "",
   notes: "",
 };
@@ -93,7 +93,7 @@ export default function EditEquipmentPage() {
           serial_number: record.serial_number ?? "",
           manufacturer: "",
           model_number: "",
-          condition: "",
+          status: record.status ?? "",
           purchase_date: record.purchase_date ?? "",
           cost: record.cost ?? "",
           supplier: "",
@@ -101,7 +101,7 @@ export default function EditEquipmentPage() {
           service_interval_months: "",
           next_service_date: "",
           assigned_staff: matchedStaff ? String(matchedStaff.id) : "",
-          department: record.regional_office ?? record.subsidiary ?? "",
+          regional_office: record.regional_office ?? "",
           location: record.location ?? "",
           notes: record.notes ?? "",
         });
@@ -196,12 +196,21 @@ export default function EditEquipmentPage() {
                       className={inputClasses}
                     >
                       <option value="">Select a category</option>
-                      <option value="LAPTOP">Laptop</option>
-                      <option value="DESKTOP">Desktop</option>
-                      <option value="PHONE">Phone</option>
-                      <option value="PRINTER">Printer</option>
-                      <option value="FURNITURE">Furniture</option>
-                      <option value="OTHER">Other</option>
+                      <option value="computer">Computer</option>
+                      <option value="laptop">Laptop</option>
+                      <option value="printer">Printer</option>
+                      <option value="scanner">Scanner</option>
+                      <option value="copier">Copier</option>
+                      <option value="ac">Air Conditioner</option>
+                      <option value="generator">Generator</option>
+                      <option value="furniture">Furniture</option>
+                      <option value="phone">Phone/Communication</option>
+                      <option value="appliance">Appliance</option>
+                      <option value="safety">Safety Equipment</option>
+                      <option value="network">Network Equipment</option>
+                      <option value="electronics">Electronics</option>
+                      <option value="office_supplies">Office Supplies</option>
+                      <option value="other">Other</option>
                     </select>
                   </Field>
                   <Field label="Serial Number">
@@ -237,14 +246,20 @@ export default function EditEquipmentPage() {
                       className={inputClasses}
                     />
                   </Field>
-                  <Field label="Condition">
-                    <input
-                      type="text"
-                      value={form.condition}
-                      onChange={(e) => update("condition", e.target.value)}
-                      placeholder="Select condition"
+                  <Field label="Status">
+                    <select
+                      value={form.status}
+                      onChange={(e) => update("status", e.target.value)}
                       className={inputClasses}
-                    />
+                    >
+                      <option value="">Select status</option>
+                      <option value="active">Active</option>
+                      <option value="pending_certification">
+                        Pending Certification
+                      </option>
+                      <option value="inactive">Inactive</option>
+                      <option value="damaged">Damaged</option>
+                    </select>
                   </Field>
                 </div>
               </div>
@@ -337,14 +352,21 @@ export default function EditEquipmentPage() {
                       ))}
                     </select>
                   </Field>
-                  <Field label="Department">
-                    <input
-                      type="text"
-                      value={form.department}
-                      onChange={(e) => update("department", e.target.value)}
-                      placeholder="Select department"
+                  <Field label="Regional Office">
+                    <select
+                      value={form.regional_office}
+                      onChange={(e) =>
+                        update("regional_office", e.target.value)
+                      }
                       className={inputClasses}
-                    />
+                    >
+                      <option value="">Select regional office</option>
+                      <option value="Lagos">Telnet Lagos</option>
+                      <option value="Abuja">Telnet Abuja</option>
+                      <option value="Port Harcourt">
+                        Telnet Port Harcourt
+                      </option>
+                    </select>
                   </Field>
                   <Field label="Location">
                     <input
