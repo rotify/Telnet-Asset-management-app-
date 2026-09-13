@@ -32,7 +32,7 @@ export async function POST(request: Request) {
       { status: 502 }
     );
   }
-
+ 
   const data = await upstream.json().catch(() => ({}));
 
   if (!upstream.ok) {

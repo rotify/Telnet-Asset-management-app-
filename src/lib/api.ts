@@ -400,3 +400,196 @@ export function getAssetHistory(
 ): Promise<AssetHistoryEntry[]> {
   return authedFetch<AssetHistoryEntry[]>(`/api/asset/${assetId}/history`);
 }
+
+// Notifications (v1)
+
+export interface NotificationSchedule {
+  id: number;
+  schedule_time: string;
+  alert_days: number;
+  is_enabled: boolean;
+  last_sent: string | null;
+  updated_at: string;
+}
+
+export interface NotificationSchedulePayload {
+  is_enabled?: boolean;
+  alert_days?: number;
+  schedule_time?: string;
+}
+
+export function getNotificationSchedule(): Promise<NotificationSchedule> {
+  return authedFetch<NotificationSchedule>("/api/v1/notifications/schedule");
+}
+
+export function updateNotificationSchedule(
+  payload: NotificationSchedulePayload
+): Promise<NotificationSchedule> {
+  return authedMutate<NotificationSchedule>(
+    "/api/v1/notifications/schedule",
+    "PATCH",
+    payload
+  );
+}
+
+export interface NotificationRecipient {
+  id: number;
+  email: string;
+  full_name: string;
+  is_active: boolean;
+  created_at: string;
+}
+
+export interface NotificationRecipientPayload {
+  email: string;
+  full_name: string;
+  is_active?: boolean;
+}
+
+export function getNotificationRecipients(): Promise<{
+  count: number;
+  results: NotificationRecipient[];
+}> {
+  return authedFetch("/api/v1/notifications/recipients");
+}
+
+export function createNotificationRecipient(
+  payload: NotificationRecipientPayload
+): Promise<NotificationRecipient> {
+  return authedMutate(
+    "/api/v1/notifications/recipients",
+    "POST",
+    payload
+  );
+}
+
+// Delivery item shape isn't confirmed against live data yet beyond
+// {id, status} (from the retry response) — kept loose on purpose so
+// unexpected fields don't break rendering.
+export interface NotificationDelivery {
+  id: number;
+  status: string;
+  [key: string]: unknown;
+}
+
+export function getNotificationDeliveries(): Promise<{
+  count: number;
+  results: NotificationDelivery[];
+}> {
+  return authedFetch("/api/v1/notifications/deliveries");
+}
+
+export function sendNotificationsNow(): Promise<{
+  status: string;
+  sent_count: number;
+}> {
+  return authedMutate("/api/v1/notifications/send-now", "POST", {});
+}
+
+export function retryNotificationDelivery(
+  id: number
+): Promise<{ id: number; status: string }> {
+  return authedMutate(
+    `/api/v1/notifications/deliveries/${id}/retry`,
+    "POST",
+    {}
+  );
+}
+
+// Reports (v1)
+
+export interface ReportOverview {
+  generated_at: string;
+  assets: { total: number; active: number; unassigned: number };
+  vehicles: number;
+  equipment: number;
+  documents: { total: number; expired: number; expiring: number };
+  maintenance: { vehicle_cost: number; equipment_cost: number };
+}
+
+export function getReportOverview(): Promise<ReportOverview> {
+  return authedFetch<ReportOverview>("/api/v1/reports/overview");
+}
+
+// These report endpoints return { count, results: [...] } — the shape
+// of each result row isn't confirmed against live data yet, so results
+// are kept as loose records rather than guessed at.
+export interface ReportListResponse {
+  count: number;
+  results: Record<string, unknown>[];
+}
+
+export function getVehiclesReport(): Promise<ReportListResponse> {
+  return authedFetch("/api/v1/reports/vehicles");
+}
+
+export function getEquipmentReport(): Promise<ReportListResponse> {
+  return authedFetch("/api/v1/reports/equipment");
+}
+
+export function getDocumentsReport(): Promise<ReportListResponse> {
+  return authedFetch("/api/v1/reports/documents");
+}
+
+export interface MaintenanceReport {
+  summary: {
+    vehicle_count: number;
+    equipment_count: number;
+    vehicle_cost: number;
+    equipment_cost: number;
+  };
+  vehicles: Record<string, unknown>[];
+  equipment: Record<string, unknown>[];
+}
+
+export function getMaintenanceReport(): Promise<MaintenanceReport> {
+  return authedFetch<MaintenanceReport>("/api/v1/reports/maintenance");
+}
+
+export function getTransfersReport(): Promise<ReportListResponse> {
+  return authedFetch("/api/v1/reports/transfers");
+}
+
+export function getAuditReport(): Promise<ReportListResponse> {
+  return authedFetch("/api/v1/reports/audit");
+}
+
+// Settings (v1)
+
+export interface OrganizationSettings {
+  name: string;
+  timezone: string;
+  file_upload_max_size_mb: number;
+}
+
+export function getOrganizationSettings(): Promise<OrganizationSettings> {
+  return authedFetch<OrganizationSettings>("/api/v1/settings/organization");
+}
+
+export interface ProfileSettings {
+  id: number;
+  username: string;
+  first_name: string;
+  last_name: string;
+  email: string;
+}
+
+export interface ProfileSettingsPayload {
+  first_name?: string;
+  last_name?: string;
+  email?: string;
+}
+
+export function getProfileSettings(): Promise<ProfileSettings> {
+  return authedFetch<ProfileSettings>("/api/v1/settings/profile");
+}
+
+export function updateProfileSettings(
+  payload: ProfileSettingsPayload
+): Promise<ProfileSettings> {
+  return authedMutate<ProfileSettings>(
+    "/api/v1/settings/profile",
+    "PATCH",
+    payload
+  );
+}

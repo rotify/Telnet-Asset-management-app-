@@ -24,10 +24,10 @@ const NAV_ITEMS: NavItem[] = [
   { label: "Documents", href: "/admin/documents", icon: "doc", live: true },
   { label: "Equipments", href: "/admin/equipment", icon: "wrench", live: true },
   { label: "Maintenance", href: "/admin/maintenance", icon: "gauge", live: true },
-  { label: "Reports", href: "/admin/reports", icon: "chart", live: false },
+  { label: "Reports", href: "/admin/reports", icon: "chart", live: true },
   { label: "Users & Roles", href: "/admin/staff", icon: "users", live: true },
-  { label: "Notifications", href: "/admin/notifications", icon: "bell", live: false },
-  { label: "Settings", href: "/admin/settings", icon: "settings", live: false },
+  { label: "Notifications", href: "/admin/notifications", icon: "bell", live: true },
+  { label: "Settings", href: "/admin/settings", icon: "settings", live: true },
 ];
 
 function NavIcon({ name }: { name: string }) {
