@@ -64,16 +64,16 @@ export function SiteHeader() {
   }
 
   return (
-    <header className="flex h-14 items-center justify-between bg-[#10245c] px-6 text-white">
+    <header className="flex h-14 items-center justify-between bg-[#0F172A] px-6 text-white">
       <div className="flex items-center gap-3">
-        <span className="font-serif text-lg font-bold text-[#50A5DB]">
+        <span className="font-serif text-lg font-bold text-white">
           TELNET
         </span>
         <span className="hidden text-sm font-medium text-white/80 sm:inline">
           Telnet Assets Management System
         </span>
         {username && isSuperAdmin(username) && (
-          <span className="rounded-md bg-white/10 px-2 py-0.5 text-xs font-semibold text-[#7ea9ff]">
+          <span className="rounded-md bg-white/10 px-2 py-0.5 text-xs font-semibold text-slate-200">
             Superadmin
           </span>
         )}
@@ -84,14 +84,14 @@ export function SiteHeader() {
           <button
             type="button"
             onClick={handleLogout}
-            className="text-sm font-semibold text-[#7ea9ff] hover:underline"
+            className="text-sm font-semibold text-slate-200 hover:text-white hover:underline"
           >
             Logout
           </button>
         ) : (
           <Link
             href="/login"
-            className="text-sm font-semibold text-[#7ea9ff] hover:underline"
+            className="text-sm font-semibold text-slate-200 hover:text-white hover:underline"
           >
             Login
           </Link>
