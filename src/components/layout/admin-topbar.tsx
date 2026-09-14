@@ -1,6 +1,7 @@
 "use client";
 
 import { useEffect, useState } from "react";
+import { useRouter } from "next/navigation";
 import { getStoredUsername } from "@/lib/auth";
 
 function SearchIcon() {
@@ -61,6 +62,7 @@ export function AdminTopBar({
   searchPlaceholder = "Search...",
   hasNotifications = false,
 }: AdminTopBarProps) {
+  const router = useRouter();
   const [username, setUsername] = useState<string | null>(null);
   const [localSearch, setLocalSearch] = useState("");
   const isControlled = search !== undefined;
@@ -95,7 +97,8 @@ export function AdminTopBar({
         <button
           type="button"
           aria-label="Notifications"
-          className="relative flex h-11 w-11 items-center justify-center rounded-full bg-[#F5F2F2] text-slate-600"
+          onClick={() => router.push("/admin/notifications")}
+          className="relative flex h-11 w-11 items-center justify-center rounded-full bg-[#F5F2F2] text-slate-600 hover:bg-slate-200"
         >
           <BellIcon />
           {hasNotifications && (
