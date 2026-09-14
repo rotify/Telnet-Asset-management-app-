@@ -216,11 +216,13 @@ export default function AddVehiclePage() {
                   className={inputClasses}
                 >
                   <option value="">Unassigned</option>
-                  {staff.map((s) => (
-                    <option key={s.id} value={s.id}>
-                      {s.first_name} {s.last_name}
-                    </option>
-                  ))}
+                  {staff
+                    .filter((s) => Boolean(s.driver_status?.trim()))
+                    .map((s) => (
+                      <option key={s.id} value={s.id}>
+                        {s.first_name} {s.last_name}
+                      </option>
+                    ))}
                 </select>
               </Field>
               <Field label="Purchase Cost">

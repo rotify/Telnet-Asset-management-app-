@@ -110,6 +110,15 @@ export default function AssetsPage() {
     [staff]
   );
 
+  // Vehicles can only be assigned to staff registered as drivers.
+  const driverStaffOptions = useMemo(
+    () =>
+      staff
+        .filter((s) => Boolean(s.driver_status?.trim()))
+        .map((s) => ({ id: s.id, name: `${s.first_name} ${s.last_name}` })),
+    [staff]
+  );
+
   const rows: AssetRow[] = useMemo(() => {
     const eqRows: AssetRow[] = equipment.map((e) => ({
       key: `eq-${e.id}`,
@@ -340,7 +349,9 @@ export default function AssetsPage() {
                     <div className="mt-3 border-t border-slate-100 pt-3">
                       <AssetActions
                         assetId={r.asset}
-                        staffOptions={staffOptions}
+                        staffOptions={
+                          r.kind === "vehicle" ? driverStaffOptions : staffOptions
+                        }
                         onChanged={() => setRefreshKey((k) => k + 1)}
                         onEdit={() => router.push(editHref(r))}
                         onDelete={() => deleteRow(r)}
@@ -399,7 +410,11 @@ export default function AssetsPage() {
                         <td className="px-4 py-3">
                           <AssetActions
                             assetId={r.asset}
-                            staffOptions={staffOptions}
+                            staffOptions={
+                              r.kind === "vehicle"
+                                ? driverStaffOptions
+                                : staffOptions
+                            }
                             onChanged={() => setRefreshKey((k) => k + 1)}
                           />
                         </td>

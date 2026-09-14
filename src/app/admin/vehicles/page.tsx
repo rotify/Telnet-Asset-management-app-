@@ -103,7 +103,10 @@ export default function VehiclesPage() {
   }, [gateChecked, refreshKey]);
 
   const staffOptions = useMemo(
-    () => staff.map((s) => ({ id: s.id, name: `${s.first_name} ${s.last_name}` })),
+    () =>
+      staff
+        .filter((s) => Boolean(s.driver_status?.trim()))
+        .map((s) => ({ id: s.id, name: `${s.first_name} ${s.last_name}` })),
     [staff]
   );
 
