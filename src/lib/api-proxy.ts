@@ -6,12 +6,7 @@ const API_BASE_URL =
 
 type ProxyMethod = "GET" | "POST" | "PUT" | "PATCH" | "DELETE";
 
-/**
- * Builds a Next.js route handler that forwards a request to the Django
- * backend, attaching the caller's Authorization header. Used for the
- * v1 Notifications / Reports / Settings endpoints, which are simple
- * pass-through JSON proxies with no per-route special handling.
- */
+
 export function proxyHandler(upstreamPath: string, method: ProxyMethod) {
   return async function handler(request: Request) {
     const authHeader = request.headers.get("authorization");

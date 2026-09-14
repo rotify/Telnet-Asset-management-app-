@@ -15,8 +15,7 @@ function extractErrorMessage(data: unknown, status: number): string {
   if (typeof obj.error === "string") return obj.error;
   if (typeof obj.detail === "string") return obj.detail;
 
-  // Django REST Framework validation errors look like:
-  // { "driver_status": ["This field is required."], "email": ["Enter a valid email address."] }
+  
   const fieldMessages: string[] = [];
   for (const [key, value] of Object.entries(obj)) {
     if (Array.isArray(value)) {

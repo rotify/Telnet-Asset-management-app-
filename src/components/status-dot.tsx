@@ -1,5 +1,3 @@
-// Status/priority indicator: a filled pill with a dot + colored text, matching Figma exactly.
-
 
 export const STATUS_COLORS = {
   green: "#2DB130",
