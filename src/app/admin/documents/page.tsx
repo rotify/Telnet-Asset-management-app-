@@ -445,24 +445,32 @@ export default function DocumentsPage() {
                   }
                   className="rounded-lg border border-slate-200 px-3 py-2 text-sm focus:border-telnet-primary focus:outline-none"
                 />
-                <input
-                  type="date"
-                  placeholder="Issue date"
-                  value={newDoc.issue_date}
-                  onChange={(e) =>
-                    setNewDoc((v) => ({ ...v, issue_date: e.target.value }))
-                  }
-                  className="rounded-lg border border-slate-200 px-3 py-2 text-sm focus:border-telnet-primary focus:outline-none"
-                />
-                <input
-                  type="date"
-                  placeholder="Expiry date"
-                  value={newDoc.expiry_date}
-                  onChange={(e) =>
-                    setNewDoc((v) => ({ ...v, expiry_date: e.target.value }))
-                  }
-                  className="rounded-lg border border-slate-200 px-3 py-2 text-sm focus:border-telnet-primary focus:outline-none"
-                />
+                <div>
+                  <label className="mb-1.5 block text-sm font-medium text-[#121B3B]">
+                    Issue Date
+                  </label>
+                  <input
+                    type="date"
+                    value={newDoc.issue_date}
+                    onChange={(e) =>
+                      setNewDoc((v) => ({ ...v, issue_date: e.target.value }))
+                    }
+                    className="w-full rounded-lg border border-slate-200 px-3 py-2 text-sm focus:border-telnet-primary focus:outline-none"
+                  />
+                </div>
+                <div>
+                  <label className="mb-1.5 block text-sm font-medium text-[#121B3B]">
+                    Expiry Date
+                  </label>
+                  <input
+                    type="date"
+                    value={newDoc.expiry_date}
+                    onChange={(e) =>
+                      setNewDoc((v) => ({ ...v, expiry_date: e.target.value }))
+                    }
+                    className="w-full rounded-lg border border-slate-200 px-3 py-2 text-sm focus:border-telnet-primary focus:outline-none"
+                  />
+                </div>
                 <input
                   type="text"
                   placeholder="Description"
@@ -719,28 +727,38 @@ export default function DocumentsPage() {
                             }
                             className="rounded-lg border border-slate-200 px-3 py-2 text-sm focus:border-telnet-primary focus:outline-none"
                           />
-                          <input
-                            type="date"
-                            value={editDoc.issue_date}
-                            onChange={(e) =>
-                              setEditDoc((v) => ({
-                                ...v,
-                                issue_date: e.target.value,
-                              }))
-                            }
-                            className="rounded-lg border border-slate-200 px-3 py-2 text-sm focus:border-telnet-primary focus:outline-none"
-                          />
-                          <input
-                            type="date"
-                            value={editDoc.expiry_date}
-                            onChange={(e) =>
-                              setEditDoc((v) => ({
-                                ...v,
-                                expiry_date: e.target.value,
-                              }))
-                            }
-                            className="rounded-lg border border-slate-200 px-3 py-2 text-sm focus:border-telnet-primary focus:outline-none"
-                          />
+                          <div>
+                            <label className="mb-1.5 block text-xs font-medium text-slate-500">
+                              Issue Date
+                            </label>
+                            <input
+                              type="date"
+                              value={editDoc.issue_date}
+                              onChange={(e) =>
+                                setEditDoc((v) => ({
+                                  ...v,
+                                  issue_date: e.target.value,
+                                }))
+                              }
+                              className="w-full rounded-lg border border-slate-200 px-3 py-2 text-sm focus:border-telnet-primary focus:outline-none"
+                            />
+                          </div>
+                          <div>
+                            <label className="mb-1.5 block text-xs font-medium text-slate-500">
+                              Expiry Date
+                            </label>
+                            <input
+                              type="date"
+                              value={editDoc.expiry_date}
+                              onChange={(e) =>
+                                setEditDoc((v) => ({
+                                  ...v,
+                                  expiry_date: e.target.value,
+                                }))
+                              }
+                              className="w-full rounded-lg border border-slate-200 px-3 py-2 text-sm focus:border-telnet-primary focus:outline-none"
+                            />
+                          </div>
                           <input
                             type="text"
                             placeholder="Location"
