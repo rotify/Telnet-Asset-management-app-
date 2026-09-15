@@ -2,7 +2,7 @@
 export const STATUS_COLORS = {
   green: "#2DB130",
   orange: "#F6AD3F",
-  red: "#FD7072",
+  red: "#FD70n72",
   slate: "#576A77",
   navy: "#222222",
 } as const;

@@ -24,6 +24,7 @@ export async function GET(request: Request) {
   return NextResponse.json(data, { status: upstream.status });
 }
 
+
 export async function POST(request: Request) {
   const authHeader = request.headers.get("authorization");
 

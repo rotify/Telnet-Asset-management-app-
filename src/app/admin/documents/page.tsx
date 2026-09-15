@@ -25,6 +25,28 @@ const STATUS_TONES: Record<DocStatus, StatusTone> = {
   Unknown: "slate",
 };
 
+// document_type is a free-text field on the backend (no enforced choice
+// list), so this is a curated set of sensible categories rather than a
+// backend-confirmed list. "insurance" and "compliance" are values seen
+// in real API responses; the rest cover the doc types called out on
+// this page ("insurance certificates, licenses, warranties, receipts").
+const DOCUMENT_TYPE_OPTIONS = [
+  "insurance",
+  "compliance",
+  "license",
+  "registration",
+  "warranty",
+  "certificate",
+  "permit",
+  "contract",
+  "receipt",
+  "other",
+];
+
+function prettifyDocumentType(value: string): string {
+  return value.charAt(0).toUpperCase() + value.slice(1);
+}
+
 function formatDate(dateStr: string | null): string {
   if (!dateStr) return "—";
   const d = new Date(dateStr);
@@ -424,15 +446,20 @@ export default function DocumentsPage() {
                   }
                   className="rounded-lg border border-slate-200 px-3 py-2 text-sm focus:border-telnet-primary focus:outline-none"
                 />
-                <input
-                  type="text"
-                  placeholder="Type (e.g. compliance, licence)"
+                <select
                   value={newDoc.document_type}
                   onChange={(e) =>
                     setNewDoc((v) => ({ ...v, document_type: e.target.value }))
                   }
                   className="rounded-lg border border-slate-200 px-3 py-2 text-sm focus:border-telnet-primary focus:outline-none"
-                />
+                >
+                  <option value="">Select document type</option>
+                  {DOCUMENT_TYPE_OPTIONS.map((opt) => (
+                    <option key={opt} value={opt}>
+                      {prettifyDocumentType(opt)}
+                    </option>
+                  ))}
+                </select>
                 <input
                   type="text"
                   placeholder="Issuing authority"
@@ -691,9 +718,7 @@ export default function DocumentsPage() {
                             }
                             className="rounded-lg border border-slate-200 px-3 py-2 text-sm focus:border-telnet-primary focus:outline-none"
                           />
-                          <input
-                            type="text"
-                            placeholder="Type (e.g. compliance, licence)"
+                          <select
                             value={editDoc.document_type}
                             onChange={(e) =>
                               setEditDoc((v) => ({
@@ -702,7 +727,22 @@ export default function DocumentsPage() {
                               }))
                             }
                             className="rounded-lg border border-slate-200 px-3 py-2 text-sm focus:border-telnet-primary focus:outline-none"
-                          />
+                          >
+                            <option value="">Select document type</option>
+                            {DOCUMENT_TYPE_OPTIONS.map((opt) => (
+                              <option key={opt} value={opt}>
+                                {prettifyDocumentType(opt)}
+                              </option>
+                            ))}
+                            {editDoc.document_type &&
+                              !DOCUMENT_TYPE_OPTIONS.includes(
+                                editDoc.document_type
+                              ) && (
+                                <option value={editDoc.document_type}>
+                                  {prettifyDocumentType(editDoc.document_type)}
+                                </option>
+                              )}
+                          </select>
                           <input
                             type="text"
                             placeholder="Issuing authority"
