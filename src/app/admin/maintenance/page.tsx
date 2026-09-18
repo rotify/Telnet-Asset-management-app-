@@ -32,7 +32,7 @@ function RecordActions({
   async function handleClickDelete(close: () => void) {
     if (
       !window.confirm(
-        `Delete the maintenance record for ${deleteLabel}? This can't be undone.`
+        `Delete the maintenance record for ${deleteLabel}? This can't be undone.`,
       )
     ) {
       return;
@@ -70,7 +70,6 @@ function RecordActions({
     </ThreeDotMenu>
   );
 }
-
 function formatDate(dateStr: string | null): string {
   if (!dateStr) return "—";
   const d = new Date(dateStr);
@@ -78,22 +77,24 @@ function formatDate(dateStr: string | null): string {
   return d.toLocaleDateString("en-GB");
 }
 
-function dueStatus(dueDate: string | null): { label: string; tone: StatusTone } {
+function dueStatus(dueDate: string | null): {
+  label: string;
+  tone: StatusTone;
+} {
   if (!dueDate) return { label: "No due date", tone: "slate" };
-  const days = Math.ceil(
-    (new Date(dueDate).getTime() - Date.now()) / 86400000
-  );
+  const days = Math.ceil((new Date(dueDate).getTime() - Date.now()) / 86400000);
   if (Number.isNaN(days)) return { label: "No due date", tone: "slate" };
   if (days < 0) return { label: "Overdue", tone: "red" };
   if (days <= 14) return { label: "Due Soon", tone: "orange" };
   return { label: "Scheduled", tone: "green" };
 }
 
-function priorityFromDue(dueDate: string | null): { label: string; tone: StatusTone } {
+function priorityFromDue(dueDate: string | null): {
+  label: string;
+  tone: StatusTone;
+} {
   if (!dueDate) return { label: "Low", tone: "slate" };
-  const days = Math.ceil(
-    (new Date(dueDate).getTime() - Date.now()) / 86400000
-  );
+  const days = Math.ceil((new Date(dueDate).getTime() - Date.now()) / 86400000);
   if (Number.isNaN(days)) return { label: "Low", tone: "slate" };
   if (days < 0) return { label: "High", tone: "red" };
   if (days <= 14) return { label: "Medium", tone: "orange" };
@@ -156,7 +157,9 @@ export default function MaintenancePage() {
       setEquipment(eq);
     } catch (err) {
       setError(
-        err instanceof Error ? err.message : "Couldn't load maintenance records."
+        err instanceof Error
+          ? err.message
+          : "Couldn't load maintenance records.",
       );
     } finally {
       setIsLoading(false);
@@ -166,7 +169,6 @@ export default function MaintenancePage() {
   useEffect(() => {
     if (!gateChecked) return;
     loadData();
-    // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [gateChecked]);
 
   const equipmentNameById = useMemo(() => {
@@ -197,7 +199,11 @@ export default function MaintenancePage() {
 
   async function handleAdd() {
     setAddError(null);
-    if (!newRecord.equipment || !newRecord.description.trim() || !newRecord.due_date) {
+    if (
+      !newRecord.equipment ||
+      !newRecord.description.trim() ||
+      !newRecord.due_date
+    ) {
       setAddError("Equipment, description, and due date are required.");
       return;
     }
@@ -215,7 +221,9 @@ export default function MaintenancePage() {
       setShowAddForm(false);
     } catch (err) {
       setAddError(
-        err instanceof Error ? err.message : "Couldn't create maintenance record."
+        err instanceof Error
+          ? err.message
+          : "Couldn't create maintenance record.",
       );
     } finally {
       setIsAdding(false);
@@ -259,13 +267,13 @@ export default function MaintenancePage() {
         cost: editForm.cost || undefined,
         notes: editForm.notes || undefined,
       });
-      setRecords((prev) =>
-        prev.map((r) => (r.id === editingId ? updated : r))
-      );
+      setRecords((prev) => prev.map((r) => (r.id === editingId ? updated : r)));
       setEditingId(null);
     } catch (err) {
       setEditError(
-        err instanceof Error ? err.message : "Couldn't update maintenance record."
+        err instanceof Error
+          ? err.message
+          : "Couldn't update maintenance record.",
       );
     } finally {
       setIsSavingEdit(false);
@@ -279,7 +287,14 @@ export default function MaintenancePage() {
 
   function handleExport() {
     const rows = [
-      ["Machine Name", "Office location", "Category", "Report Name", "Priority", "Status"],
+      [
+        "Machine Name",
+        "Office location",
+        "Category",
+        "Report Name",
+        "Priority",
+        "Status",
+      ],
       ...records.map((r) => {
         const eq = equipmentById.get(r.equipment);
         const priority = priorityFromDue(r.due_date);
@@ -460,7 +475,7 @@ export default function MaintenancePage() {
                     | "Overdue"
                     | "Due Soon"
                     | "Scheduled"
-                    | "No due date"
+                    | "No due date",
                 )
               }
               className="rounded-lg border border-slate-200 bg-white px-3 py-2 text-sm text-slate-700 focus:border-telnet-primary focus:outline-none"
@@ -577,9 +592,7 @@ export default function MaintenancePage() {
                         />
                       </div>
                       {editError && (
-                        <p className="mt-2 text-sm text-red-600">
-                          {editError}
-                        </p>
+                        <p className="mt-2 text-sm text-red-600">{editError}</p>
                       )}
                       <div className="mt-3 flex gap-3">
                         <button
@@ -645,7 +658,10 @@ export default function MaintenancePage() {
                       </div>
                       <div>
                         <p className="text-slate-400">Priority</p>
-                        <StatusDot label={priority.label} tone={priority.tone} />
+                        <StatusDot
+                          label={priority.label}
+                          tone={priority.tone}
+                        />
                       </div>
                       <div>
                         <p className="text-slate-400">Cost</p>
@@ -708,7 +724,10 @@ export default function MaintenancePage() {
 
                       if (editingId === r.id) {
                         return (
-                          <tr key={r.id} className="border-b border-slate-50 last:border-0">
+                          <tr
+                            key={r.id}
+                            className="border-b border-slate-50 last:border-0"
+                          >
                             <td colSpan={7} className="px-4 py-4">
                               <p className="text-sm font-semibold text-[#121B3B]">
                                 Edit maintenance record
@@ -825,10 +844,16 @@ export default function MaintenancePage() {
                             {r.description}
                           </td>
                           <td className="px-4 py-3">
-                            <StatusDot label={priority.label} tone={priority.tone} />
+                            <StatusDot
+                              label={priority.label}
+                              tone={priority.tone}
+                            />
                           </td>
                           <td className="px-4 py-3">
-                            <StatusDot label={status.label} tone={status.tone} />
+                            <StatusDot
+                              label={status.label}
+                              tone={status.tone}
+                            />
                           </td>
                           <td className="px-4 py-3">
                             <RecordActions
