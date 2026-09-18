@@ -116,6 +116,24 @@ export default function EquipmentPage() {
     [staff]
   );
 
+  // assigned_staff comes back from the API as a raw staff id — resolve it
+  // to a display name here instead of showing the id in the table.
+  const staffNameById = useMemo(() => {
+    const map = new Map<string, string>();
+    staff.forEach((s) => map.set(String(s.id), `${s.first_name} ${s.last_name}`));
+    return map;
+  }, [staff]);
+
+  function resolveAssignee(
+    assignedStaff: string | null,
+    assignedUser?: string | null
+  ): string {
+    if (assignedStaff) {
+      return staffNameById.get(String(assignedStaff)) ?? assignedStaff;
+    }
+    return assignedUser || "Unassigned";
+  }
+
   const statusOptions = useMemo(() => {
     const set = new Set<string>();
     equipment.forEach((e) => {
@@ -134,10 +152,13 @@ export default function EquipmentPage() {
         e.name?.toLowerCase().includes(q) ||
         e.serial_number?.toLowerCase().includes(q) ||
         e.tag_number?.toLowerCase().includes(q) ||
-        (e.assigned_staff ?? e.assigned_user ?? "").toLowerCase().includes(q);
+        resolveAssignee(e.assigned_staff, e.assigned_user)
+          .toLowerCase()
+          .includes(q);
       return matchesStatus && matchesSearch;
     });
-  }, [equipment, search, statusFilter]);
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, [equipment, search, statusFilter, staffNameById]);
 
   async function handleExport() {
     setExportError(null);
@@ -315,7 +336,7 @@ export default function EquipmentPage() {
                       <div>
                         <p className="text-slate-400">Assigned To</p>
                         <p className="text-slate-700">
-                          {e.assigned_staff || e.assigned_user || "Unassigned"}
+                          {resolveAssignee(e.assigned_staff, e.assigned_user)}
                         </p>
                       </div>
                       <div>
@@ -397,7 +418,7 @@ export default function EquipmentPage() {
                             {e.serial_number || e.tag_number || "—"}
                           </td>
                           <td className="px-4 py-3 text-slate-500">
-                            {e.assigned_staff || e.assigned_user || "Unassigned"}
+                            {resolveAssignee(e.assigned_staff, e.assigned_user)}
                           </td>
                           <td className="px-4 py-3 text-slate-500">
                             {e.regional_office || e.subsidiary || "—"}

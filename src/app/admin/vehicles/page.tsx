@@ -110,6 +110,23 @@ export default function VehiclesPage() {
     [staff]
   );
 
+  // assigned_staff comes back from the API as a raw staff id — resolve it
+  // to a display name here instead of showing the id in the table. Uses
+  // the full staff list (not just drivers) so a staff member who was
+  // assigned before losing driver status still resolves to a name.
+  const staffNameById = useMemo(() => {
+    const map = new Map<string, string>();
+    staff.forEach((s) => map.set(String(s.id), `${s.first_name} ${s.last_name}`));
+    return map;
+  }, [staff]);
+
+  function resolveAssignee(assignedStaff: string | null): string {
+    if (assignedStaff) {
+      return staffNameById.get(String(assignedStaff)) ?? assignedStaff;
+    }
+    return "Unassigned";
+  }
+
   const statusOptions = useMemo(() => {
     const set = new Set<string>();
     vehicles.forEach((v) => {
@@ -128,10 +145,11 @@ export default function VehiclesPage() {
         v.name?.toLowerCase().includes(q) ||
         v.license_plate?.toLowerCase().includes(q) ||
         v.vin_number?.toLowerCase().includes(q) ||
-        (v.assigned_staff ?? "").toLowerCase().includes(q);
+        resolveAssignee(v.assigned_staff).toLowerCase().includes(q);
       return matchesStatus && matchesSearch;
     });
-  }, [vehicles, search, statusFilter]);
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, [vehicles, search, statusFilter, staffNameById]);
 
   async function handleExport() {
     setExportError(null);
@@ -327,7 +345,7 @@ export default function VehiclesPage() {
                       <div>
                         <p className="text-slate-400">Current Driver</p>
                         <p className="font-medium text-slate-700">
-                          {v.assigned_staff || "Unassigned"}
+                          {resolveAssignee(v.assigned_staff)}
                         </p>
                       </div>
                       <div>

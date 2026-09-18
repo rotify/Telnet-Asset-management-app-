@@ -245,6 +245,14 @@ export default function AdminDashboardPage() {
   const equipment = useMemo(() => data?.equipment ?? [], [data]);
   const vehicles = useMemo(() => data?.vehicles ?? [], [data]);
   const staff = useMemo(() => data?.staff ?? [], [data]);
+
+  // assigned_staff comes back from the API as a raw staff id — resolve it
+  // to a display name for the recent-activity feed instead of showing the id.
+  const staffNameById = useMemo(() => {
+    const map = new Map<string, string>();
+    staff.forEach((s) => map.set(String(s.id), `${s.first_name} ${s.last_name}`));
+    return map;
+  }, [staff]);
   const documents = useMemo(() => data?.documents ?? [], [data]);
 
   const statusBreakdown = useMemo(() => {
@@ -272,7 +280,7 @@ export default function AdminDashboardPage() {
         tag: "Equipment" as const,
         title: e.name,
         sub: e.assigned_staff
-          ? `Assigned to ${e.assigned_staff}`
+          ? `Assigned to ${staffNameById.get(String(e.assigned_staff)) ?? e.assigned_staff}`
           : "Equipment registered",
         created_at: e.created_at,
       })),
@@ -281,7 +289,7 @@ export default function AdminDashboardPage() {
         tag: "Vehicle" as const,
         title: v.name,
         sub: v.assigned_staff
-          ? `Assigned to ${v.assigned_staff}`
+          ? `Assigned to ${staffNameById.get(String(v.assigned_staff)) ?? v.assigned_staff}`
           : "Vehicle registered",
         created_at: v.created_at,
       })),
@@ -299,7 +307,7 @@ export default function AdminDashboardPage() {
       .filter((i) => !q || i.title.toLowerCase().includes(q) || i.sub.toLowerCase().includes(q))
       .sort((a, b) => (a.created_at < b.created_at ? 1 : -1))
       .slice(0, 6);
-  }, [equipment, vehicles, staff, search]);
+  }, [equipment, vehicles, staff, search, staffNameById]);
 
   const upcomingAlerts = useMemo(() => {
     const alerts: { id: string; message: string; sub: string; level: string }[] = [];

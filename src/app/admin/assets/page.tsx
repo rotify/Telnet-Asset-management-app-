@@ -110,6 +110,24 @@ export default function AssetsPage() {
     [staff]
   );
 
+  // assigned_staff comes back from the API as a raw staff id — resolve it
+  // to a display name here instead of showing the id in the table.
+  const staffNameById = useMemo(() => {
+    const map = new Map<string, string>();
+    staff.forEach((s) => map.set(String(s.id), `${s.first_name} ${s.last_name}`));
+    return map;
+  }, [staff]);
+
+  function resolveAssignee(
+    assignedStaff: string | null,
+    assignedUser?: string | null
+  ): string {
+    if (assignedStaff) {
+      return staffNameById.get(String(assignedStaff)) ?? assignedStaff;
+    }
+    return assignedUser || "Unassigned";
+  }
+
   // Vehicles can only be assigned to staff registered as drivers.
   const driverStaffOptions = useMemo(
     () =>
@@ -130,7 +148,7 @@ export default function AssetsPage() {
       assetId: `EQ-${e.id}`,
       name: e.name,
       category: e.equipment_type || "Equipment",
-      assignedTo: e.assigned_staff || e.assigned_user || "Unassigned",
+      assignedTo: resolveAssignee(e.assigned_staff, e.assigned_user),
       location: e.location || e.regional_office || "—",
       status: e.status,
     }));
@@ -142,12 +160,13 @@ export default function AssetsPage() {
       assetId: `VH-${v.id}`,
       name: v.name,
       category: "Vehicle",
-      assignedTo: v.assigned_staff || "Unassigned",
+      assignedTo: resolveAssignee(v.assigned_staff),
       location: v.license_plate || "—",
       status: v.status,
     }));
     return [...eqRows, ...vhRows];
-  }, [equipment, vehicles]);
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, [equipment, vehicles, staffNameById]);
 
   const statusOptions = useMemo(() => {
     const set = new Set<string>();
