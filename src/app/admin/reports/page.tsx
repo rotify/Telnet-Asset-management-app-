@@ -71,7 +71,11 @@ function DynamicTable({ rows }: { rows: Record<string, unknown>[] }) {
                   key={col}
                   className="whitespace-nowrap py-2 pr-4 text-slate-700"
                 >
-                  {formatValue(row[col])}
+                  {/* The ID column shows each record's real database id,
+                      which isn't sequential once rows are sorted newest
+                      first — display the row's position instead so it
+                      always reads 1, 2, 3. */}
+                  {col === "id" ? i + 1 : formatValue(row[col])}
                 </td>
               ))}
             </tr>
