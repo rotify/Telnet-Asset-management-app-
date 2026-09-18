@@ -31,10 +31,10 @@ interface AssetRow {
 }
 
 const STATUS_TONES: Record<string, StatusTone> = {
-  available: "green",
-  assigned: "green",
-  maintenance: "orange",
-  expired: "red",
+  active: "green",
+  pending_certification: "orange",
+  "pending certification": "orange",
+  damaged: "red",
   inactive: "red",
 };
 
@@ -118,6 +118,8 @@ export default function AssetsPage() {
         .map((s) => ({ id: s.id, name: `${s.first_name} ${s.last_name}` })),
     [staff]
   );
+
+  
 
   const rows: AssetRow[] = useMemo(() => {
     const eqRows: AssetRow[] = equipment.map((e) => ({

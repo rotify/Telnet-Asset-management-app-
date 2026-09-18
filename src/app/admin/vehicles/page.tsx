@@ -17,10 +17,10 @@ import type { Vehicle } from "@/types/asset";
 import type { Staff } from "@/types/staff";
 
 const STATUS_TONES: Record<string, StatusTone> = {
-  available: "green",
-  assigned: "green",
-  maintenance: "orange",
-  expired: "red",
+  active: "green",
+  pending_certification: "orange",
+  "pending certification": "orange",
+  damaged: "red",
   inactive: "red",
 };
 

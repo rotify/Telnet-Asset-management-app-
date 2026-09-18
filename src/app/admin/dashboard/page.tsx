@@ -12,10 +12,9 @@ import type { Staff } from "@/types/staff";
 import type { DocumentRecord } from "@/types/document";
 
 const STATUS_BAR_COLORS: Record<string, string> = {
-  Available: STATUS_COLORS.green,
-  Assigned: STATUS_COLORS.green,
-  Maintenance: STATUS_COLORS.orange,
-  Expired: STATUS_COLORS.red,
+  Active: STATUS_COLORS.green,
+  "Pending Certification": STATUS_COLORS.orange,
+  Damaged: STATUS_COLORS.red,
   Inactive: STATUS_COLORS.red,
 };
 
@@ -26,7 +25,7 @@ interface DashboardData {
   documents: DocumentRecord[];
 }
 
-const STATUS_ORDER = ["Available", "Assigned", "Maintenance", "Expired", "Inactive"];
+const STATUS_ORDER = ["Active", "Pending Certification", "Damaged", "Inactive"];
 
 function timeAgo(dateStr: string | null | undefined): string {
   if (!dateStr) return "";
