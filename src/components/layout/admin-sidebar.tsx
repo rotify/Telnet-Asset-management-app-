@@ -156,8 +156,12 @@ export function AdminSidebar() {
         />
       )}
 
+      {/* Stays position: fixed at every width (no lg:static drop to
+          in-flow) so it never scrolls away with page content — desktop
+          pages account for its width with lg:pl-60 on their content
+          wrapper instead of relying on flex layout to reserve the space. */}
       <aside
-        className={`fixed inset-y-0 left-0 z-50 flex w-60 shrink-0 flex-col border-r border-slate-200 bg-white px-4 py-6 transition-transform duration-200 ease-in-out lg:static lg:z-auto lg:translate-x-0 ${
+        className={`fixed inset-y-0 left-0 z-50 flex w-60 shrink-0 flex-col overflow-y-auto border-r border-slate-200 bg-white px-4 py-6 transition-transform duration-200 ease-in-out lg:translate-x-0 ${
           isOpen ? "translate-x-0" : "-translate-x-full"
         }`}
       >

@@ -181,9 +181,14 @@ export default function VehiclesPage() {
     <div className="flex min-h-[calc(100vh-0px)] bg-[#EFF1F6]">
       <AdminSidebar />
 
-      <div className="flex-1 px-6 py-8">
+      <div className="flex-1 px-6 py-8 lg:ml-60">
         <div className="mx-auto max-w-6xl">
-          <AdminTopBar />
+          {/* Sticky so the search/date/profile bar stays put while the
+              page content below scrolls, matching the sidebar's fixed
+              positioning instead of scrolling away with the page. */}
+          <div className="sticky top-0 z-20 bg-[#EFF1F6] pb-2">
+            <AdminTopBar />
+          </div>
 
           <header className="mt-6 flex flex-wrap items-center justify-between gap-3">
             <div>
@@ -196,32 +201,35 @@ export default function VehiclesPage() {
               </p>
             </div>
             <div className="flex items-center gap-2">
-              <div className="flex items-center rounded-lg border border-slate-200 bg-white p-0.5">
-                <button
-                  type="button"
-                  onClick={() => setViewMode("table")}
-                  aria-pressed={viewMode === "table"}
-                  className={`rounded-md px-2.5 py-1.5 text-xs font-semibold transition-colors ${
-                    viewMode === "table"
-                      ? "bg-[#0F172A] text-white"
-                      : "text-slate-500 hover:bg-slate-50"
-                  }`}
-                >
-                  Table
-                </button>
-                <button
-                  type="button"
-                  onClick={() => setViewMode("card")}
-                  aria-pressed={viewMode === "card"}
-                  className={`rounded-md px-2.5 py-1.5 text-xs font-semibold transition-colors ${
-                    viewMode === "card"
-                      ? "bg-[#0F172A] text-white"
-                      : "text-slate-500 hover:bg-slate-50"
-                  }`}
-                >
-                  Cards
-                </button>
-              </div>
+              <button
+                type="button"
+                onClick={() =>
+                  setViewMode((m) => (m === "table" ? "card" : "table"))
+                }
+                aria-label={
+                  viewMode === "table" ? "Switch to card view" : "Switch to table view"
+                }
+                title={
+                  viewMode === "table" ? "Switch to card view" : "Switch to table view"
+                }
+                className="flex h-9 w-9 items-center justify-center rounded-lg border border-slate-200 bg-white text-slate-500 hover:bg-slate-50"
+              >
+                {viewMode === "table" ? (
+                  // Currently in table view — icon shows what you'll switch TO (cards).
+                  <svg width="17" height="17" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth={1.8} strokeLinecap="round" strokeLinejoin="round">
+                    <rect x="3" y="3" width="8" height="8" rx="1.5" />
+                    <rect x="13" y="3" width="8" height="8" rx="1.5" />
+                    <rect x="3" y="13" width="8" height="8" rx="1.5" />
+                    <rect x="13" y="13" width="8" height="8" rx="1.5" />
+                  </svg>
+                ) : (
+                  // Currently in card view — icon shows what you'll switch TO (table).
+                  <svg width="17" height="17" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth={1.8} strokeLinecap="round" strokeLinejoin="round">
+                    <rect x="3" y="4" width="18" height="16" rx="1.5" />
+                    <path d="M3 9h18M3 14h18" />
+                  </svg>
+                )}
+              </button>
               <button
                 type="button"
                 onClick={handleExport}

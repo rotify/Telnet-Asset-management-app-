@@ -25,23 +25,13 @@ const STATUS_TONES: Record<DocStatus, StatusTone> = {
   Unknown: "slate",
 };
 
-// document_type is a free-text field on the backend (no enforced choice
-// list), so this is a curated set of sensible categories rather than a
-// backend-confirmed list. "insurance" and "compliance" are values seen
-// in real API responses; the rest cover the doc types called out on
-// this page ("insurance certificates, licenses, warranties, receipts").
 const DOCUMENT_TYPE_OPTIONS = [
   "insurance",
-  "compliance",
   "license",
-  "registration",
   "warranty",
-  "certificate",
-  "permit",
-  "contract",
   "receipt",
-  "other",
-];
+]
+
 
 function prettifyDocumentType(value: string): string {
   return value.charAt(0).toUpperCase() + value.slice(1);
@@ -393,9 +383,14 @@ export default function DocumentsPage() {
     <div className="flex min-h-[calc(100vh-0px)] bg-[#EFF1F6]">
       <AdminSidebar />
 
-      <div className="flex-1 px-6 py-8">
+      <div className="flex-1 px-6 py-8 lg:ml-60">
         <div className="mx-auto max-w-6xl">
-          <AdminTopBar />
+          {/* Sticky so the search/date/profile bar stays put while the
+              page content below scrolls, matching the sidebar's fixed
+              positioning instead of scrolling away with the page. */}
+          <div className="sticky top-0 z-20 bg-[#EFF1F6] pb-2">
+            <AdminTopBar />
+          </div>
 
           <header className="mt-6 flex flex-wrap items-center justify-between gap-3">
             <div>
