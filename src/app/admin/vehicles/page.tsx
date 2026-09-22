@@ -54,6 +54,9 @@ export default function VehiclesPage() {
   const [refreshKey, setRefreshKey] = useState(0);
   const [isExporting, setIsExporting] = useState(false);
   const [exportError, setExportError] = useState<string | null>(null);
+  // Table is the default: with 50+ vehicles the card grid gets huge fast,
+  // so a dense table is the sane default and cards are the opt-in view.
+  const [viewMode, setViewMode] = useState<"table" | "card">("table");
 
   useEffect(() => {
     const token = getStoredToken();
@@ -193,6 +196,32 @@ export default function VehiclesPage() {
               </p>
             </div>
             <div className="flex items-center gap-2">
+              <div className="flex items-center rounded-lg border border-slate-200 bg-white p-0.5">
+                <button
+                  type="button"
+                  onClick={() => setViewMode("table")}
+                  aria-pressed={viewMode === "table"}
+                  className={`rounded-md px-2.5 py-1.5 text-xs font-semibold transition-colors ${
+                    viewMode === "table"
+                      ? "bg-[#0F172A] text-white"
+                      : "text-slate-500 hover:bg-slate-50"
+                  }`}
+                >
+                  Table
+                </button>
+                <button
+                  type="button"
+                  onClick={() => setViewMode("card")}
+                  aria-pressed={viewMode === "card"}
+                  className={`rounded-md px-2.5 py-1.5 text-xs font-semibold transition-colors ${
+                    viewMode === "card"
+                      ? "bg-[#0F172A] text-white"
+                      : "text-slate-500 hover:bg-slate-50"
+                  }`}
+                >
+                  Cards
+                </button>
+              </div>
               <button
                 type="button"
                 onClick={handleExport}
@@ -291,8 +320,78 @@ export default function VehiclesPage() {
             </p>
           )}
 
-          {!isLoading && !error && filtered.length > 0 && (
-            <div className="mt-6 grid grid-cols-1 gap-4 md:grid-cols-2">
+          {!isLoading && !error && filtered.length > 0 && viewMode === "table" && (
+            <div className="mt-6 overflow-x-auto rounded-xl bg-white shadow-[0_1px_2px_rgba(16,24,64,0.06)]">
+              <table className="w-full min-w-[900px] border-collapse text-left text-sm">
+                <thead>
+                  <tr className="border-b border-slate-100 bg-blue-50/60 text-xs font-semibold uppercase tracking-wide text-slate-500">
+                    <th className="px-4 py-3">Vehicle</th>
+                    <th className="px-4 py-3">Type</th>
+                    <th className="px-4 py-3">Driver</th>
+                    <th className="px-4 py-3">Cost</th>
+                    <th className="px-4 py-3">Insurance</th>
+                    <th className="px-4 py-3">Road Worthiness</th>
+                    <th className="px-4 py-3">Status</th>
+                    <th className="px-4 py-3">Actions</th>
+                  </tr>
+                </thead>
+                <tbody>
+                  {filtered.map((v) => {
+                    const statusKey = (v.status ?? "").toLowerCase();
+                    const insurance = expiryStatus(v.insurance_expiry);
+                    const roadworthy = expiryStatus(v.roadworthy_expiry);
+                    return (
+                      <tr
+                        key={v.id}
+                        className="border-b border-slate-50 last:border-0 hover:bg-slate-50"
+                      >
+                        <td className="px-4 py-3">
+                          <p className="font-medium text-slate-800">{v.name}</p>
+                          <p className="text-xs text-slate-400">
+                            {v.license_plate || v.vin_number || "—"}
+                          </p>
+                        </td>
+                        <td className="px-4 py-3 capitalize text-slate-500">
+                          {v.asset_type || "—"}
+                        </td>
+                        <td className="px-4 py-3 text-slate-500">
+                          {resolveAssignee(v.assigned_staff)}
+                        </td>
+                        <td className="px-4 py-3 text-slate-500">
+                          {v.cost || "—"}
+                        </td>
+                        <td className="px-4 py-3">
+                          <StatusDot label={insurance.label} tone={insurance.tone} />
+                        </td>
+                        <td className="px-4 py-3">
+                          <StatusDot label={roadworthy.label} tone={roadworthy.tone} />
+                        </td>
+                        <td className="px-4 py-3">
+                          <StatusDot
+                            label={titleCase(v.status)}
+                            tone={STATUS_TONES[statusKey] ?? "slate"}
+                          />
+                        </td>
+                        <td className="px-4 py-3">
+                          <AssetActions
+                            assetId={v.asset}
+                            staffOptions={staffOptions}
+                            onChanged={() => setRefreshKey((k) => k + 1)}
+                            onEdit={() => router.push(`/admin/vehicles/${v.id}/edit`)}
+                            onDelete={() => deleteVehicle(v.id)}
+                            deleteConfirmLabel={v.name}
+                          />
+                        </td>
+                      </tr>
+                    );
+                  })}
+                </tbody>
+              </table>
+            </div>
+          )}
+
+          {!isLoading && !error && filtered.length > 0 && viewMode === "card" && (
+            <div className="mt-6 grid grid-cols-1 gap-3 sm:grid-cols-2 lg:grid-cols-3">
               {filtered.map((v) => {
                 const statusKey = (v.status ?? "").toLowerCase();
                 const insurance = expiryStatus(v.insurance_expiry);
@@ -300,14 +399,14 @@ export default function VehiclesPage() {
                 return (
                   <div
                     key={v.id}
-                    className="rounded-xl bg-white p-4 shadow-[0_1px_2px_rgba(16,24,64,0.06)]"
+                    className="rounded-xl bg-white p-3 shadow-[0_1px_2px_rgba(16,24,64,0.06)]"
                   >
                     <div className="flex items-start justify-between gap-2">
-                      <div className="flex items-start gap-3">
+                      <div className="flex items-start gap-2">
                         <span className="mt-0.5 shrink-0 text-slate-400">
                           <svg
-                            width="16"
-                            height="16"
+                            width="14"
+                            height="14"
                             viewBox="0 0 24 24"
                             fill="none"
                             stroke="currentColor"
@@ -320,7 +419,7 @@ export default function VehiclesPage() {
                           </svg>
                         </span>
                         <div>
-                          <p className="font-semibold text-slate-800">
+                          <p className="text-sm font-semibold text-slate-800">
                             {v.name}
                           </p>
                           <p className="text-xs text-slate-400">
@@ -335,15 +434,15 @@ export default function VehiclesPage() {
                       />
                     </div>
 
-                    <div className="mt-4 grid grid-cols-3 gap-x-3 gap-y-2 border-t border-slate-100 pt-3 text-xs">
+                    <div className="mt-3 grid grid-cols-3 gap-x-2 gap-y-1.5 border-t border-slate-100 pt-2 text-xs">
                       <div>
-                        <p className="text-slate-400">Vehicle Type</p>
+                        <p className="text-slate-400">Type</p>
                         <p className="font-medium capitalize text-slate-700">
                           {v.asset_type || "—"}
                         </p>
                       </div>
                       <div>
-                        <p className="text-slate-400">Current Driver</p>
+                        <p className="text-slate-400">Driver</p>
                         <p className="font-medium text-slate-700">
                           {resolveAssignee(v.assigned_staff)}
                         </p>
@@ -356,21 +455,18 @@ export default function VehiclesPage() {
                       </div>
                     </div>
 
-                    <div className="mt-3 grid grid-cols-2 gap-x-3 gap-y-1 text-xs">
+                    <div className="mt-2 grid grid-cols-2 gap-x-2 gap-y-1 text-xs">
                       <div>
                         <p className="text-slate-400">Insurance</p>
                         <StatusDot label={insurance.label} tone={insurance.tone} />
                       </div>
                       <div>
-                        <p className="text-slate-400">Road Worthiness</p>
+                        <p className="text-slate-400">Road Worthy</p>
                         <StatusDot label={roadworthy.label} tone={roadworthy.tone} />
                       </div>
                     </div>
 
-                    <div className="mt-4 flex items-center justify-between border-t border-slate-100 pt-3">
-                      <span className="text-sm font-medium text-slate-500">
-                        View details
-                      </span>
+                    <div className="mt-2 flex items-center justify-end border-t border-slate-100 pt-2">
                       <AssetActions
                         assetId={v.asset}
                         staffOptions={staffOptions}

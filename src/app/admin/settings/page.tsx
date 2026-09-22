@@ -100,7 +100,7 @@ export default function SettingsPage() {
       <AdminSidebar />
 
       <div className="flex-1 px-6 py-8">
-        <div className="mx-auto max-w-4xl">
+        <div className="mx-auto max-w-6xl">
           <AdminTopBar />
 
           <header className="mt-6">

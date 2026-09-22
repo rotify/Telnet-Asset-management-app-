@@ -140,7 +140,6 @@ export default function NotificationsPage() {
     loadSchedule();
     loadRecipients();
     loadDeliveries();
-    // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [gateChecked]);
 
   async function saveSchedule() {
@@ -228,7 +227,7 @@ export default function NotificationsPage() {
       <AdminSidebar />
 
       <div className="flex-1 px-6 py-8">
-        <div className="mx-auto max-w-4xl">
+        <div className="mx-auto max-w-6xl">
           <AdminTopBar />
 
           <header className="mt-6 flex flex-wrap items-center justify-between gap-3">
@@ -257,7 +256,7 @@ export default function NotificationsPage() {
             </div>
           )}
 
-          {/* Alert Schedule */}
+         
           <div className="mt-6 rounded-xl bg-white p-6 shadow-[0_1px_2px_rgba(16,24,64,0.06)]">
             <h2 className="border-b border-slate-100 pb-3 text-sm font-semibold text-[#121B3B]">
               Alert Schedule
@@ -346,7 +345,6 @@ export default function NotificationsPage() {
             )}
           </div>
 
-          {/* Recipients */}
           <div className="mt-6 rounded-xl bg-white p-6 shadow-[0_1px_2px_rgba(16,24,64,0.06)]">
             <h2 className="border-b border-slate-100 pb-3 text-sm font-semibold text-[#121B3B]">
               Recipients
@@ -416,7 +414,6 @@ export default function NotificationsPage() {
             </div>
           </div>
 
-          {/* Deliveries */}
           <div className="mt-6 rounded-xl bg-white p-6 shadow-[0_1px_2px_rgba(16,24,64,0.06)]">
             <h2 className="border-b border-slate-100 pb-3 text-sm font-semibold text-[#121B3B]">
               Recent Deliveries
