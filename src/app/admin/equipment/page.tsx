@@ -192,7 +192,7 @@ export default function EquipmentPage() {
           {/* Sticky so the search/date/profile bar stays put while the
               page content below scrolls, matching the sidebar's fixed
               positioning instead of scrolling away with the page. */}
-          <div className="sticky top-0 z-20 bg-[#EFF1F6] pb-2">
+          <div className="sticky top-12 z-20 bg-[#EFF1F6] pb-2 lg:top-0">
             <AdminTopBar />
           </div>
 

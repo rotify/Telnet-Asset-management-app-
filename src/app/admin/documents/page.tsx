@@ -246,7 +246,6 @@ export default function DocumentsPage() {
   useEffect(() => {
     if (!gateChecked) return;
     loadDocuments();
-    // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [gateChecked]);
 
   const filtered = useMemo(() => {
@@ -367,9 +366,7 @@ export default function DocumentsPage() {
         doc.responsible_person ?? "",
       ]),
     ];
-    // A literal `"` inside a value has to become `""` in CSV, or the quoted
-    // field closes early and every value after it in the file gets misread —
-    // often rendering as blank cells once opened in Excel/Numbers/Sheets.
+  
     const csv = rows
       .map((r) =>
         r.map((v) => `"${String(v ?? "").replace(/"/g, '""')}"`).join(",")
@@ -392,10 +389,8 @@ export default function DocumentsPage() {
 
       <div className="flex-1 px-6 py-8 lg:ml-60">
         <div className="mx-auto max-w-6xl">
-          {/* Sticky so the search/date/profile bar stays put while the
-              page content below scrolls, matching the sidebar's fixed
-              positioning instead of scrolling away with the page. */}
-          <div className="sticky top-0 z-20 bg-[#EFF1F6] pb-2">
+         
+          <div className="sticky top-12 z-20 bg-[#EFF1F6] pb-2 lg:top-0">
             <AdminTopBar />
           </div>
 

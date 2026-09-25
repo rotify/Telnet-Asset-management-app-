@@ -45,9 +45,11 @@ export function SiteHeader() {
   }
 
   if (isAdminSection) {
-  
+    // Sticky so the menu button that opens the sidebar stays reachable
+    // while scrolling on mobile — without this, scrolling down a long
+    // list made navigation unreachable until you scrolled back to top.
     return (
-      <header className="flex h-12 items-center border-b border-slate-200 bg-white px-4 lg:hidden">
+      <header className="sticky top-0 z-40 flex h-12 items-center border-b border-slate-200 bg-white px-4 lg:hidden">
         <button
           type="button"
           onClick={toggleSidebar}
