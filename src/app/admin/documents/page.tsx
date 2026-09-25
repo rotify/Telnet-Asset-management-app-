@@ -14,6 +14,7 @@ import {
 import { AdminSidebar } from "@/components/layout/admin-sidebar";
 import { AdminTopBar } from "@/components/layout/admin-topbar";
 import { StatusDot, type StatusTone } from "@/components/status-dot";
+import { ViewToggleButton } from "@/components/view-toggle";
 import type { DocumentRecord } from "@/types/document";
 
 type DocStatus = "Valid" | "Expiring" | "Expired" | "Unknown";
@@ -193,6 +194,9 @@ export default function DocumentsPage() {
   const [search, setSearch] = useState("");
   const [statusFilter, setStatusFilter] = useState<"All" | DocStatus>("All");
   const [expandedId, setExpandedId] = useState<number | null>(null);
+  // Table is the default; mobile always shows cards regardless (see the
+  // render blocks below) — the toggle only takes effect at md and up.
+  const [viewMode, setViewMode] = useState<"table" | "card">("table");
 
   const [showAddForm, setShowAddForm] = useState(false);
   const [newDoc, setNewDoc] = useState(EMPTY_NEW_DOC);
@@ -405,6 +409,12 @@ export default function DocumentsPage() {
               </p>
             </div>
             <div className="flex items-center gap-2">
+              <ViewToggleButton
+                viewMode={viewMode}
+                onToggle={() =>
+                  setViewMode((m) => (m === "table" ? "card" : "table"))
+                }
+              />
               <button
                 type="button"
                 onClick={handleExport}
@@ -613,7 +623,11 @@ export default function DocumentsPage() {
           )}
 
           {!isLoading && !error && filtered.length > 0 && (
-            <div className="mt-6 grid grid-cols-1 gap-3 sm:gap-4 md:grid-cols-2">
+            <div
+              className={`mt-6 grid grid-cols-1 gap-3 sm:gap-4 md:grid-cols-2 ${
+                viewMode === "table" ? "md:hidden" : ""
+              }`}
+            >
               {filtered.map((doc) => {
                 const status = statusFromExpiry(doc.expiry_date);
                 const isExpanded = expandedId === doc.id;
@@ -916,6 +930,92 @@ export default function DocumentsPage() {
                   </div>
                 );
               })}
+            </div>
+          )}
+
+          {!isLoading && !error && filtered.length > 0 && (
+            <div
+              className={`mt-6 hidden overflow-x-auto rounded-xl bg-white shadow-[0_1px_2px_rgba(16,24,64,0.06)] ${
+                viewMode === "table" ? "md:block" : ""
+              }`}
+            >
+              <table className="w-full min-w-[800px] border-collapse text-left text-sm">
+                <thead>
+                  <tr className="border-b border-slate-100 bg-blue-50/60 text-xs font-semibold uppercase tracking-wide text-slate-500">
+                    <th className="px-4 py-3">Name</th>
+                    <th className="px-4 py-3">Type</th>
+                    <th className="px-4 py-3">Status</th>
+                    <th className="px-4 py-3">Expiry Date</th>
+                    <th className="px-4 py-3">Uploaded By</th>
+                    <th className="px-4 py-3">Actions</th>
+                  </tr>
+                </thead>
+                <tbody>
+                  {filtered.map((doc) => {
+                    const status = statusFromExpiry(doc.expiry_date);
+                    return (
+                      <tr
+                        key={doc.id}
+                        className="border-b border-slate-50 last:border-0 hover:bg-slate-50"
+                      >
+                        <td className="px-4 py-3 font-medium text-slate-800">
+                          {doc.name}
+                        </td>
+                        <td className="px-4 py-3 text-slate-500">
+                          {prettifyDocumentType(doc.document_type)}
+                        </td>
+                        <td className="px-4 py-3">
+                          <StatusDot label={status} tone={STATUS_TONES[status]} />
+                        </td>
+                        <td className="px-4 py-3 text-slate-500">
+                          {formatDate(doc.expiry_date)}
+                        </td>
+                        <td className="px-4 py-3 text-slate-500">
+                          {doc.responsible_person || "—"}
+                        </td>
+                        <td className="px-4 py-3">
+                          <div className="flex items-center gap-3">
+                            <button
+                              type="button"
+                              onClick={() => {
+                                setViewMode("card");
+                                startEdit(doc);
+                              }}
+                              className="text-sm font-medium text-telnet-primary hover:underline"
+                            >
+                              Edit
+                            </button>
+                            {doc.document_file ? (
+                              <a
+                                href={documentFileUrl(doc.document_file)}
+                                target="_blank"
+                                rel="noopener noreferrer"
+                                className="text-sm font-medium text-[#121B3B] hover:text-telnet-primary hover:underline"
+                              >
+                                View File
+                              </a>
+                            ) : (
+                              <span className="text-sm font-medium text-slate-300">
+                                No File
+                              </span>
+                            )}
+                            <button
+                              type="button"
+                              onClick={() =>
+                                handleDeleteDocument(doc.id, doc.name)
+                              }
+                              disabled={deletingId === doc.id}
+                              className="text-sm font-medium text-red-600 hover:text-red-700 disabled:opacity-60"
+                            >
+                              {deletingId === doc.id ? "…" : "Delete"}
+                            </button>
+                          </div>
+                        </td>
+                      </tr>
+                    );
+                  })}
+                </tbody>
+              </table>
             </div>
           )}
         </div>

@@ -13,6 +13,7 @@ import { AdminSidebar } from "@/components/layout/admin-sidebar";
 import { AdminTopBar } from "@/components/layout/admin-topbar";
 import { AssetActions } from "@/components/asset-actions";
 import { StatusDot, type StatusTone } from "@/components/status-dot";
+import { ViewToggleButton } from "@/components/view-toggle";
 import type { Vehicle } from "@/types/asset";
 import type { Staff } from "@/types/staff";
 
@@ -201,38 +202,12 @@ export default function VehiclesPage() {
               </p>
             </div>
             <div className="flex items-center gap-2">
-              {/* Mobile always shows cards (see the render blocks below), so
-                  this toggle has no effect below md — hide it there instead
-                  of showing a control that looks broken when tapped. */}
-              <button
-                type="button"
-                onClick={() =>
+              <ViewToggleButton
+                viewMode={viewMode}
+                onToggle={() =>
                   setViewMode((m) => (m === "table" ? "card" : "table"))
                 }
-                aria-label={
-                  viewMode === "table" ? "Switch to card view" : "Switch to table view"
-                }
-                title={
-                  viewMode === "table" ? "Switch to card view" : "Switch to table view"
-                }
-                className="hidden h-9 w-9 items-center justify-center rounded-lg border border-slate-200 bg-white text-slate-500 hover:bg-slate-50 md:flex"
-              >
-                {viewMode === "table" ? (
-                  // Currently in table view — icon shows what you'll switch TO (cards).
-                  <svg width="17" height="17" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth={1.8} strokeLinecap="round" strokeLinejoin="round">
-                    <rect x="3" y="3" width="8" height="8" rx="1.5" />
-                    <rect x="13" y="3" width="8" height="8" rx="1.5" />
-                    <rect x="3" y="13" width="8" height="8" rx="1.5" />
-                    <rect x="13" y="13" width="8" height="8" rx="1.5" />
-                  </svg>
-                ) : (
-                  // Currently in card view — icon shows what you'll switch TO (table).
-                  <svg width="17" height="17" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth={1.8} strokeLinecap="round" strokeLinejoin="round">
-                    <rect x="3" y="4" width="18" height="16" rx="1.5" />
-                    <path d="M3 9h18M3 14h18" />
-                  </svg>
-                )}
-              </button>
+              />
               <button
                 type="button"
                 onClick={handleExport}

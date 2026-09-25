@@ -262,7 +262,7 @@ export default function NotificationsPage() {
           )}
 
          
-          <div className="mt-6 rounded-xl bg-white p-6 shadow-[0_1px_2px_rgba(16,24,64,0.06)]">
+          <div className="mt-6 rounded-xl bg-white p-4 shadow-[0_1px_2px_rgba(16,24,64,0.06)]">
             <h2 className="border-b border-slate-100 pb-3 text-sm font-semibold text-[#121B3B]">
               Alert Schedule
             </h2>
@@ -350,7 +350,7 @@ export default function NotificationsPage() {
             )}
           </div>
 
-          <div className="mt-6 rounded-xl bg-white p-6 shadow-[0_1px_2px_rgba(16,24,64,0.06)]">
+          <div className="mt-6 rounded-xl bg-white p-4 shadow-[0_1px_2px_rgba(16,24,64,0.06)]">
             <h2 className="border-b border-slate-100 pb-3 text-sm font-semibold text-[#121B3B]">
               Recipients
             </h2>
@@ -419,7 +419,7 @@ export default function NotificationsPage() {
             </div>
           </div>
 
-          <div className="mt-6 rounded-xl bg-white p-6 shadow-[0_1px_2px_rgba(16,24,64,0.06)]">
+          <div className="mt-6 rounded-xl bg-white p-4 shadow-[0_1px_2px_rgba(16,24,64,0.06)]">
             <h2 className="border-b border-slate-100 pb-3 text-sm font-semibold text-[#121B3B]">
               Recent Deliveries
             </h2>

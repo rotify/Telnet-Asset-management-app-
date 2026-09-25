@@ -133,19 +133,19 @@ function StatCard({
   icon: React.ReactNode;
 }) {
   return (
-    <div className="rounded-xl bg-white p-4 shadow-[0_1px_2px_rgba(16,24,64,0.06)]">
-      <div className="flex items-center gap-3">
-        <span className="flex h-[51px] w-[51px] shrink-0 items-center justify-center rounded-2xl bg-[#F0F6FA] text-telnet-primary">
+    <div className="rounded-xl bg-white p-3 shadow-[0_1px_2px_rgba(16,24,64,0.06)]">
+      <div className="flex items-center gap-2.5">
+        <span className="flex h-10 w-10 shrink-0 items-center justify-center rounded-xl bg-[#F0F6FA] text-telnet-primary">
           {icon}
         </span>
         <div>
-          <p className="text-xs font-bold uppercase tracking-wide text-slate-500">
+          <p className="text-[11px] font-bold uppercase tracking-wide text-slate-500">
             {label}
           </p>
-          <p className="text-2xl font-bold text-[#121B3B]">{value}</p>
+          <p className="text-xl font-bold text-[#121B3B]">{value}</p>
         </div>
       </div>
-      {hint && <p className="mt-2 text-xs text-slate-400">{hint}</p>}
+      {hint && <p className="mt-1.5 text-xs text-slate-400">{hint}</p>}
     </div>
   );
 }
@@ -456,7 +456,7 @@ export default function AdminDashboardPage() {
 
           {!isLoading && !error && (
             <>
-              <div className="mt-6 grid grid-cols-2 gap-4 sm:grid-cols-4">
+              <div className="mt-6 grid grid-cols-2 gap-3 sm:grid-cols-4">
                 <StatCard
                   label="Total assets"
                   value={equipment.length + vehicles.length}

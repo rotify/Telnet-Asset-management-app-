@@ -88,9 +88,9 @@ function DynamicTable({ rows }: { rows: Record<string, unknown>[] }) {
 
 function StatCard({ label, value }: { label: string; value: string | number }) {
   return (
-    <div className="rounded-xl bg-white p-5 shadow-[0_1px_2px_rgba(16,24,64,0.06)]">
-      <p className="text-xs font-medium text-slate-400">{label}</p>
-      <p className="mt-1.5 text-2xl font-bold text-[#121B3B]">{value}</p>
+    <div className="rounded-xl bg-white p-3 shadow-[0_1px_2px_rgba(16,24,64,0.06)]">
+      <p className="text-[11px] font-medium text-slate-400">{label}</p>
+      <p className="mt-1 text-xl font-bold text-[#121B3B]">{value}</p>
     </div>
   );
 }
@@ -177,13 +177,13 @@ export default function ReportsPage() {
             </p>
           </header>
 
-          <div className="mt-6 flex flex-wrap gap-2 rounded-xl bg-white p-1.5 shadow-[0_1px_2px_rgba(16,24,64,0.06)]">
+          <div className="mt-6 flex flex-wrap gap-1 rounded-xl bg-white p-1.5 shadow-[0_1px_2px_rgba(16,24,64,0.06)]">
             {TABS.map((tab) => (
               <button
                 key={tab}
                 type="button"
                 onClick={() => setActiveTab(tab)}
-                className={`rounded-lg px-3 py-1.5 text-sm font-medium transition-colors ${
+                className={`flex-1 whitespace-nowrap rounded-lg px-3 py-1.5 text-center text-sm font-medium transition-colors ${
                   activeTab === tab
                     ? "bg-[#0F172A] text-white"
                     : "text-slate-500 hover:bg-slate-50"
@@ -212,7 +212,7 @@ export default function ReportsPage() {
                     Generated{" "}
                     {new Date(overview.generated_at).toLocaleString("en-GB")}
                   </p>
-                  <div className="grid grid-cols-2 gap-4 sm:grid-cols-4">
+                  <div className="grid grid-cols-2 gap-3 sm:grid-cols-4">
                     <StatCard label="Total Assets" value={overview.assets.total} />
                     <StatCard label="Active Assets" value={overview.assets.active} />
                     <StatCard label="Unassigned" value={overview.assets.unassigned} />
@@ -242,7 +242,7 @@ export default function ReportsPage() {
               )}
 
               {activeTab === "Vehicles" && vehicles && (
-                <div className="mt-6 rounded-xl bg-white p-6 shadow-[0_1px_2px_rgba(16,24,64,0.06)]">
+                <div className="mt-6 rounded-xl bg-white p-4 shadow-[0_1px_2px_rgba(16,24,64,0.06)]">
                   <p className="mb-4 text-sm text-slate-500">
                     {vehicles.count} vehicle{vehicles.count === 1 ? "" : "s"}
                   </p>
@@ -251,7 +251,7 @@ export default function ReportsPage() {
               )}
 
               {activeTab === "Equipment" && equipment && (
-                <div className="mt-6 rounded-xl bg-white p-6 shadow-[0_1px_2px_rgba(16,24,64,0.06)]">
+                <div className="mt-6 rounded-xl bg-white p-4 shadow-[0_1px_2px_rgba(16,24,64,0.06)]">
                   <p className="mb-4 text-sm text-slate-500">
                     {equipment.count} item{equipment.count === 1 ? "" : "s"}
                   </p>
@@ -260,7 +260,7 @@ export default function ReportsPage() {
               )}
 
               {activeTab === "Documents" && documents && (
-                <div className="mt-6 rounded-xl bg-white p-6 shadow-[0_1px_2px_rgba(16,24,64,0.06)]">
+                <div className="mt-6 rounded-xl bg-white p-4 shadow-[0_1px_2px_rgba(16,24,64,0.06)]">
                   <p className="mb-4 text-sm text-slate-500">
                     {documents.count} document{documents.count === 1 ? "" : "s"}
                   </p>
@@ -270,7 +270,7 @@ export default function ReportsPage() {
 
               {activeTab === "Maintenance" && maintenance && (
                 <div className="mt-6 space-y-6">
-                  <div className="grid grid-cols-2 gap-4 sm:grid-cols-4">
+                  <div className="grid grid-cols-2 gap-3 sm:grid-cols-4">
                     <StatCard
                       label="Vehicle Records"
                       value={maintenance.summary.vehicle_count}
@@ -288,13 +288,13 @@ export default function ReportsPage() {
                       value={maintenance.summary.equipment_cost.toLocaleString()}
                     />
                   </div>
-                  <div className="rounded-xl bg-white p-6 shadow-[0_1px_2px_rgba(16,24,64,0.06)]">
+                  <div className="rounded-xl bg-white p-4 shadow-[0_1px_2px_rgba(16,24,64,0.06)]">
                     <h3 className="mb-3 text-sm font-semibold text-[#121B3B]">
                       Vehicle Maintenance
                     </h3>
                     <DynamicTable rows={maintenance.vehicles} />
                   </div>
-                  <div className="rounded-xl bg-white p-6 shadow-[0_1px_2px_rgba(16,24,64,0.06)]">
+                  <div className="rounded-xl bg-white p-4 shadow-[0_1px_2px_rgba(16,24,64,0.06)]">
                     <h3 className="mb-3 text-sm font-semibold text-[#121B3B]">
                       Equipment Maintenance
                     </h3>
@@ -304,7 +304,7 @@ export default function ReportsPage() {
               )}
 
               {activeTab === "Transfers" && transfers && (
-                <div className="mt-6 rounded-xl bg-white p-6 shadow-[0_1px_2px_rgba(16,24,64,0.06)]">
+                <div className="mt-6 rounded-xl bg-white p-4 shadow-[0_1px_2px_rgba(16,24,64,0.06)]">
                   <p className="mb-4 text-sm text-slate-500">
                     {transfers.count} transfer{transfers.count === 1 ? "" : "s"}
                   </p>
@@ -313,7 +313,7 @@ export default function ReportsPage() {
               )}
 
               {activeTab === "Audit" && audit && (
-                <div className="mt-6 rounded-xl bg-white p-6 shadow-[0_1px_2px_rgba(16,24,64,0.06)]">
+                <div className="mt-6 rounded-xl bg-white p-4 shadow-[0_1px_2px_rgba(16,24,64,0.06)]">
                   <p className="mb-4 text-sm text-slate-500">
                     {audit.count} audit log entr{audit.count === 1 ? "y" : "ies"}
                   </p>

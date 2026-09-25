@@ -14,6 +14,7 @@ import { AdminSidebar } from "@/components/layout/admin-sidebar";
 import { AdminTopBar } from "@/components/layout/admin-topbar";
 import { StatusDot, type StatusTone } from "@/components/status-dot";
 import { ThreeDotMenu, MenuItem } from "@/components/three-dot-menu";
+import { ViewToggleButton } from "@/components/view-toggle";
 import type { Equipment } from "@/types/asset";
 import type { MaintenanceRecord } from "@/types/maintenance";
 
@@ -122,6 +123,9 @@ export default function MaintenancePage() {
   >("All");
 
   const [showAddForm, setShowAddForm] = useState(false);
+  // Table is the default; mobile always shows cards regardless (see the
+  // render blocks below) — the toggle only takes effect at md and up.
+  const [viewMode, setViewMode] = useState<"table" | "card">("table");
   const [newRecord, setNewRecord] = useState(EMPTY_NEW_RECORD);
   const [addError, setAddError] = useState<string | null>(null);
   const [isAdding, setIsAdding] = useState(false);
@@ -352,6 +356,12 @@ export default function MaintenancePage() {
               </p>
             </div>
             <div className="flex items-center gap-2">
+              <ViewToggleButton
+                viewMode={viewMode}
+                onToggle={() =>
+                  setViewMode((m) => (m === "table" ? "card" : "table"))
+                }
+              />
               <button
                 type="button"
                 onClick={handleExport}
@@ -525,7 +535,11 @@ export default function MaintenancePage() {
           )}
 
           {!isLoading && !error && filtered.length > 0 && (
-            <div className="mt-6 space-y-2 md:hidden">
+            <div
+              className={`mt-6 grid grid-cols-1 gap-2 sm:grid-cols-2 lg:grid-cols-3 ${
+                viewMode === "table" ? "md:hidden" : ""
+              }`}
+            >
               {filtered.map((r) => {
                 const status = dueStatus(r.due_date);
                 const priority = priorityFromDue(r.due_date);
@@ -705,7 +719,11 @@ export default function MaintenancePage() {
           )}
 
           {!isLoading && !error && filtered.length > 0 && (
-            <div className="mt-6 hidden overflow-x-auto rounded-xl bg-white shadow-[0_1px_2px_rgba(16,24,64,0.06)] md:block">
+            <div
+              className={`mt-6 hidden overflow-x-auto rounded-xl bg-white shadow-[0_1px_2px_rgba(16,24,64,0.06)] ${
+                viewMode === "table" ? "md:block" : ""
+              }`}
+            >
               <table className="w-full min-w-[900px] border-collapse text-left text-sm">
                 <thead>
                   <tr className="border-b border-slate-100 bg-blue-50/60 text-xs font-semibold uppercase tracking-wide text-slate-500">
