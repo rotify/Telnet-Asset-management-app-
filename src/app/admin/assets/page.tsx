@@ -202,6 +202,13 @@ export default function AssetsPage() {
       : deleteVehicle(r.id);
   }
 
+  // A literal `"` inside a value has to become `""` in CSV, or the quoted
+  // field closes early and every value after it in the file gets misread —
+  // often rendering as blank cells once opened in Excel/Numbers/Sheets.
+  function csvCell(value: unknown): string {
+    return `"${String(value ?? "").replace(/"/g, '""')}"`;
+  }
+
   function handleExport() {
     const rowsCsv = [
       ["Asset ID", "Asset Name", "Category", "Assigned To", "Location", "Status"],
@@ -214,7 +221,7 @@ export default function AssetsPage() {
         titleCase(r.status),
       ]),
     ];
-    const csv = rowsCsv.map((r) => r.map((v) => `"${v}"`).join(",")).join("\n");
+    const csv = rowsCsv.map((r) => r.map(csvCell).join(",")).join("\n");
     const blob = new Blob([csv], { type: "text/csv" });
     const url = URL.createObjectURL(blob);
     const a = document.createElement("a");

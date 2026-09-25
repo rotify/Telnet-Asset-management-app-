@@ -367,7 +367,14 @@ export default function DocumentsPage() {
         doc.responsible_person ?? "",
       ]),
     ];
-    const csv = rows.map((r) => r.map((v) => `"${v}"`).join(",")).join("\n");
+    // A literal `"` inside a value has to become `""` in CSV, or the quoted
+    // field closes early and every value after it in the file gets misread —
+    // often rendering as blank cells once opened in Excel/Numbers/Sheets.
+    const csv = rows
+      .map((r) =>
+        r.map((v) => `"${String(v ?? "").replace(/"/g, '""')}"`).join(",")
+      )
+      .join("\n");
     const blob = new Blob([csv], { type: "text/csv" });
     const url = URL.createObjectURL(blob);
     const a = document.createElement("a");
