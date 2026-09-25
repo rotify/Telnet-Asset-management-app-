@@ -161,7 +161,7 @@ export default function ReportsPage() {
     <div className="flex min-h-[calc(100vh-0px)] bg-[#EFF1F6]">
       <AdminSidebar />
 
-      <div className="flex-1 px-6 py-8 lg:ml-60">
+      <div className="flex-1 px-4 py-4 sm:px-6 sm:py-8 lg:ml-60">
         <div className="mx-auto max-w-6xl">
           {/* Sticky so the search/date/profile bar stays put while the
               page content below scrolls, matching the sidebar's fixed

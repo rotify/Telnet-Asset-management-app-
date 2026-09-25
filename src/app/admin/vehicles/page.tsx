@@ -181,7 +181,7 @@ export default function VehiclesPage() {
     <div className="flex min-h-[calc(100vh-0px)] bg-[#EFF1F6]">
       <AdminSidebar />
 
-      <div className="flex-1 px-6 py-8 lg:ml-60">
+      <div className="flex-1 px-4 py-4 sm:px-6 sm:py-8 lg:ml-60">
         <div className="mx-auto max-w-6xl">
           {/* Sticky so the search/date/profile bar stays put while the
               page content below scrolls, matching the sidebar's fixed
@@ -201,6 +201,9 @@ export default function VehiclesPage() {
               </p>
             </div>
             <div className="flex items-center gap-2">
+              {/* Mobile always shows cards (see the render blocks below), so
+                  this toggle has no effect below md — hide it there instead
+                  of showing a control that looks broken when tapped. */}
               <button
                 type="button"
                 onClick={() =>
@@ -212,7 +215,7 @@ export default function VehiclesPage() {
                 title={
                   viewMode === "table" ? "Switch to card view" : "Switch to table view"
                 }
-                className="flex h-9 w-9 items-center justify-center rounded-lg border border-slate-200 bg-white text-slate-500 hover:bg-slate-50"
+                className="hidden h-9 w-9 items-center justify-center rounded-lg border border-slate-200 bg-white text-slate-500 hover:bg-slate-50 md:flex"
               >
                 {viewMode === "table" ? (
                   // Currently in table view — icon shows what you'll switch TO (cards).

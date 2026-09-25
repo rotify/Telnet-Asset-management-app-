@@ -187,7 +187,7 @@ export default function EquipmentPage() {
     <div className="flex min-h-[calc(100vh-0px)] bg-[#EFF1F6]">
       <AdminSidebar />
 
-      <div className="flex-1 px-6 py-8 lg:ml-60">
+      <div className="flex-1 px-4 py-4 sm:px-6 sm:py-8 lg:ml-60">
         <div className="mx-auto max-w-6xl">
           {/* Sticky so the search/date/profile bar stays put while the
               page content below scrolls, matching the sidebar's fixed
@@ -306,18 +306,18 @@ export default function EquipmentPage() {
           )}
 
           {!isLoading && !error && filtered.length > 0 && (
-            <div className="mt-6 space-y-3 md:hidden">
+            <div className="mt-6 space-y-2 md:hidden">
               {filtered.map((e) => {
                 const statusKey = (e.status ?? "").toLowerCase();
                 const warranty = warrantyLabel(e.warranty_expiry);
                 return (
                   <div
                     key={e.id}
-                    className="rounded-xl bg-white p-4 shadow-[0_1px_2px_rgba(16,24,64,0.06)]"
+                    className="rounded-xl bg-white p-3 shadow-[0_1px_2px_rgba(16,24,64,0.06)]"
                   >
                     <div className="flex items-start justify-between gap-2">
                       <div>
-                        <p className="font-semibold text-slate-800">
+                        <p className="text-sm font-semibold text-slate-800">
                           {e.name}
                         </p>
                         <p className="text-xs text-slate-400">
@@ -331,7 +331,7 @@ export default function EquipmentPage() {
                       />
                     </div>
 
-                    <div className="mt-3 grid grid-cols-2 gap-x-3 gap-y-2 text-xs">
+                    <div className="mt-2 grid grid-cols-2 gap-x-2 gap-y-1.5 text-xs">
                       <div>
                         <p className="text-slate-400">Serial No</p>
                         <p className="text-slate-700">
@@ -358,11 +358,11 @@ export default function EquipmentPage() {
                       </div>
                     </div>
 
-                    <p className={`mt-3 text-xs ${warranty.tone}`}>
+                    <p className={`mt-2 text-xs ${warranty.tone}`}>
                       {warranty.text}
                     </p>
 
-                    <div className="mt-3 border-t border-slate-100 pt-3">
+                    <div className="mt-2 flex justify-end border-t border-slate-100 pt-2">
                       <AssetActions
                         assetId={e.asset}
                         staffOptions={staffOptions}

@@ -387,7 +387,7 @@ export default function DocumentsPage() {
     <div className="flex min-h-[calc(100vh-0px)] bg-[#EFF1F6]">
       <AdminSidebar />
 
-      <div className="flex-1 px-6 py-8 lg:ml-60">
+      <div className="flex-1 px-4 py-4 sm:px-6 sm:py-8 lg:ml-60">
         <div className="mx-auto max-w-6xl">
          
           <div className="sticky top-12 z-20 bg-[#EFF1F6] pb-2 lg:top-0">
@@ -613,25 +613,25 @@ export default function DocumentsPage() {
           )}
 
           {!isLoading && !error && filtered.length > 0 && (
-            <div className="mt-6 grid grid-cols-1 gap-4 md:grid-cols-2">
+            <div className="mt-6 grid grid-cols-1 gap-3 sm:gap-4 md:grid-cols-2">
               {filtered.map((doc) => {
                 const status = statusFromExpiry(doc.expiry_date);
                 const isExpanded = expandedId === doc.id;
                 return (
                   <div
                     key={doc.id}
-                    className="rounded-xl bg-white p-4 shadow-[0_1px_2px_rgba(16,24,64,0.06)]"
+                    className="rounded-xl bg-white p-3 shadow-[0_1px_2px_rgba(16,24,64,0.06)] sm:p-4"
                   >
                     <div className="flex items-start justify-between gap-3">
-                      <div className="flex items-start gap-3">
-                        <span className="flex h-11 w-11 shrink-0 items-center justify-center rounded-full bg-telnet-activeBg text-[#222222]">
+                      <div className="flex items-start gap-2 sm:gap-3">
+                        <span className="flex h-9 w-9 shrink-0 items-center justify-center rounded-full bg-telnet-activeBg text-[#222222] sm:h-11 sm:w-11">
                           <DocIcon />
                         </span>
                         <div>
-                          <p className="font-semibold text-[#121B3B]">
+                          <p className="text-sm font-semibold text-[#121B3B] sm:text-base">
                             {doc.name}
                           </p>
-                          <p className="text-sm text-slate-400">
+                          <p className="text-xs text-slate-400 sm:text-sm">
                             {doc.document_type}
                           </p>
                         </div>
@@ -643,7 +643,7 @@ export default function DocumentsPage() {
                       />
                     </div>
 
-                    <div className="mt-4 space-y-2 border-t border-slate-100 pt-3 text-sm">
+                    <div className="mt-3 space-y-2 border-t border-slate-100 pt-3 text-sm">
                       <div className="flex justify-between">
                         <span className="text-slate-400">Expiring Date</span>
                         <span className="font-medium text-slate-700">
