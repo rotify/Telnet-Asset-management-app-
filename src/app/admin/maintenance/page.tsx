@@ -338,49 +338,50 @@ export default function MaintenancePage() {
 
       <div className="flex-1 px-4 pt-2 pb-4 sm:px-6 sm:pt-4 sm:pb-8 lg:ml-60">
         <div className="mx-auto max-w-6xl">
-          {/* Sticky so the search/date/profile bar stays put while the
+          {/* Sticky so the title and date/profile bar stay put while the
               page content below scrolls, matching the sidebar's fixed
               positioning instead of scrolling away with the page. */}
           <div className="sticky top-12 z-20 bg-[#EFF1F6] pb-2 lg:top-0">
-            <AdminTopBar />
+            <header className="flex flex-wrap items-center justify-between gap-3">
+              <div>
+                <h1 className="text-2xl font-bold text-[#121B3B]">
+                  Maintenance Management
+                </h1>
+                <p className="mt-1 text-sm text-slate-500">
+                  Store and manage important company files such as insurance
+                  certificates, licenses, warranties, and receipts.
+                </p>
+              </div>
+              <div className="flex items-center gap-2">
+                <ViewToggleButton
+                  viewMode={viewMode}
+                  onToggle={() =>
+                    setViewMode((m) => (m === "table" ? "card" : "table"))
+                  }
+                />
+                <button
+                  type="button"
+                  onClick={handleExport}
+                  className="flex items-center gap-1.5 rounded-lg border border-slate-200 bg-white px-3 py-1.5 text-xs font-semibold text-slate-600 hover:bg-slate-50"
+                >
+                  Export
+                </button>
+                <button
+                  type="button"
+                  onClick={() => {
+                    setShowAddForm((v) => !v);
+                    setAddError(null);
+                  }}
+                  className="rounded-lg bg-[#0F172A] px-4 py-2 text-sm font-semibold text-white hover:bg-[#1e293b]"
+                >
+                  {showAddForm ? "Cancel" : "+ Upload"}
+                </button>
+              </div>
+            </header>
+            <div className="mt-2">
+              <AdminTopBar />
+            </div>
           </div>
-
-          <header className="mt-6 flex flex-wrap items-center justify-between gap-3">
-            <div>
-              <h1 className="text-2xl font-bold text-[#121B3B]">
-                Maintenance Management
-              </h1>
-              <p className="mt-1 text-sm text-slate-500">
-                Store and manage important company files such as insurance
-                certificates, licenses, warranties, and receipts.
-              </p>
-            </div>
-            <div className="flex items-center gap-2">
-              <ViewToggleButton
-                viewMode={viewMode}
-                onToggle={() =>
-                  setViewMode((m) => (m === "table" ? "card" : "table"))
-                }
-              />
-              <button
-                type="button"
-                onClick={handleExport}
-                className="flex items-center gap-1.5 rounded-lg border border-slate-200 bg-white px-3 py-1.5 text-xs font-semibold text-slate-600 hover:bg-slate-50"
-              >
-                Export
-              </button>
-              <button
-                type="button"
-                onClick={() => {
-                  setShowAddForm((v) => !v);
-                  setAddError(null);
-                }}
-                className="rounded-lg bg-[#0F172A] px-4 py-2 text-sm font-semibold text-white hover:bg-[#1e293b]"
-              >
-                {showAddForm ? "Cancel" : "+ Upload"}
-              </button>
-            </div>
-          </header>
 
           {showAddForm && (
             <div className="mt-4 rounded-xl bg-white p-4 shadow-[0_1px_2px_rgba(16,24,64,0.06)]">

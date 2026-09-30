@@ -210,31 +210,32 @@ export default function StaffPage() {
 
       <div className="flex-1 px-4 pt-2 pb-4 sm:px-6 sm:pt-4 sm:pb-8 lg:ml-60">
         <div className="mx-auto max-w-6xl">
-          {/* Sticky so the search/date/profile bar stays put while the
+          {/* Sticky so the title and date/profile bar stay put while the
               page content below scrolls, matching the sidebar's fixed
               positioning instead of scrolling away with the page. */}
           <div className="sticky top-12 z-20 bg-[#EFF1F6] pb-2 lg:top-0">
-            <AdminTopBar />
-          </div>
-
-          <header className="mt-6 flex flex-wrap items-center justify-between gap-3">
-            <div>
-              <h1 className="text-2xl font-bold text-[#121B3B]">
-                Users &amp; Roles
-              </h1>
-              <p className="mt-1 text-sm text-slate-500">
-                Monitor company assets, vehicles, equipment, maintenance
-                schedules, and document status from one centralized dashboard.
-              </p>
+            <header className="flex flex-wrap items-center justify-between gap-3">
+              <div>
+                <h1 className="text-2xl font-bold text-[#121B3B]">
+                  Users &amp; Roles
+                </h1>
+                <p className="mt-1 text-sm text-slate-500">
+                  Monitor company assets, vehicles, equipment, maintenance
+                  schedules, and document status from one centralized dashboard.
+                </p>
+              </div>
+              <button
+                type="button"
+                onClick={() => router.push("/admin/staff/new")}
+                className="rounded-lg bg-telnet-primary px-4 py-2 text-sm font-semibold text-white hover:bg-telnet-primaryHover"
+              >
+                + Add Employee
+              </button>
+            </header>
+            <div className="mt-2">
+              <AdminTopBar />
             </div>
-            <button
-              type="button"
-              onClick={() => router.push("/admin/staff/new")}
-              className="rounded-lg bg-telnet-primary px-4 py-2 text-sm font-semibold text-white hover:bg-telnet-primaryHover"
-            >
-              + Add Employee
-            </button>
-          </header>
+          </div>
 
           {showAddForm && (
             <div className="mt-4 rounded-xl bg-white p-4 shadow-[0_1px_2px_rgba(16,24,64,0.06)]">

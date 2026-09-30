@@ -395,48 +395,49 @@ export default function DocumentsPage() {
         <div className="mx-auto max-w-6xl">
          
           <div className="sticky top-12 z-20 bg-[#EFF1F6] pb-2 lg:top-0">
-            <AdminTopBar />
+            <header className="flex flex-wrap items-center justify-between gap-3">
+              <div>
+                <h1 className="text-2xl font-bold text-[#121B3B]">
+                  Document Management
+                </h1>
+                <p className="mt-1 text-sm text-slate-500">
+                  Store and manage important company files such as insurance
+                  certificates, licenses, warranties, and receipts.
+                </p>
+              </div>
+              <div className="flex items-center gap-2">
+                <ViewToggleButton
+                  viewMode={viewMode}
+                  onToggle={() =>
+                    setViewMode((m) => (m === "table" ? "card" : "table"))
+                  }
+                />
+                <button
+                  type="button"
+                  onClick={handleExport}
+                  className="flex items-center gap-1.5 rounded-lg border border-slate-200 bg-white px-3 py-1.5 text-sm font-semibold text-slate-600 hover:bg-slate-50"
+                >
+                  <ExportIcon />
+                  Export
+                </button>
+                <button
+                  type="button"
+                  onClick={() => {
+                    setShowAddForm((v) => !v);
+                    setAddError(null);
+                    setNewDocFile(null);
+                  }}
+                  className="flex items-center gap-1.5 rounded-lg bg-[#0F172A] px-4 py-2 text-sm font-semibold text-white hover:bg-[#1e293b]"
+                >
+                  {showAddForm ? null : <UploadIcon />}
+                  {showAddForm ? "Cancel" : "Upload"}
+                </button>
+              </div>
+            </header>
+            <div className="mt-2">
+              <AdminTopBar />
+            </div>
           </div>
-
-          <header className="mt-6 flex flex-wrap items-center justify-between gap-3">
-            <div>
-              <h1 className="text-2xl font-bold text-[#121B3B]">
-                Document Management
-              </h1>
-              <p className="mt-1 text-sm text-slate-500">
-                Store and manage important company files such as insurance
-                certificates, licenses, warranties, and receipts.
-              </p>
-            </div>
-            <div className="flex items-center gap-2">
-              <ViewToggleButton
-                viewMode={viewMode}
-                onToggle={() =>
-                  setViewMode((m) => (m === "table" ? "card" : "table"))
-                }
-              />
-              <button
-                type="button"
-                onClick={handleExport}
-                className="flex items-center gap-1.5 rounded-lg border border-slate-200 bg-white px-3 py-1.5 text-sm font-semibold text-slate-600 hover:bg-slate-50"
-              >
-                <ExportIcon />
-                Export
-              </button>
-              <button
-                type="button"
-                onClick={() => {
-                  setShowAddForm((v) => !v);
-                  setAddError(null);
-                  setNewDocFile(null);
-                }}
-                className="flex items-center gap-1.5 rounded-lg bg-[#0F172A] px-4 py-2 text-sm font-semibold text-white hover:bg-[#1e293b]"
-              >
-                {showAddForm ? null : <UploadIcon />}
-                {showAddForm ? "Cancel" : "Upload"}
-              </button>
-            </div>
-          </header>
 
           {showAddForm && (
             <div className="mt-4 rounded-xl bg-white p-4 shadow-[0_1px_2px_rgba(16,24,64,0.06)]">

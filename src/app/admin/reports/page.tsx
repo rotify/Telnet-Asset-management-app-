@@ -163,19 +163,20 @@ export default function ReportsPage() {
 
       <div className="flex-1 px-4 pt-2 pb-4 sm:px-6 sm:pt-4 sm:pb-8 lg:ml-60">
         <div className="mx-auto max-w-6xl">
-          {/* Sticky so the search/date/profile bar stays put while the
+          {/* Sticky so the title and date/profile bar stay put while the
               page content below scrolls, matching the sidebar's fixed
               positioning instead of scrolling away with the page. */}
           <div className="sticky top-12 z-20 bg-[#EFF1F6] pb-2 lg:top-0">
-            <AdminTopBar />
+            <header>
+              <h1 className="text-2xl font-bold text-[#121B3B]">Reports</h1>
+              <p className="mt-1 text-sm text-slate-500">
+                Fleet, equipment, and document reporting across the company.
+              </p>
+            </header>
+            <div className="mt-2">
+              <AdminTopBar />
+            </div>
           </div>
-
-          <header className="mt-6">
-            <h1 className="text-2xl font-bold text-[#121B3B]">Reports</h1>
-            <p className="mt-1 text-sm text-slate-500">
-              Fleet, equipment, and document reporting across the company.
-            </p>
-          </header>
 
           <div className="mt-6 flex flex-wrap gap-1 rounded-xl bg-white p-1.5 shadow-[0_1px_2px_rgba(16,24,64,0.06)]">
             {TABS.map((tab) => (
