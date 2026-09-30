@@ -188,7 +188,6 @@ export default function AdminDashboardPage() {
   const [data, setData] = useState<DashboardData | null>(null);
   const [error, setError] = useState<string | null>(null);
   const [isLoading, setIsLoading] = useState(true);
-  const [search, setSearch] = useState("");
   const [showRegisterMenu, setShowRegisterMenu] = useState(false);
 
   useEffect(() => {
@@ -301,13 +300,11 @@ export default function AdminDashboardPage() {
         created_at: s.created_at,
       })),
     ];
-    const q = search.trim().toLowerCase();
     return items
       .filter((i) => i.created_at)
-      .filter((i) => !q || i.title.toLowerCase().includes(q) || i.sub.toLowerCase().includes(q))
       .sort((a, b) => (a.created_at < b.created_at ? 1 : -1))
       .slice(0, 6);
-  }, [equipment, vehicles, staff, search, staffNameById]);
+  }, [equipment, vehicles, staff, staffNameById]);
 
   const upcomingAlerts = useMemo(() => {
     const alerts: { id: string; message: string; sub: string; level: string }[] = [];
@@ -378,11 +375,7 @@ export default function AdminDashboardPage() {
               page content below scrolls, matching the sidebar's fixed
               positioning instead of scrolling away with the page. */}
           <div className="sticky top-12 z-20 bg-[#EFF1F6] pb-2 lg:top-0">
-            <AdminTopBar
-              search={search}
-              onSearchChange={setSearch}
-              hasNotifications={upcomingAlerts.length > 0}
-            />
+            <AdminTopBar hasNotifications={upcomingAlerts.length > 0} />
           </div>
 
           <header className="mt-6 flex flex-wrap items-center justify-between gap-3">
