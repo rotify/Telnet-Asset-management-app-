@@ -4,6 +4,15 @@ import { useEffect, useState } from "react";
 import { useRouter } from "next/navigation";
 import { getStoredUsername } from "@/lib/auth";
 
+function SearchIcon() {
+  return (
+    <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth={2}>
+      <circle cx="11" cy="11" r="7" />
+      <path d="m20 20-3.5-3.5" strokeLinecap="round" />
+    </svg>
+  );
+}
+
 function CalendarIcon() {
   return (
     <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth={1.8} strokeLinecap="round" strokeLinejoin="round">
@@ -40,19 +49,45 @@ function todayFormatted(): string {
 }
 
 interface AdminTopBarProps {
+  search?: string;
+  onSearchChange?: (value: string) => void;
+  searchPlaceholder?: string;
   hasNotifications?: boolean;
 }
 
-export function AdminTopBar({ hasNotifications = false }: AdminTopBarProps) {
+export function AdminTopBar({
+  search,
+  onSearchChange,
+  searchPlaceholder = "Search...",
+  hasNotifications = false,
+}: AdminTopBarProps) {
   const router = useRouter();
   const [username, setUsername] = useState<string | null>(null);
+  const [localSearch, setLocalSearch] = useState("");
+  const isControlled = search !== undefined;
+  const searchValue = isControlled ? search : localSearch;
+  const handleSearchChange = isControlled
+    ? onSearchChange ?? (() => {})
+    : setLocalSearch;
 
   useEffect(() => {
     setUsername(getStoredUsername());
   }, []);
 
   return (
-    <div className="flex flex-wrap items-center justify-end gap-3">
+    <div className="flex flex-wrap items-center justify-between gap-3">
+      <div className="relative w-full max-w-[389px]">
+        <span className="pointer-events-none absolute left-3 top-1/2 -translate-y-1/2 text-slate-400">
+          <SearchIcon />
+        </span>
+        <input
+          type="text"
+          value={searchValue}
+          onChange={(e) => handleSearchChange(e.target.value)}
+          placeholder={searchPlaceholder}
+          className="w-full rounded-lg border border-[#D9D9D9] bg-white py-2.5 pl-9 pr-3 text-sm text-slate-700 placeholder:text-slate-400 focus:border-telnet-primary focus:outline-none"
+        />
+      </div>
       <div className="flex items-center gap-4">
         <div className="flex items-center gap-1.5 text-sm text-slate-600">
           <CalendarIcon />

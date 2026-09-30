@@ -247,7 +247,11 @@ export default function AssetsPage() {
               page content below scrolls, matching the sidebar's fixed
               positioning instead of scrolling away with the page. */}
           <div className="sticky top-12 z-20 bg-[#EFF1F6] pb-2 lg:top-0">
-            <AdminTopBar />
+            <AdminTopBar
+              search={search}
+              onSearchChange={setSearch}
+              searchPlaceholder="Search by name, ID, or assignee…"
+            />
           </div>
 
           <header className="mt-6 flex flex-wrap items-center justify-between gap-3">
@@ -298,28 +302,6 @@ export default function AssetsPage() {
           )}
 
           <div className="mt-6 flex flex-col gap-3 sm:flex-row sm:items-center">
-            <div className="relative flex-1">
-              <span className="pointer-events-none absolute left-3 top-1/2 -translate-y-1/2 text-slate-400">
-                <svg
-                  width="16"
-                  height="16"
-                  viewBox="0 0 24 24"
-                  fill="none"
-                  stroke="currentColor"
-                  strokeWidth={2}
-                >
-                  <circle cx="11" cy="11" r="7" />
-                  <path d="m20 20-3.5-3.5" strokeLinecap="round" />
-                </svg>
-              </span>
-              <input
-                type="text"
-                value={search}
-                onChange={(e) => setSearch(e.target.value)}
-                placeholder="Search by name, ID, or assignee…"
-                className="w-full rounded-lg border border-slate-200 bg-white py-2 pl-9 pr-3 text-sm text-slate-700 placeholder:text-slate-400 focus:border-telnet-primary focus:outline-none"
-              />
-            </div>
             <select
               value={statusFilter}
               onChange={(e) => setStatusFilter(e.target.value)}

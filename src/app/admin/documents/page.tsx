@@ -395,7 +395,11 @@ export default function DocumentsPage() {
         <div className="mx-auto max-w-6xl">
          
           <div className="sticky top-12 z-20 bg-[#EFF1F6] pb-2 lg:top-0">
-            <AdminTopBar />
+            <AdminTopBar
+              search={search}
+              onSearchChange={setSearch}
+              searchPlaceholder="Search documents…"
+            />
           </div>
 
           <header className="mt-6 flex flex-wrap items-center justify-between gap-3">
@@ -561,28 +565,6 @@ export default function DocumentsPage() {
           )}
 
           <div className="mt-6 flex flex-col gap-3 rounded-xl bg-white p-3 shadow-[0_1px_2px_rgba(16,24,64,0.06)] sm:flex-row sm:items-center">
-            <div className="relative flex-1">
-              <span className="pointer-events-none absolute left-3 top-1/2 -translate-y-1/2 text-slate-400">
-                <svg
-                  width="16"
-                  height="16"
-                  viewBox="0 0 24 24"
-                  fill="none"
-                  stroke="currentColor"
-                  strokeWidth={2}
-                >
-                  <circle cx="11" cy="11" r="7" />
-                  <path d="m20 20-3.5-3.5" strokeLinecap="round" />
-                </svg>
-              </span>
-              <input
-                type="text"
-                value={search}
-                onChange={(e) => setSearch(e.target.value)}
-                placeholder="Search…"
-                className="w-full rounded-lg border-0 bg-slate-50 py-2 pl-9 pr-3 text-sm text-slate-700 placeholder:text-slate-400 focus:outline-none focus:ring-1 focus:ring-telnet-primary"
-              />
-            </div>
             <div className="flex items-center gap-2 text-slate-400">
               <CalendarIcon />
               <select
