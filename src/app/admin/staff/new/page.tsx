@@ -124,10 +124,17 @@ export default function AddStaffPage() {
 
       <div className="flex-1 px-6 py-8">
         <div className="mx-auto max-w-4xl">
-          <AdminTopBar
-            title="Company Asset"
-            description="Create a staff record so assets, documents and maintenance can be attributed to a real person."
-          />
+          <AdminTopBar />
+
+          <header className="mt-6">
+            <h1 className="text-2xl font-bold uppercase text-[#121B3B]">
+              Company Asset
+            </h1>
+            <p className="mt-1 text-sm text-slate-500">
+              Create a staff record so assets, documents and maintenance can
+              be attributed to a real person.
+            </p>
+          </header>
 
           {error && (
             <div className="mt-6 rounded-lg border border-red-200 bg-red-50 px-4 py-3 text-sm text-red-700">

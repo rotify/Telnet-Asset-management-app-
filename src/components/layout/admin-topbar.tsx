@@ -40,16 +40,10 @@ function todayFormatted(): string {
 }
 
 interface AdminTopBarProps {
-  title?: string;
-  description?: string;
   hasNotifications?: boolean;
 }
 
-export function AdminTopBar({
-  title,
-  description,
-  hasNotifications = false,
-}: AdminTopBarProps) {
+export function AdminTopBar({ hasNotifications = false }: AdminTopBarProps) {
   const router = useRouter();
   const [username, setUsername] = useState<string | null>(null);
 
@@ -58,17 +52,7 @@ export function AdminTopBar({
   }, []);
 
   return (
-    <div className="flex flex-wrap items-center justify-between gap-3">
-      {title ? (
-        <div>
-          <h1 className="text-2xl font-bold text-[#121B3B]">{title}</h1>
-          {description && (
-            <p className="mt-1 text-sm text-slate-500">{description}</p>
-          )}
-        </div>
-      ) : (
-        <div />
-      )}
+    <div className="flex flex-wrap items-center justify-end gap-3">
       <div className="flex items-center gap-4">
         <div className="flex items-center gap-1.5 text-sm text-slate-600">
           <CalendarIcon />

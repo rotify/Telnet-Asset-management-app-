@@ -375,14 +375,19 @@ export default function AdminDashboardPage() {
               page content below scrolls, matching the sidebar's fixed
               positioning instead of scrolling away with the page. */}
           <div className="sticky top-12 z-20 bg-[#EFF1F6] pb-2 lg:top-0">
-            <AdminTopBar
-              title="Asset Management"
-              description="Monitor company assets, vehicles, equipment, maintenance schedules, and document status from one centralized dashboard."
-              hasNotifications={upcomingAlerts.length > 0}
-            />
+            <AdminTopBar hasNotifications={upcomingAlerts.length > 0} />
           </div>
 
-          <header className="mt-4 flex flex-wrap items-center justify-end gap-2">
+          <header className="mt-6 flex flex-wrap items-center justify-between gap-3">
+            <div>
+              <h1 className="text-2xl font-bold text-[#121B3B]">
+                Asset Management
+              </h1>
+              <p className="mt-1 text-sm text-slate-500">
+                Monitor company assets, vehicles, equipment, maintenance
+                schedules, and document status from one centralized dashboard.
+              </p>
+            </div>
             <div className="flex items-center gap-2">
               <button
                 type="button"

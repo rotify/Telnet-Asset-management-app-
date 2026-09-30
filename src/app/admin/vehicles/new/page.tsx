@@ -114,10 +114,17 @@ export default function AddVehiclePage() {
 
       <div className="flex-1 px-6 py-8">
         <div className="mx-auto max-w-4xl">
-          <AdminTopBar
-            title="Company Asset"
-            description="Register a new vehicle and keep its compliance documents up to date."
-          />
+          <AdminTopBar />
+
+          <header className="mt-6">
+            <h1 className="text-2xl font-bold uppercase text-[#121B3B]">
+              Company Asset
+            </h1>
+            <p className="mt-1 text-sm text-slate-500">
+              Register a new vehicle and keep its compliance documents up to
+              date.
+            </p>
+          </header>
 
           {error && (
             <div className="mt-6 rounded-lg border border-red-200 bg-red-50 px-4 py-3 text-sm text-red-700">

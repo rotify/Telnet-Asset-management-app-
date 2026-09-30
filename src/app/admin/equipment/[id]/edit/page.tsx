@@ -150,10 +150,18 @@ export default function EditEquipmentPage() {
 
       <div className="flex-1 px-6 py-8">
         <div className="mx-auto max-w-4xl">
-          <AdminTopBar
-            title="Company Equipment"
-            description="Update this equipment record."
-          />
+          <AdminTopBar />
+
+          <header className="mt-6 flex flex-wrap items-center justify-between gap-3">
+            <div>
+              <h1 className="text-2xl font-bold uppercase text-[#121B3B]">
+                Company Equipment
+              </h1>
+              <p className="mt-1 text-sm text-slate-500">
+                Update this equipment record.
+              </p>
+            </div>
+          </header>
 
           {error && (
             <div className="mt-6 rounded-lg border border-red-200 bg-red-50 px-4 py-3 text-sm text-red-700">

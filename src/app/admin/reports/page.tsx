@@ -167,13 +167,17 @@ export default function ReportsPage() {
               page content below scrolls, matching the sidebar's fixed
               positioning instead of scrolling away with the page. */}
           <div className="sticky top-12 z-20 bg-[#EFF1F6] pb-2 lg:top-0">
-            <AdminTopBar
-              title="Reports"
-              description="Fleet, equipment, and document reporting across the company."
-            />
+            <AdminTopBar />
           </div>
 
-          <div className="mt-4 flex flex-wrap gap-1 rounded-xl bg-white p-1.5 shadow-[0_1px_2px_rgba(16,24,64,0.06)]">
+          <header className="mt-6">
+            <h1 className="text-2xl font-bold text-[#121B3B]">Reports</h1>
+            <p className="mt-1 text-sm text-slate-500">
+              Fleet, equipment, and document reporting across the company.
+            </p>
+          </header>
+
+          <div className="mt-6 flex flex-wrap gap-1 rounded-xl bg-white p-1.5 shadow-[0_1px_2px_rgba(16,24,64,0.06)]">
             {TABS.map((tab) => (
               <button
                 key={tab}
