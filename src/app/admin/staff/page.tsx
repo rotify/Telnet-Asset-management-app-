@@ -214,19 +214,13 @@ export default function StaffPage() {
               page content below scrolls, matching the sidebar's fixed
               positioning instead of scrolling away with the page. */}
           <div className="sticky top-12 z-20 bg-[#EFF1F6] pb-2 lg:top-0">
-            <AdminTopBar />
+            <AdminTopBar
+              title="Users & Roles"
+              description="Monitor company assets, vehicles, equipment, maintenance schedules, and document status from one centralized dashboard."
+            />
           </div>
 
-          <header className="mt-6 flex flex-wrap items-center justify-between gap-3">
-            <div>
-              <h1 className="text-2xl font-bold text-[#121B3B]">
-                Users &amp; Roles
-              </h1>
-              <p className="mt-1 text-sm text-slate-500">
-                Monitor company assets, vehicles, equipment, maintenance
-                schedules, and document status from one centralized dashboard.
-              </p>
-            </div>
+          <header className="mt-4 flex flex-wrap items-center justify-end gap-2">
             <button
               type="button"
               onClick={() => router.push("/admin/staff/new")}

@@ -232,19 +232,13 @@ export default function NotificationsPage() {
               page content below scrolls, matching the sidebar's fixed
               positioning instead of scrolling away with the page. */}
           <div className="sticky top-12 z-20 bg-[#EFF1F6] pb-2 lg:top-0">
-            <AdminTopBar />
+            <AdminTopBar
+              title="Notifications"
+              description="Manage expiry alert schedules, recipients, and delivery history."
+            />
           </div>
 
-          <header className="mt-6 flex flex-wrap items-center justify-between gap-3">
-            <div>
-              <h1 className="text-2xl font-bold text-[#121B3B]">
-                Notifications
-              </h1>
-              <p className="mt-1 text-sm text-slate-500">
-                Manage expiry alert schedules, recipients, and delivery
-                history.
-              </p>
-            </div>
+          <header className="mt-4 flex flex-wrap items-center justify-end gap-3">
             <button
               type="button"
               onClick={handleSendNow}

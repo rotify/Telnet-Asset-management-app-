@@ -105,18 +105,14 @@ export default function SettingsPage() {
               page content below scrolls, matching the sidebar's fixed
               positioning instead of scrolling away with the page. */}
           <div className="sticky top-12 z-20 bg-[#EFF1F6] pb-2 lg:top-0">
-            <AdminTopBar />
+            <AdminTopBar
+              title="Settings"
+              description="Organization details and your profile."
+            />
           </div>
 
-          <header className="mt-6">
-            <h1 className="text-2xl font-bold text-[#121B3B]">Settings</h1>
-            <p className="mt-1 text-sm text-slate-500">
-              Organization details and your profile.
-            </p>
-          </header>
-
           {/* Organization */}
-          <div className="mt-6 rounded-xl bg-white p-4 shadow-[0_1px_2px_rgba(16,24,64,0.06)]">
+          <div className="mt-4 rounded-xl bg-white p-4 shadow-[0_1px_2px_rgba(16,24,64,0.06)]">
             <h2 className="border-b border-slate-100 pb-3 text-sm font-semibold text-[#121B3B]">
               Organization
             </h2>
