@@ -228,33 +228,32 @@ export default function NotificationsPage() {
 
       <div className="flex-1 px-4 pt-2 pb-4 sm:px-6 sm:pt-4 sm:pb-8 lg:ml-60">
         <div className="mx-auto max-w-6xl">
-          {/* Sticky so the title and date/profile bar stay put while the
+          {/* Sticky so the search/date/profile bar stays put while the
               page content below scrolls, matching the sidebar's fixed
               positioning instead of scrolling away with the page. */}
           <div className="sticky top-12 z-20 bg-[#EFF1F6] pb-2 lg:top-0">
-            <header className="flex flex-wrap items-center justify-between gap-3">
-              <div>
-                <h1 className="text-2xl font-bold text-[#121B3B]">
-                  Notifications
-                </h1>
-                <p className="mt-1 text-sm text-slate-500">
-                  Manage expiry alert schedules, recipients, and delivery
-                  history.
-                </p>
-              </div>
-              <button
-                type="button"
-                onClick={handleSendNow}
-                disabled={isSending}
-                className="rounded-lg bg-[#0F172A] px-4 py-2 text-sm font-semibold text-white hover:bg-[#1e293b] disabled:opacity-60"
-              >
-                {isSending ? "Sending…" : "Send Now"}
-              </button>
-            </header>
-            <div className="mt-2">
-              <AdminTopBar />
-            </div>
+            <AdminTopBar />
           </div>
+
+          <header className="mt-6 flex flex-wrap items-center justify-between gap-3">
+            <div>
+              <h1 className="text-2xl font-bold text-[#121B3B]">
+                Notifications
+              </h1>
+              <p className="mt-1 text-sm text-slate-500">
+                Manage expiry alert schedules, recipients, and delivery
+                history.
+              </p>
+            </div>
+            <button
+              type="button"
+              onClick={handleSendNow}
+              disabled={isSending}
+              className="rounded-lg bg-[#0F172A] px-4 py-2 text-sm font-semibold text-white hover:bg-[#1e293b] disabled:opacity-60"
+            >
+              {isSending ? "Sending…" : "Send Now"}
+            </button>
+          </header>
 
           {sendResult && (
             <div className="mt-4 rounded-lg border border-slate-200 bg-white px-4 py-3 text-sm text-slate-600">
