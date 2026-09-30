@@ -6,4 +6,9 @@ html,
 body {
   padding: 0;
   margin: 0;
+  /* Stop the whole page from scrolling sideways on mobile when a
+     child (like a row of tabs) is wider than the viewport. Elements
+     that need horizontal scrolling of their own (tables, tab bars)
+     opt back in with their own overflow-x-auto. */
+  overflow-x: hidden;
 }

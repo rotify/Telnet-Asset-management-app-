@@ -177,21 +177,23 @@ export default function ReportsPage() {
             </p>
           </header>
 
-          <div className="mt-6 flex flex-wrap gap-1 rounded-xl bg-white p-1.5 shadow-[0_1px_2px_rgba(16,24,64,0.06)]">
-            {TABS.map((tab) => (
-              <button
-                key={tab}
-                type="button"
-                onClick={() => setActiveTab(tab)}
-                className={`flex-1 whitespace-nowrap rounded-lg px-3 py-1.5 text-center text-sm font-medium transition-colors ${
-                  activeTab === tab
-                    ? "bg-[#0F172A] text-white"
-                    : "text-slate-500 hover:bg-slate-50"
-                }`}
-              >
-                {tab}
-              </button>
-            ))}
+          <div className="mt-6 overflow-x-auto rounded-xl bg-white p-1.5 shadow-[0_1px_2px_rgba(16,24,64,0.06)]">
+            <div className="flex gap-1 sm:flex-wrap">
+              {TABS.map((tab) => (
+                <button
+                  key={tab}
+                  type="button"
+                  onClick={() => setActiveTab(tab)}
+                  className={`shrink-0 whitespace-nowrap rounded-lg px-3 py-1.5 text-center text-sm font-medium transition-colors sm:flex-1 ${
+                    activeTab === tab
+                      ? "bg-[#0F172A] text-white"
+                      : "text-slate-500 hover:bg-slate-50"
+                  }`}
+                >
+                  {tab}
+                </button>
+              ))}
+            </div>
           </div>
 
           {error && (
