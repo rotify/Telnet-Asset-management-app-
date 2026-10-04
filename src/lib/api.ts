@@ -3,6 +3,7 @@ import type { Equipment, Vehicle } from "@/types/asset";
 import type { Staff } from "@/types/staff";
 import type { DocumentRecord } from "@/types/document";
 import type { AssetHistoryEntry, MaintenanceRecord } from "@/types/maintenance";
+import type { WorkOrder } from "@/types/work-order";
 
 function extractErrorMessage(data: unknown, status: number): string {
   if (!data || typeof data !== "object") {
@@ -591,4 +592,7 @@ export function updateProfileSettings(
     "PATCH",
     payload
   );
+}
+export function getEquipmentWorkOrders(): Promise<WorkOrder[]> {
+  return authedFetch<WorkOrder[]>("/api/equipment-work-orders");
 }

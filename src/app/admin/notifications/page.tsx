@@ -18,6 +18,7 @@ import {
 import { AdminSidebar } from "@/components/layout/admin-sidebar";
 import { AdminTopBar } from "@/components/layout/admin-topbar";
 import { StatusDot, type StatusTone } from "@/components/status-dot";
+import { WorkOrdersPanel } from "@/components/work-orders-panel";
 
 function formatDateTime(value: string | null): string {
   if (!value) return "Never";
@@ -260,6 +261,8 @@ export default function NotificationsPage() {
               {sendResult}
             </div>
           )}
+
+          <WorkOrdersPanel title="Open Work Order Alerts" openOnly />
 
          
           <div className="mt-6 rounded-xl bg-white p-4 shadow-[0_1px_2px_rgba(16,24,64,0.06)]">

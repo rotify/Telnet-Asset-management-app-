@@ -6,6 +6,7 @@ import { getStoredToken, getStoredUsername, isSuperAdmin } from "@/lib/auth";
 import {
   getAuditReport,
   getDocumentsReport,
+  getEquipmentWorkOrders,
   getEquipmentReport,
   getMaintenanceReport,
   getReportOverview,
@@ -17,6 +18,8 @@ import {
 } from "@/lib/api";
 import { AdminSidebar } from "@/components/layout/admin-sidebar";
 import { AdminTopBar } from "@/components/layout/admin-topbar";
+import { isOpenWorkOrder } from "@/lib/work-orders";
+import type { WorkOrder } from "@/types/work-order";
 
 const TABS = [
   "Overview",
@@ -24,6 +27,7 @@ const TABS = [
   "Equipment",
   "Documents",
   "Maintenance",
+  "Work Orders",
   "Transfers",
   "Audit",
 ] as const;
@@ -109,6 +113,7 @@ export default function ReportsPage() {
   );
   const [transfers, setTransfers] = useState<ReportListResponse | null>(null);
   const [audit, setAudit] = useState<ReportListResponse | null>(null);
+  const [workOrders, setWorkOrders] = useState<WorkOrder[]>([]);
 
   const [isLoading, setIsLoading] = useState(true);
   const [error, setError] = useState<string | null>(null);
@@ -139,8 +144,9 @@ export default function ReportsPage() {
       getMaintenanceReport(),
       getTransfersReport(),
       getAuditReport(),
+      getEquipmentWorkOrders().catch(() => [] as WorkOrder[]),
     ])
-      .then(([o, v, e, d, m, t, a]) => {
+      .then(([o, v, e, d, m, t, a, w]) => {
         setOverview(o);
         setVehicles(v);
         setEquipment(e);
@@ -148,6 +154,7 @@ export default function ReportsPage() {
         setMaintenance(m);
         setTransfers(t);
         setAudit(a);
+        setWorkOrders(w);
       })
       .catch((err) => {
         setError(err instanceof Error ? err.message : "Couldn't load reports.");
@@ -301,6 +308,39 @@ export default function ReportsPage() {
                       Equipment Maintenance
                     </h3>
                     <DynamicTable rows={maintenance.equipment} />
+                  </div>
+                </div>
+              )}
+
+              {activeTab === "Work Orders" && (
+                <div className="mt-6 space-y-6">
+                  <div className="grid grid-cols-2 gap-3 sm:grid-cols-4">
+                    <StatCard label="Total Work Orders" value={workOrders.length} />
+                    <StatCard
+                      label="Open"
+                      value={workOrders.filter(isOpenWorkOrder).length}
+                    />
+                    <StatCard
+                      label="High Priority"
+                      value={
+                        workOrders.filter(
+                          (o) => (o.priority ?? "").toLowerCase() === "high"
+                        ).length
+                      }
+                    />
+                    <StatCard
+                      label="Repairs"
+                      value={
+                        workOrders.filter(
+                          (o) => (o.work_type ?? "").toLowerCase() === "repair"
+                        ).length
+                      }
+                    />
+                  </div>
+                  <div className="rounded-xl bg-white p-4 shadow-[0_1px_2px_rgba(16,24,64,0.06)]">
+                    <DynamicTable
+                      rows={workOrders as unknown as Record<string, unknown>[]}
+                    />
                   </div>
                 </div>
               )}

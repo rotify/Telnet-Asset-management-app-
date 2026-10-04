@@ -12,6 +12,7 @@ import {
 } from "@/lib/api";
 import { AdminSidebar } from "@/components/layout/admin-sidebar";
 import { AdminTopBar } from "@/components/layout/admin-topbar";
+import { WorkOrdersPanel } from "@/components/work-orders-panel";
 import { StatusDot, type StatusTone } from "@/components/status-dot";
 import { ThreeDotMenu, MenuItem } from "@/components/three-dot-menu";
 import { ViewToggleButton } from "@/components/view-toggle";
@@ -385,6 +386,8 @@ export default function MaintenancePage() {
               </button>
             </div>
           </header>
+
+          <WorkOrdersPanel />
 
           {showAddForm && (
             <div className="mt-4 rounded-xl bg-white p-4 shadow-[0_1px_2px_rgba(16,24,64,0.06)]">

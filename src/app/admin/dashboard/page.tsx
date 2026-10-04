@@ -3,7 +3,20 @@
 import { useEffect, useMemo, useState } from "react";
 import { useRouter } from "next/navigation";
 import { getStoredToken, getStoredUsername, isSuperAdmin } from "@/lib/auth";
-import { getEquipment, getVehicles, getStaff, getDocuments } from "@/lib/api";
+import {
+  getEquipment,
+  getVehicles,
+  getStaff,
+  getDocuments,
+  getEquipmentWorkOrders,
+} from "@/lib/api";
+import {
+  isOpenWorkOrder,
+  prettify,
+  workOrderLevel,
+  workOrderTitle,
+} from "@/lib/work-orders";
+import type { WorkOrder } from "@/types/work-order";
 import { AdminSidebar } from "@/components/layout/admin-sidebar";
 import { AdminTopBar } from "@/components/layout/admin-topbar";
 import { STATUS_COLORS } from "@/components/status-dot";
@@ -23,6 +36,7 @@ interface DashboardData {
   vehicles: Vehicle[];
   staff: Staff[];
   documents: DocumentRecord[];
+  workOrders: WorkOrder[];
 }
 
 const STATUS_ORDER = ["Active", "Pending Certification", "Damaged", "Inactive"];
@@ -216,14 +230,16 @@ export default function AdminDashboardPage() {
       setIsLoading(true);
       setError(null);
       try {
-        const [equipment, vehicles, staff, documents] = await Promise.all([
-          getEquipment(),
-          getVehicles(),
-          getStaff(),
-          getDocuments().catch(() => []),
-        ]);
+        const [equipment, vehicles, staff, documents, workOrders] =
+          await Promise.all([
+            getEquipment(),
+            getVehicles(),
+            getStaff(),
+            getDocuments().catch(() => []),
+            getEquipmentWorkOrders().catch(() => [] as WorkOrder[]),
+          ]);
         if (!cancelled) {
-          setData({ equipment, vehicles, staff, documents });
+          setData({ equipment, vehicles, staff, documents, workOrders });
         }
       } catch (err) {
         if (!cancelled) {
@@ -243,6 +259,10 @@ export default function AdminDashboardPage() {
   }, [gateChecked]);
 
   const equipment = useMemo(() => data?.equipment ?? [], [data]);
+  const openWorkOrders = useMemo(
+    () => (data?.workOrders ?? []).filter(isOpenWorkOrder),
+    [data]
+  );
   const vehicles = useMemo(() => data?.vehicles ?? [], [data]);
   const staff = useMemo(() => data?.staff ?? [], [data]);
 
@@ -350,8 +370,17 @@ export default function AdminDashboardPage() {
       }
     });
 
+    openWorkOrders.forEach((o) => {
+      alerts.unshift({
+        id: `work-order-${o.id}`,
+        message: `${workOrderTitle(o)} (${prettify(o.status)})`,
+        sub: o.due_date ? `Due ${o.due_date.slice(0, 10)}` : "Work order",
+        level: workOrderLevel(o),
+      });
+    });
+
     return alerts.slice(0, 6);
-  }, [equipment, vehicles]);
+  }, [equipment, vehicles, openWorkOrders]);
 
   function handleExport() {
     const rows = [
@@ -516,6 +545,20 @@ export default function AdminDashboardPage() {
                           />
                         </div>
                       </div>
+                    ))}
+                  </div>
+                  <div className="mt-4 border-t border-slate-100 pt-3">
+                    <div className="flex justify-between text-xs text-slate-500">
+                      <span>Open work orders</span>
+                      <span>{openWorkOrders.length}</span>
+                    </div>
+                    {openWorkOrders.slice(0, 3).map((o) => (
+                      <p
+                        key={o.id}
+                        className="mt-1 truncate text-xs text-slate-400"
+                      >
+                        {workOrderTitle(o)} · {prettify(o.priority)}
+                      </p>
                     ))}
                   </div>
                 </div>
