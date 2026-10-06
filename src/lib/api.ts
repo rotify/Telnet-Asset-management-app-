@@ -4,6 +4,7 @@ import type { Staff } from "@/types/staff";
 import type { DocumentRecord } from "@/types/document";
 import type { AssetHistoryEntry, MaintenanceRecord } from "@/types/maintenance";
 import type { WorkOrder } from "@/types/work-order";
+import type { AdminRole, AdminUser, Paginated } from "@/types/admin";
 
 function extractErrorMessage(data: unknown, status: number): string {
   if (!data || typeof data !== "object") {
@@ -595,4 +596,15 @@ export function updateProfileSettings(
 }
 export function getEquipmentWorkOrders(): Promise<WorkOrder[]> {
   return authedFetch<WorkOrder[]>("/api/equipment-work-orders");
+}
+
+// Admin API v1 (users / roles) -- proxied to the newer backend.
+export function getAdminUsers(pageSize = 100): Promise<Paginated<AdminUser>> {
+  return authedFetch<Paginated<AdminUser>>(
+    `/api/admin/users?page_size=${pageSize}`
+  );
+}
+
+export function getAdminRoles(): Promise<AdminRole[]> {
+  return authedFetch<AdminRole[]>("/api/admin/roles");
 }

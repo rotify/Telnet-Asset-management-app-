@@ -6,6 +6,7 @@ import { getStoredToken, getStoredUsername, isSuperAdmin } from "@/lib/auth";
 import { createStaff, deleteStaff, getStaff, updateStaff } from "@/lib/api";
 import { AdminSidebar } from "@/components/layout/admin-sidebar";
 import { AdminTopBar } from "@/components/layout/admin-topbar";
+import { AdminUsersSection } from "@/components/admin-users-section";
 import { StatusDot } from "@/components/status-dot";
 import type { Staff } from "@/types/staff";
 
@@ -217,7 +218,7 @@ export default function StaffPage() {
             <AdminTopBar
               search={search}
               onSearchChange={setSearch}
-              searchPlaceholder="Search staff…"
+              searchPlaceholder="Search staff and users…"
             />
           </div>
 
@@ -637,6 +638,8 @@ export default function StaffPage() {
               </table>
             </div>
           )}
+
+          <AdminUsersSection search={search} />
 
           <div className="mt-8 grid grid-cols-1 gap-4 sm:grid-cols-2">
             {ROLE_CARDS.map((role) => (
