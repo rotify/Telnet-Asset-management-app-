@@ -2,7 +2,7 @@ import { NextResponse } from "next/server";
 
 const API_BASE_URL =
   process.env.API_BASE_URL ??
-  "https://company-assets-management-system.onrender.com/api";
+  "http://207.180.246.69:8038/api";
 
 type ProxyMethod = "GET" | "POST" | "PUT" | "PATCH" | "DELETE";
 

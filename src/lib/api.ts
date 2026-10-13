@@ -3,7 +3,15 @@ import type { Equipment, Vehicle } from "@/types/asset";
 import type { Staff } from "@/types/staff";
 import type { DocumentRecord } from "@/types/document";
 import type { AssetHistoryEntry, MaintenanceRecord } from "@/types/maintenance";
-import type { WorkOrder } from "@/types/work-order";
+import type { WorkOrder, WorkOrderPayload } from "@/types/work-order";
+import type {
+  DriverRequest,
+  DriverRequestPayload,
+  EquipmentTransfer,
+  EquipmentTransferPayload,
+  VehicleMaintenance,
+  VehicleMaintenancePayload,
+} from "@/types/workflow";
 import type { AdminRole, AdminUser, Paginated } from "@/types/admin";
 
 function extractErrorMessage(data: unknown, status: number): string {
@@ -607,4 +615,175 @@ export function getAdminUsers(pageSize = 100): Promise<Paginated<AdminUser>> {
 
 export function getAdminRoles(): Promise<AdminRole[]> {
   return authedFetch<AdminRole[]>("/api/admin/roles");
+}
+
+// ---------------------------------------------------------------------
+// Newer backend endpoints (proxied through /api/remote/*)
+// ---------------------------------------------------------------------
+
+export function getCurrentUser(): Promise<{ username: string; role: string }> {
+  return authedFetch("/api/remote/me");
+}
+
+// Work orders
+export function getEquipmentWorkOrder(id: number): Promise<WorkOrder> {
+  return authedFetch<WorkOrder>(`/api/remote/equipment-work-orders/${id}`);
+}
+export function createEquipmentWorkOrder(
+  payload: WorkOrderPayload
+): Promise<WorkOrder> {
+  return authedMutate<WorkOrder>(
+    "/api/remote/equipment-work-orders",
+    "POST",
+    payload
+  );
+}
+export function updateEquipmentWorkOrder(
+  id: number,
+  payload: Partial<WorkOrderPayload>
+): Promise<WorkOrder> {
+  return authedMutate<WorkOrder>(
+    `/api/remote/equipment-work-orders/${id}`,
+    "PATCH",
+    payload
+  );
+}
+export function deleteEquipmentWorkOrder(id: number): Promise<void> {
+  return authedMutate<void>(`/api/remote/equipment-work-orders/${id}`, "DELETE");
+}
+
+// Vehicle maintenance
+export function getVehicleMaintenance(
+  vehicleId?: number
+): Promise<VehicleMaintenance[]> {
+  const q = vehicleId ? `?vehicle=${vehicleId}` : "";
+  return authedFetch<VehicleMaintenance[]>(`/api/remote/vehicle-maintenance${q}`);
+}
+export function createVehicleMaintenance(
+  payload: VehicleMaintenancePayload
+): Promise<VehicleMaintenance> {
+  return authedMutate<VehicleMaintenance>(
+    "/api/remote/vehicle-maintenance",
+    "POST",
+    payload
+  );
+}
+export function updateVehicleMaintenance(
+  id: number,
+  payload: Partial<VehicleMaintenancePayload>
+): Promise<VehicleMaintenance> {
+  return authedMutate<VehicleMaintenance>(
+    `/api/remote/vehicle-maintenance/${id}`,
+    "PATCH",
+    payload
+  );
+}
+export function deleteVehicleMaintenance(id: number): Promise<void> {
+  return authedMutate<void>(`/api/remote/vehicle-maintenance/${id}`, "DELETE");
+}
+
+// Equipment transfers
+export function getEquipmentTransfers(
+  equipmentId?: number
+): Promise<EquipmentTransfer[]> {
+  const q = equipmentId ? `?equipment=${equipmentId}` : "";
+  return authedFetch<EquipmentTransfer[]>(`/api/remote/equipment-transfers${q}`);
+}
+export function getEquipmentTransfer(id: number): Promise<EquipmentTransfer> {
+  return authedFetch<EquipmentTransfer>(`/api/remote/equipment-transfers/${id}`);
+}
+export function createEquipmentTransfer(
+  payload: EquipmentTransferPayload
+): Promise<EquipmentTransfer> {
+  return authedMutate<EquipmentTransfer>(
+    "/api/remote/equipment-transfers",
+    "POST",
+    payload
+  );
+}
+
+// Driver requests
+export function getDriverRequests(): Promise<DriverRequest[]> {
+  return authedFetch<DriverRequest[]>("/api/remote/driver-requests");
+}
+export function getDriverRequest(id: number): Promise<DriverRequest> {
+  return authedFetch<DriverRequest>(`/api/remote/driver-requests/${id}`);
+}
+export function createDriverRequest(
+  payload: DriverRequestPayload
+): Promise<DriverRequest> {
+  return authedMutate<DriverRequest>("/api/remote/driver-requests", "POST", payload);
+}
+export function assignDriverRequest(
+  id: number,
+  payload: { assigned_driver: number; notes?: string }
+): Promise<DriverRequest> {
+  return authedMutate<DriverRequest>(
+    `/api/remote/driver-requests/${id}/assign`,
+    "POST",
+    payload
+  );
+}
+
+// Admin users / staff (create + edit)
+export function getAdminUser(id: number): Promise<AdminUser> {
+  return authedFetch<AdminUser>(`/api/remote/v1/admin/users/${id}`);
+}
+export function createAdminUser(payload: Partial<AdminUser> & { password?: string }): Promise<AdminUser> {
+  return authedMutate<AdminUser>("/api/remote/v1/admin/users", "POST", payload);
+}
+export function updateAdminUser(id: number, payload: Partial<AdminUser>): Promise<AdminUser> {
+  return authedMutate<AdminUser>(`/api/remote/v1/admin/users/${id}`, "PATCH", payload);
+}
+export function createAdminStaff(payload: Partial<Staff>): Promise<Staff> {
+  return authedMutate<Staff>("/api/remote/v1/admin/staff", "POST", payload);
+}
+export function updateAdminStaff(id: number, payload: Partial<Staff>): Promise<Staff> {
+  return authedMutate<Staff>(`/api/remote/v1/admin/staff/${id}`, "PATCH", payload);
+}
+export function deleteAdminStaff(id: number): Promise<void> {
+  return authedMutate<void>(`/api/remote/v1/admin/staff/${id}`, "DELETE");
+}
+
+// Notification recipients (edit / remove)
+export function updateNotificationRecipient(
+  id: number,
+  payload: Partial<NotificationRecipient>
+): Promise<NotificationRecipient> {
+  return authedMutate<NotificationRecipient>(
+    `/api/remote/v1/notifications/recipients/${id}`,
+    "PATCH",
+    payload
+  );
+}
+export function deleteNotificationRecipient(id: number): Promise<void> {
+  return authedMutate<void>(`/api/remote/v1/notifications/recipients/${id}`, "DELETE");
+}
+
+// Bulk uploads (multipart)
+export interface BulkUploadResult {
+  created?: number;
+  errors?: unknown[];
+  [key: string]: unknown;
+}
+async function uploadFile(path: string, file: File): Promise<BulkUploadResult> {
+  const token = getStoredToken();
+  if (!token) throw new Error("You're not signed in.");
+  const formData = new FormData();
+  formData.append("file", file);
+  const res = await fetch(path, {
+    method: "POST",
+    headers: { Authorization: `Token ${token}` },
+    body: formData,
+    cache: "no-store",
+  });
+  const data = await res.json().catch(() => null);
+  if (!res.ok) throw new Error(extractErrorMessage(data, res.status));
+  return data as BulkUploadResult;
+}
+export function bulkUploadAssets(file: File): Promise<BulkUploadResult> {
+  return uploadFile("/api/remote/bulk-upload-assets", file);
+}
+export function bulkUploadEquipment(file: File): Promise<BulkUploadResult> {
+  return uploadFile("/api/remote/bulk-upload-equipment", file);
 }
