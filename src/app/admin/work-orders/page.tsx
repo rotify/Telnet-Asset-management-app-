@@ -10,6 +10,9 @@ import {
 } from "@/lib/api";
 import { AdminPageShell } from "@/components/layout/admin-page-shell";
 import { StatusDot, type StatusTone } from "@/components/status-dot";
+import { DataList, EmptyNote } from "@/components/data-list";
+import { MenuItem, ThreeDotMenu } from "@/components/three-dot-menu";
+import { ViewToggleButton } from "@/components/view-toggle";
 import { prettify, workOrderLevel } from "@/lib/work-orders";
 import type { Equipment } from "@/types/asset";
 import type { WorkOrder } from "@/types/work-order";
@@ -44,6 +47,7 @@ export default function WorkOrdersPage() {
   const [formError, setFormError] = useState<string | null>(null);
   const [isSaving, setIsSaving] = useState(false);
   const [busyId, setBusyId] = useState<number | null>(null);
+  const [viewMode, setViewMode] = useState<"table" | "card">("table");
 
   function load() {
     setIsLoading(true);
@@ -144,13 +148,19 @@ export default function WorkOrdersPage() {
       onSearchChange={setSearch}
       searchPlaceholder="Search work orders…"
       actions={
-        <button
-          type="button"
-          onClick={() => setShowForm((v) => !v)}
-          className="rounded-lg bg-[#0F172A] px-4 py-2 text-sm font-semibold text-white hover:bg-[#1e293b]"
-        >
-          {showForm ? "Cancel" : "+ New Work Order"}
-        </button>
+        <div className="flex items-center gap-2">
+          <ViewToggleButton
+            viewMode={viewMode}
+            onToggle={() => setViewMode((m) => (m === "table" ? "card" : "table"))}
+          />
+          <button
+            type="button"
+            onClick={() => setShowForm((v) => !v)}
+            className="rounded-lg bg-[#0F172A] px-4 py-2 text-sm font-semibold text-white hover:bg-[#1e293b]"
+          >
+            {showForm ? "Cancel" : "+ New Work Order"}
+          </button>
+        </div>
       }
     >
       {showForm && (
@@ -261,58 +271,105 @@ export default function WorkOrdersPage() {
       )}
       {isLoading && <p className="mt-6 text-sm text-slate-500">Loading work orders…</p>}
       {!isLoading && !error && filtered.length === 0 && (
-        <p className="mt-6 rounded-xl bg-white p-6 text-center text-sm text-slate-400 shadow-[0_1px_2px_rgba(16,24,64,0.06)]">
-          No work orders found.
-        </p>
+        <EmptyNote>No work orders found.</EmptyNote>
       )}
 
       {filtered.length > 0 && (
-        <div className="mt-6 space-y-2">
-          {filtered.map((o) => (
-            <div
-              key={o.id}
-              className="flex flex-wrap items-center justify-between gap-3 rounded-xl bg-white p-3 shadow-[0_1px_2px_rgba(16,24,64,0.06)]"
-            >
-              <div className="min-w-0">
-                <p className="truncate font-semibold text-slate-800">
-                  {o.title || `${prettify(o.work_type)} – ${o.equipment_name}`}
-                </p>
-                <p className="truncate text-xs text-slate-400">
-                  {o.equipment_name} · {prettify(o.work_type)}
-                  {o.due_date ? ` · Due ${o.due_date.slice(0, 10)}` : ""}
-                  {o.notes || o.description ? ` · ${o.notes || o.description}` : ""}
-                </p>
+        <DataList
+          rows={filtered}
+          rowKey={(o) => o.id}
+          viewMode={viewMode}
+          columns={[
+            { header: "Equipment", cell: (o) => <span className="font-semibold text-slate-800">{o.equipment_name}</span> },
+            { header: "Title", cell: (o) => o.title || prettify(o.work_type) },
+            { header: "Type", cell: (o) => prettify(o.work_type) },
+            { header: "Due Date", cell: (o) => (o.due_date ? o.due_date.slice(0, 10) : "—") },
+            { header: "Priority", cell: (o) => <PriorityBadge o={o} /> },
+            { header: "Status", cell: (o) => <StatusBadge status={o.status} /> },
+            { header: "Actions", cell: (o) => <OrderActions o={o} busy={busyId === o.id} onStatus={handleStatus} onDelete={handleDelete} /> },
+          ]}
+          renderCard={(o) => (
+            <>
+              <div className="flex items-start justify-between gap-2">
+                <div className="min-w-0">
+                  <p className="text-xs text-slate-400">{o.equipment_name}</p>
+                  <p className="font-semibold text-slate-800">{o.title || prettify(o.work_type)}</p>
+                </div>
+                <OrderActions o={o} busy={busyId === o.id} onStatus={handleStatus} onDelete={handleDelete} />
               </div>
-              <div className="flex flex-wrap items-center gap-2">
-                <StatusDot
-                  label={prettify(o.priority) || "Normal"}
-                  tone={TONE[workOrderLevel(o)]}
-                />
-                <select
-                  disabled={busyId === o.id}
-                  value={o.status}
-                  onChange={(e) => handleStatus(o, e.target.value)}
-                  className={input}
-                >
-                  {Array.from(new Set([o.status, ...STATUSES])).map((s) => (
-                    <option key={s} value={s}>
-                      {prettify(s)}
-                    </option>
-                  ))}
-                </select>
-                <button
-                  type="button"
-                  disabled={busyId === o.id}
-                  onClick={() => handleDelete(o)}
-                  className="text-sm font-medium text-red-600 hover:text-red-700 disabled:opacity-60"
-                >
-                  Delete
-                </button>
+              <div className="mt-2 grid grid-cols-2 gap-x-2 gap-y-1.5 text-xs">
+                <div>
+                  <p className="text-slate-400">Type</p>
+                  <p className="text-slate-700">{prettify(o.work_type)}</p>
+                </div>
+                <div>
+                  <p className="text-slate-400">Due Date</p>
+                  <p className="text-slate-700">{o.due_date ? o.due_date.slice(0, 10) : "—"}</p>
+                </div>
               </div>
-            </div>
-          ))}
-        </div>
+              <div className="mt-2 flex items-center gap-2">
+                <PriorityBadge o={o} />
+                <StatusBadge status={o.status} />
+              </div>
+            </>
+          )}
+        />
       )}
     </AdminPageShell>
+  );
+}
+
+function PriorityBadge({ o }: { o: WorkOrder }) {
+  return (
+    <StatusDot label={prettify(o.priority) || "Normal"} tone={TONE[workOrderLevel(o)]} />
+  );
+}
+
+function StatusBadge({ status }: { status: string }) {
+  const tone: StatusTone =
+    status === "completed" ? "green" : status === "cancelled" ? "slate" : status === "in_progress" ? "orange" : "navy";
+  return <StatusDot label={prettify(status)} tone={tone} />;
+}
+
+function OrderActions({
+  o,
+  busy,
+  onStatus,
+  onDelete,
+}: {
+  o: WorkOrder;
+  busy: boolean;
+  onStatus: (o: WorkOrder, status: string) => void;
+  onDelete: (o: WorkOrder) => void;
+}) {
+  return (
+    <ThreeDotMenu>
+      {(close) => (
+        <div>
+          {STATUSES.filter((s) => s !== o.status).map((s) => (
+            <MenuItem
+              key={s}
+              disabled={busy}
+              onClick={() => {
+                onStatus(o, s);
+                close();
+              }}
+            >
+              Mark {prettify(s)}
+            </MenuItem>
+          ))}
+          <MenuItem
+            tone="danger"
+            disabled={busy}
+            onClick={() => {
+              onDelete(o);
+              close();
+            }}
+          >
+            Delete
+          </MenuItem>
+        </div>
+      )}
+    </ThreeDotMenu>
   );
 }

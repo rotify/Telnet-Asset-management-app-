@@ -7,6 +7,8 @@ import {
   getEquipmentTransfers,
 } from "@/lib/api";
 import { AdminPageShell } from "@/components/layout/admin-page-shell";
+import { DataList, EmptyNote } from "@/components/data-list";
+import { ViewToggleButton } from "@/components/view-toggle";
 import type { Equipment } from "@/types/asset";
 import type { EquipmentTransfer } from "@/types/workflow";
 
@@ -23,6 +25,7 @@ export default function TransfersPage() {
   const [form, setForm] = useState(EMPTY);
   const [formError, setFormError] = useState<string | null>(null);
   const [isSaving, setIsSaving] = useState(false);
+  const [viewMode, setViewMode] = useState<"table" | "card">("table");
 
   useEffect(() => {
     Promise.all([
@@ -102,13 +105,19 @@ export default function TransfersPage() {
       onSearchChange={setSearch}
       searchPlaceholder="Search transfers…"
       actions={
-        <button
-          type="button"
-          onClick={() => setShowForm((v) => !v)}
-          className="rounded-lg bg-[#0F172A] px-4 py-2 text-sm font-semibold text-white hover:bg-[#1e293b]"
-        >
-          {showForm ? "Cancel" : "+ New Transfer"}
-        </button>
+        <div className="flex items-center gap-2">
+          <ViewToggleButton
+            viewMode={viewMode}
+            onToggle={() => setViewMode((m) => (m === "table" ? "card" : "table"))}
+          />
+          <button
+            type="button"
+            onClick={() => setShowForm((v) => !v)}
+            className="rounded-lg bg-[#0F172A] px-4 py-2 text-sm font-semibold text-white hover:bg-[#1e293b]"
+          >
+            {showForm ? "Cancel" : "+ New Transfer"}
+          </button>
+        </div>
       }
     >
       {showForm && (
@@ -188,32 +197,41 @@ export default function TransfersPage() {
       )}
       {isLoading && <p className="mt-6 text-sm text-slate-500">Loading transfers…</p>}
       {!isLoading && !error && filtered.length === 0 && (
-        <p className="mt-6 rounded-xl bg-white p-6 text-center text-sm text-slate-400 shadow-[0_1px_2px_rgba(16,24,64,0.06)]">
-          No transfers found.
-        </p>
+        <EmptyNote>No transfers found.</EmptyNote>
       )}
 
       {filtered.length > 0 && (
-        <div className="mt-6 space-y-2">
-          {filtered.map((t) => (
-            <div
-              key={t.id}
-              className="rounded-xl bg-white p-3 shadow-[0_1px_2px_rgba(16,24,64,0.06)]"
-            >
-              <div className="flex flex-wrap items-center justify-between gap-2">
-                <p className="font-semibold text-slate-800">{label(t)}</p>
-                <p className="text-xs text-slate-400">
-                  {t.created_at ? new Date(t.created_at).toLocaleDateString("en-GB") : ""}
-                </p>
+        <DataList
+          rows={filtered}
+          rowKey={(t) => t.id}
+          viewMode={viewMode}
+          columns={[
+            { header: "Equipment", cell: (t) => <span className="font-semibold text-slate-800">{label(t)}</span> },
+            { header: "Destination", cell: (t) => t.destination },
+            { header: "Department", cell: (t) => t.department || "—" },
+            { header: "Reason", cell: (t) => t.reason || "—" },
+            { header: "Date", cell: (t) => (t.created_at ? new Date(t.created_at).toLocaleDateString("en-GB") : "—") },
+          ]}
+          renderCard={(t) => (
+            <>
+              <p className="font-semibold text-slate-800">{label(t)}</p>
+              <div className="mt-2 grid grid-cols-2 gap-x-2 gap-y-1.5 text-xs">
+                <div>
+                  <p className="text-slate-400">Destination</p>
+                  <p className="text-slate-700">{t.destination}</p>
+                </div>
+                <div>
+                  <p className="text-slate-400">Department</p>
+                  <p className="text-slate-700">{t.department || "—"}</p>
+                </div>
+                <div className="col-span-2">
+                  <p className="text-slate-400">Reason</p>
+                  <p className="text-slate-700">{t.reason || "—"}</p>
+                </div>
               </div>
-              <p className="mt-1 text-sm text-slate-600">
-                → {t.destination}
-                {t.department ? ` (${t.department})` : ""}
-              </p>
-              {t.reason && <p className="mt-1 text-xs text-slate-400">{t.reason}</p>}
-            </div>
-          ))}
-        </div>
+            </>
+          )}
+        />
       )}
     </AdminPageShell>
   );

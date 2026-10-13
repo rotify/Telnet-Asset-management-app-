@@ -9,6 +9,9 @@ import {
 } from "@/lib/api";
 import { AdminPageShell } from "@/components/layout/admin-page-shell";
 import { StatusDot, type StatusTone } from "@/components/status-dot";
+import { DataList, EmptyNote } from "@/components/data-list";
+import { MenuItem, ThreeDotMenu } from "@/components/three-dot-menu";
+import { ViewToggleButton } from "@/components/view-toggle";
 import { prettify } from "@/lib/work-orders";
 import type { Staff } from "@/types/staff";
 import type { DriverRequest } from "@/types/workflow";
@@ -33,6 +36,7 @@ export default function DriverRequestsPage() {
   const [assigning, setAssigning] = useState<number | null>(null);
   const [driverId, setDriverId] = useState("");
   const [notes, setNotes] = useState("");
+  const [viewMode, setViewMode] = useState<"table" | "card">("table");
 
   useEffect(() => {
     Promise.all([getDriverRequests(), getStaff().catch(() => [] as Staff[])])
@@ -110,13 +114,19 @@ export default function DriverRequestsPage() {
       onSearchChange={setSearch}
       searchPlaceholder="Search requests…"
       actions={
-        <button
-          type="button"
-          onClick={() => setShowForm((v) => !v)}
-          className="rounded-lg bg-[#0F172A] px-4 py-2 text-sm font-semibold text-white hover:bg-[#1e293b]"
-        >
-          {showForm ? "Cancel" : "+ New Request"}
-        </button>
+        <div className="flex items-center gap-2">
+          <ViewToggleButton
+            viewMode={viewMode}
+            onToggle={() => setViewMode((m) => (m === "table" ? "card" : "table"))}
+          />
+          <button
+            type="button"
+            onClick={() => setShowForm((v) => !v)}
+            className="rounded-lg bg-[#0F172A] px-4 py-2 text-sm font-semibold text-white hover:bg-[#1e293b]"
+          >
+            {showForm ? "Cancel" : "+ New Request"}
+          </button>
+        </div>
       }
     >
       {showForm && (
@@ -153,79 +163,105 @@ export default function DriverRequestsPage() {
           {error}
         </div>
       )}
+      {assigning !== null && (
+        <div className="mt-4 rounded-xl bg-white p-4 shadow-[0_1px_2px_rgba(16,24,64,0.06)]">
+          <p className="text-sm font-semibold text-[#121B3B]">
+            Assign a driver to request #{assigning}
+          </p>
+          <div className="mt-3 flex flex-wrap items-center gap-2">
+            <select className={input} value={driverId} onChange={(e) => setDriverId(e.target.value)}>
+              <option value="">Select driver…</option>
+              {drivers.map((s) => (
+                <option key={s.id} value={s.id}>
+                  {s.first_name} {s.last_name}
+                </option>
+              ))}
+            </select>
+            <input
+              className={`${input} flex-1`}
+              placeholder="Notes (optional)"
+              value={notes}
+              onChange={(e) => setNotes(e.target.value)}
+            />
+            <button
+              type="button"
+              onClick={() => handleAssign(assigning)}
+              className="rounded-lg bg-telnet-primary px-3 py-2 text-sm font-semibold text-white hover:bg-telnet-primaryHover"
+            >
+              Assign
+            </button>
+            <button
+              type="button"
+              onClick={() => setAssigning(null)}
+              className="text-sm font-medium text-slate-400 hover:text-slate-600"
+            >
+              Cancel
+            </button>
+          </div>
+        </div>
+      )}
+
       {isLoading && <p className="mt-6 text-sm text-slate-500">Loading requests…</p>}
       {!isLoading && !error && filtered.length === 0 && (
-        <p className="mt-6 rounded-xl bg-white p-6 text-center text-sm text-slate-400 shadow-[0_1px_2px_rgba(16,24,64,0.06)]">
-          No driver requests found.
-        </p>
+        <EmptyNote>No driver requests found.</EmptyNote>
       )}
 
       {filtered.length > 0 && (
-        <div className="mt-6 space-y-2">
-          {filtered.map((r) => (
-            <div
-              key={r.id}
-              className="rounded-xl bg-white p-3 shadow-[0_1px_2px_rgba(16,24,64,0.06)]"
-            >
-              <div className="flex flex-wrap items-start justify-between gap-2">
-                <div className="min-w-0">
-                  <p className="font-semibold text-slate-800">{text(r) || `Request #${r.id}`}</p>
-                  <p className="text-xs text-slate-400">
-                    {r.preferred_date ? `Preferred ${r.preferred_date.slice(0, 10)}` : "No preferred date"}
-                    {r.assigned_driver
-                      ? ` · Driver: ${staffName.get(r.assigned_driver) ?? r.assigned_driver}`
-                      : ""}
+        <DataList
+          rows={filtered}
+          rowKey={(r) => r.id}
+          viewMode={viewMode}
+          columns={[
+            { header: "Request", cell: (r) => <span className="font-semibold text-slate-800">{text(r) || `Request #${r.id}`}</span> },
+            { header: "Preferred Date", cell: (r) => (r.preferred_date ? r.preferred_date.slice(0, 10) : "—") },
+            { header: "Driver", cell: (r) => (r.assigned_driver ? staffName.get(r.assigned_driver) ?? r.assigned_driver : "Unassigned") },
+            { header: "Status", cell: (r) => <StatusDot label={prettify(r.status)} tone={TONE[r.status] ?? "slate"} /> },
+            { header: "Actions", cell: (r) => <RequestActions r={r} onAssign={() => setAssigning(r.id)} /> },
+          ]}
+          renderCard={(r) => (
+            <>
+              <div className="flex items-start justify-between gap-2">
+                <p className="font-semibold text-slate-800">{text(r) || `Request #${r.id}`}</p>
+                <RequestActions r={r} onAssign={() => setAssigning(r.id)} />
+              </div>
+              <div className="mt-2 grid grid-cols-2 gap-x-2 gap-y-1.5 text-xs">
+                <div>
+                  <p className="text-slate-400">Preferred Date</p>
+                  <p className="text-slate-700">{r.preferred_date ? r.preferred_date.slice(0, 10) : "—"}</p>
+                </div>
+                <div>
+                  <p className="text-slate-400">Driver</p>
+                  <p className="text-slate-700">
+                    {r.assigned_driver ? staffName.get(r.assigned_driver) ?? r.assigned_driver : "Unassigned"}
                   </p>
                 </div>
-                <div className="flex items-center gap-2">
-                  <StatusDot label={prettify(r.status)} tone={TONE[r.status] ?? "slate"} />
-                  {assigning !== r.id && (
-                    <button
-                      type="button"
-                      onClick={() => setAssigning(r.id)}
-                      className="text-sm font-medium text-telnet-primary hover:text-telnet-primaryHover"
-                    >
-                      {r.assigned_driver ? "Reassign" : "Assign driver"}
-                    </button>
-                  )}
-                </div>
               </div>
-              {assigning === r.id && (
-                <div className="mt-3 flex flex-wrap items-center gap-2 border-t border-slate-100 pt-3">
-                  <select className={input} value={driverId} onChange={(e) => setDriverId(e.target.value)}>
-                    <option value="">Select driver…</option>
-                    {drivers.map((s) => (
-                      <option key={s.id} value={s.id}>
-                        {s.first_name} {s.last_name}
-                      </option>
-                    ))}
-                  </select>
-                  <input
-                    className={`${input} flex-1`}
-                    placeholder="Notes (optional)"
-                    value={notes}
-                    onChange={(e) => setNotes(e.target.value)}
-                  />
-                  <button
-                    type="button"
-                    onClick={() => handleAssign(r.id)}
-                    className="rounded-lg bg-telnet-primary px-3 py-2 text-sm font-semibold text-white hover:bg-telnet-primaryHover"
-                  >
-                    Assign
-                  </button>
-                  <button
-                    type="button"
-                    onClick={() => setAssigning(null)}
-                    className="text-sm font-medium text-slate-400 hover:text-slate-600"
-                  >
-                    Cancel
-                  </button>
-                </div>
-              )}
-            </div>
-          ))}
-        </div>
+              <div className="mt-2">
+                <StatusDot label={prettify(r.status)} tone={TONE[r.status] ?? "slate"} />
+              </div>
+            </>
+          )}
+        />
       )}
     </AdminPageShell>
+  );
+}
+
+function RequestActions({ r, onAssign }: { r: DriverRequest; onAssign: () => void }) {
+  return (
+    <ThreeDotMenu>
+      {(close) => (
+        <div>
+          <MenuItem
+            onClick={() => {
+              onAssign();
+              close();
+            }}
+          >
+            {r.assigned_driver ? "Reassign driver" : "Assign driver"}
+          </MenuItem>
+        </div>
+      )}
+    </ThreeDotMenu>
   );
 }
