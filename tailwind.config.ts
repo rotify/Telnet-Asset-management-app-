@@ -10,7 +10,7 @@ const config: Config = {
   theme: {
     extend: {
       fontFamily: {
-        sans: ["var(--font-poppins)", "ui-sans-serif", "system-ui", "sans-serif"],
+        sans: ["var(--font-poppins, ui-sans-serif)", "ui-sans-serif", "system-ui", "sans-serif"],
       },
       colors: {
         telnet: {
