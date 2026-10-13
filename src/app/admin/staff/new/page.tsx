@@ -122,14 +122,14 @@ export default function AddStaffPage() {
     <div className="flex min-h-[calc(100vh-0px)] bg-[#EFF1F6]">
       <AdminSidebar />
 
-      <div className="flex-1 px-6 py-8">
-        <div className="mx-auto max-w-4xl">
-          <AdminTopBar />
+      <div className="flex-1 px-4 pt-2 pb-4 sm:px-6 sm:pt-4 sm:pb-8 lg:ml-60">
+        <div className="mx-auto max-w-6xl">
+          <div className="sticky top-12 z-20 bg-[#EFF1F6] pb-2 lg:top-0">
+            <AdminTopBar />
+          </div>
 
           <header className="mt-6">
-            <h1 className="text-2xl font-bold uppercase text-[#121B3B]">
-              Company Asset
-            </h1>
+            <h1 className="text-2xl font-bold text-[#121B3B]">Add Employee</h1>
             <p className="mt-1 text-sm text-slate-500">
               Create a staff record so assets, documents and maintenance can
               be attributed to a real person.
