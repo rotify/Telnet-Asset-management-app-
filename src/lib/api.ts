@@ -162,8 +162,33 @@ export function deleteVehicle(id: number): Promise<void> {
   return authedMutate<void>(`/api/vehicles/${id}`, "DELETE");
 }
 
-export function getStaff(): Promise<Staff[]> {
-  return authedFetch<Staff[]>("/api/staff");
+function staffArray(data: unknown): Staff[] {
+  if (Array.isArray(data)) return data as Staff[];
+  const results = (data as { results?: unknown } | null)?.results;
+  return Array.isArray(results) ? (results as Staff[]) : [];
+}
+
+// Legacy /api/staff/ first; if it comes back empty (or fails) fall back to
+// the admin staff directory, which is where provisioned staff live.
+export async function getStaff(): Promise<Staff[]> {
+  let legacyError: unknown = null;
+  let list: Staff[] = [];
+  try {
+    list = staffArray(await authedFetch<unknown>("/api/staff"));
+  } catch (err) {
+    legacyError = err;
+  }
+  if (list.length > 0) return list;
+
+  try {
+    const admin = staffArray(await authedFetch<unknown>("/api/admin/staff?page_size=200"));
+    if (admin.length > 0) return admin;
+  } catch (err) {
+    if (legacyError) throw legacyError;
+    void err;
+  }
+  if (legacyError) throw legacyError;
+  return list;
 }
 
 export interface StaffPayload {

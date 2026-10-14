@@ -134,7 +134,9 @@ export function AssetActions({
                 onChange={(e) => setSelectedStaff(e.target.value)}
                 className="w-full rounded border border-slate-200 px-2 py-1.5 text-sm focus:border-telnet-primary focus:outline-none"
               >
-                <option value="">Select staff…</option>
+                <option value="">
+                  {staffOptions.length === 0 ? "No staff found" : "Select staff…"}
+                </option>
                 {staffOptions.map((s) => (
                   <option key={s.id} value={s.id}>
                     {s.name}
