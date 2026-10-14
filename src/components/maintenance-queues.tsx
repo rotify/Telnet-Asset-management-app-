@@ -2,8 +2,11 @@
 
 import { useEffect, useState } from "react";
 import {
+  getEquipment,
+  getEquipmentMaintenance,
   getMaintenanceDue,
   getMaintenanceRequests,
+  getVehicles,
   type MaintenanceDueItem,
   type MaintenanceRequest,
 } from "@/lib/api";
@@ -27,6 +30,66 @@ const STATUS_TONE: Record<string, StatusTone> = {
   due_soon: "orange",
   ok: "green",
 };
+
+const SOON_DAYS = 30;
+
+function dueStatus(date: string): "overdue" | "due_soon" | null {
+  const t = new Date(date).getTime();
+  if (Number.isNaN(t)) return null;
+  const days = Math.floor((t - Date.now()) / 86_400_000);
+  if (days < 0) return "overdue";
+  return days <= SOON_DAYS ? "due_soon" : null;
+}
+
+// Fallback when /maintenance/due/ is unavailable or empty: work out what
+// needs attention from the app's own data (open maintenance records and
+// vehicle compliance expiries).
+async function deriveDue(): Promise<MaintenanceDueItem[]> {
+  const [records, equipment, vehicles] = await Promise.all([
+    getEquipmentMaintenance().catch(() => []),
+    getEquipment().catch(() => []),
+    getVehicles().catch(() => []),
+  ]);
+  const eqName = new Map(equipment.map((e) => [e.id, e.name]));
+  const out: MaintenanceDueItem[] = [];
+
+  for (const r of records) {
+    if (r.maintenance_date || !r.due_date) continue;
+    const status = dueStatus(r.due_date);
+    if (status)
+      out.push({
+        name: eqName.get(r.equipment) ?? r.description,
+        type: "equipment",
+        due_date: r.due_date,
+        status,
+      });
+  }
+  for (const e of equipment) {
+    if (e.status === "damaged")
+      out.push({ name: e.name, type: "equipment", status: "overdue", due_date: "" });
+  }
+  const checks: [keyof (typeof vehicles)[number], string][] = [
+    ["insurance_expiry", "Insurance"],
+    ["roadworthy_expiry", "Roadworthiness"],
+    ["license_expiry", "Licence"],
+    ["hackney_permit", "Hackney permit"],
+  ];
+  for (const v of vehicles) {
+    for (const [key, label] of checks) {
+      const date = v[key];
+      if (typeof date !== "string" || !date) continue;
+      const status = dueStatus(date);
+      if (status)
+        out.push({
+          name: `${v.license_plate || v.name} – ${label}`,
+          type: "vehicle",
+          due_date: date,
+          status,
+        });
+    }
+  }
+  return out;
+}
 
 function Card({
   title,
@@ -58,11 +121,28 @@ export function MaintenanceQueues() {
   const [requests, setRequests] = useState<MaintenanceRequest[] | null>(null);
   const [reqError, setReqError] = useState<string | null>(null);
 
+  const [derived, setDerived] = useState(false);
+
   useEffect(() => {
     getMaintenanceDue()
-      .then(setDue)
-      .catch((e) =>
-        setDueError(e instanceof Error ? e.message : "Couldn't load due assets.")
+      .then((list) => {
+        if (list.length > 0) return setDue(list);
+        return deriveDue().then((d) => {
+          setDerived(true);
+          setDue(d);
+        });
+      })
+      .catch(() =>
+        deriveDue()
+          .then((d) => {
+            setDerived(true);
+            setDue(d);
+          })
+          .catch((e) =>
+            setDueError(
+              e instanceof Error ? e.message : "Couldn't load due assets."
+            )
+          )
       );
     getMaintenanceRequests()
       .then(setRequests)
@@ -86,6 +166,12 @@ export function MaintenanceQueues() {
           </p>
         ) : (
           <ul className="mt-3 divide-y divide-slate-100">
+            {derived && (
+              <li className="pb-2 text-xs text-slate-400">
+                Calculated from due and expiry dates (next {SOON_DAYS} days
+                and overdue).
+              </li>
+            )}
             {due.map((d, i) => {
               const status = pick(d, ["status", "due_status", "maintenance_status"]);
               return (
