@@ -19,6 +19,7 @@ export default function StaffAssetsPage() {
   const [isLoading, setIsLoading] = useState(true);
   const [error, setError] = useState<string | null>(null);
   const [search, setSearch] = useState("");
+  const [statusFilter, setStatusFilter] = useState("All");
 
   useEffect(() => {
     Promise.all([getVehicles(), getEquipment()])
@@ -33,34 +34,46 @@ export default function StaffAssetsPage() {
   }, []);
 
   const q = search.trim().toLowerCase();
+  const statusOptions = useMemo(
+    () => [
+      "All",
+      ...Array.from(
+        new Set([...vehicles, ...equipment].map((a) => a.status).filter(Boolean))
+      ),
+    ],
+    [vehicles, equipment]
+  );
   const vs = useMemo(
     () =>
       vehicles.filter(
         (v) =>
-          !q ||
+          (statusFilter === "All" || v.status === statusFilter) &&
+          (!q ||
           [v.name, v.license_plate, v.make, v.model]
             .join(" ")
             .toLowerCase()
-            .includes(q)
+            .includes(q))
       ),
-    [vehicles, q]
+    [vehicles, q, statusFilter]
   );
   const es = useMemo(
     () =>
       equipment.filter(
         (e) =>
-          !q ||
+          (statusFilter === "All" || e.status === statusFilter) &&
+          (!q ||
           [e.name, e.equipment_type, e.serial_number ?? "", e.location ?? ""]
             .join(" ")
             .toLowerCase()
-            .includes(q)
+            .includes(q))
       ),
-    [equipment, q]
+    [equipment, q, statusFilter]
   );
 
   return (
     <StaffPageShell
       title="My Assets"
+      uppercase
       description="Vehicles and equipment assigned to you."
       search={search}
       onSearchChange={setSearch}
@@ -71,6 +84,32 @@ export default function StaffAssetsPage() {
           {error}
         </p>
       )}
+      <div className="mt-6 flex flex-col gap-3 rounded-xl bg-white p-3 shadow-[0_1px_2px_rgba(16,24,64,0.06)] sm:flex-row sm:items-center">
+        <select
+          value={statusFilter}
+          onChange={(e) => setStatusFilter(e.target.value)}
+          className="rounded-lg border border-slate-200 bg-white px-3 py-2 text-sm text-slate-700 focus:border-telnet-primary focus:outline-none"
+        >
+          {statusOptions.map((st) => (
+            <option key={st} value={st}>
+              Status: {st === "All" ? "All" : prettyStatus(st)}
+            </option>
+          ))}
+        </select>
+        {(search || statusFilter !== "All") && (
+          <button
+            type="button"
+            onClick={() => {
+              setSearch("");
+              setStatusFilter("All");
+            }}
+            className="text-sm font-semibold text-red-400 hover:underline"
+          >
+            Clear filter
+          </button>
+        )}
+      </div>
+
       {isLoading ? (
         <p className="mt-6 text-sm text-slate-500">Loading…</p>
       ) : (

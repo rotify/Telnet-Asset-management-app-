@@ -40,3 +40,18 @@ export function statusTone(status: string | null | undefined): StatusTone {
 export function prettyStatus(status: string | null | undefined): string {
   return (status ?? "—").replace(/_/g, " ").replace(/^\w/, (c) => c.toUpperCase());
 }
+
+export type DocStatus = "Valid" | "Expiring" | "Expired";
+
+export function docStatus(expiry: string | null | undefined): DocStatus {
+  const d = daysUntil(expiry);
+  if (d === null) return "Valid";
+  if (d < 0) return "Expired";
+  return d <= 30 ? "Expiring" : "Valid";
+}
+
+export const DOC_TONES: Record<DocStatus, StatusTone> = {
+  Valid: "green",
+  Expiring: "orange",
+  Expired: "red",
+};

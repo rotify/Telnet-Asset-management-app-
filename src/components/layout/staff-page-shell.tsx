@@ -19,6 +19,7 @@ const STAFF_NAV: NavItem[] = [
 export function StaffPageShell({
   title,
   description,
+  uppercase = false,
   search,
   onSearchChange,
   searchPlaceholder,
@@ -26,6 +27,7 @@ export function StaffPageShell({
 }: {
   title: string;
   description: string;
+  uppercase?: boolean;
   search?: string;
   onSearchChange?: (v: string) => void;
   searchPlaceholder?: string;
@@ -61,7 +63,13 @@ export function StaffPageShell({
             />
           </div>
           <header className="mt-6">
-            <h1 className="text-2xl font-bold text-[#121B3B]">{title}</h1>
+            <h1
+              className={`text-2xl font-bold text-[#121B3B] ${
+                uppercase ? "uppercase" : ""
+              }`}
+            >
+              {title}
+            </h1>
             <p className="mt-1 text-sm text-slate-500">{description}</p>
           </header>
           {children}
