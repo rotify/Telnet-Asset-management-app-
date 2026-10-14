@@ -84,15 +84,17 @@ export default function StaffOverviewPage() {
   const [isDriver, setIsDriver] = useState(false);
 
   useEffect(() => {
-    loadMyData().then((d) => {
+    loadMyData()
+      .then((d) => {
       setVehicles(d.vehicles);
       setEquipment(d.equipment);
       setDocuments(d.documents);
       setErrors(d.errors);
       setLinked(d.linked);
       setIsDriver(d.isDriver);
-      setIsLoading(false);
-    });
+      })
+      .catch(() => setErrors(["data"]))
+      .finally(() => setIsLoading(false));
   }, []);
 
   const alerts = useMemo<Alert[]>(() => {
@@ -151,7 +153,6 @@ export default function StaffOverviewPage() {
   return (
     <StaffPageShell
       title="My Dashboard"
-      uppercase
       description="Monitor the vehicles, equipment and documents assigned to you."
       search={search}
       onSearchChange={setSearch}

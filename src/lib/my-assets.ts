@@ -25,8 +25,32 @@ export interface MyData {
 const norm = (s: string | null | undefined) =>
   (s ?? "").trim().toLowerCase().replace(/\s+/g, " ");
 
+// Never let a slow or hanging request keep a screen on "Loading…".
+function withTimeout<T>(p: Promise<T>, ms = 15000): Promise<T> {
+  return new Promise<T>((resolve, reject) => {
+    const t = setTimeout(() => reject(new Error("Request timed out.")), ms);
+    p.then(
+      (v) => {
+        clearTimeout(t);
+        resolve(v);
+      },
+      (e) => {
+        clearTimeout(t);
+        reject(e);
+      }
+    );
+  });
+}
+
 async function getIdentity() {
-  const profile = await getProfileSettings();
+  const [profile, role, staff] = await Promise.all([
+    withTimeout(getProfileSettings()),
+    withTimeout(getCurrentUser())
+      .then((u) => (u.role ?? "").toLowerCase())
+      .catch(() => ""),
+    // The staff directory is admin-only; ignore failures for staff logins.
+    withTimeout(getStaff()).catch(() => []),
+  ]);
   const names = new Set<string>();
   const add = (v: string | null | undefined) => {
     const n = norm(v);
@@ -38,11 +62,6 @@ async function getIdentity() {
 
   let staffId: number | null = null;
   let driverStaff = false;
-  const role = await getCurrentUser()
-    .then((u) => (u.role ?? "").toLowerCase())
-    .catch(() => "");
-  // The staff directory may be admin-only; ignore failures.
-  const staff = await getStaff().catch(() => []);
   const me = staff.find(
     (s) =>
       s.user === profile.id ||
@@ -67,9 +86,9 @@ export async function loadMyData(): Promise<MyData> {
   }
 
   const [v, e, d] = await Promise.allSettled([
-    getVehicles(),
-    getEquipment(),
-    getDocuments(),
+    withTimeout(getVehicles()),
+    withTimeout(getEquipment()),
+    withTimeout(getDocuments()),
   ]);
   const vehicles = v.status === "fulfilled" ? v.value : [];
   const equipment = e.status === "fulfilled" ? e.value : [];

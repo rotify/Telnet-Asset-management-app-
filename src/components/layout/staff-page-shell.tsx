@@ -57,6 +57,8 @@ export function StaffPageShell({
         <div className="mx-auto max-w-6xl">
           <div className="sticky top-12 z-20 bg-[#EFF1F6] pb-2 lg:top-0">
             <AdminTopBar
+              roleLabel="Staff"
+              showNotifications={false}
               search={search}
               onSearchChange={onSearchChange}
               searchPlaceholder={searchPlaceholder}

@@ -53,6 +53,8 @@ interface AdminTopBarProps {
   onSearchChange?: (value: string) => void;
   searchPlaceholder?: string;
   hasNotifications?: boolean;
+  roleLabel?: string;
+  showNotifications?: boolean;
 }
 
 export function AdminTopBar({
@@ -60,6 +62,8 @@ export function AdminTopBar({
   onSearchChange,
   searchPlaceholder = "Search...",
   hasNotifications = false,
+  roleLabel = "Admin",
+  showNotifications = true,
 }: AdminTopBarProps) {
   const router = useRouter();
   const [username, setUsername] = useState<string | null>(null);
@@ -93,6 +97,7 @@ export function AdminTopBar({
           <CalendarIcon />
           {todayFormatted()}
         </div>
+        {showNotifications && (
         <button
           type="button"
           aria-label="Notifications"
@@ -104,13 +109,14 @@ export function AdminTopBar({
             <span className="absolute right-2.5 top-2.5 h-2 w-2 rounded-full bg-[#FD7072]" />
           )}
         </button>
+        )}
         <div className="flex items-center gap-2">
           <span className="flex h-9 w-9 shrink-0 items-center justify-center rounded-full bg-telnet-primary text-xs font-bold text-white">
             {initials(username)}
           </span>
           <div>
             <p className="text-sm font-bold text-[#121B3B]">{username}</p>
-            <p className="text-xs font-bold text-[#787A78]">Admin</p>
+            <p className="text-xs font-bold text-[#787A78]">{roleLabel}</p>
           </div>
         </div>
       </div>

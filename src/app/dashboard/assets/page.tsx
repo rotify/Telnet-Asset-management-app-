@@ -23,7 +23,8 @@ export default function StaffAssetsPage() {
   const [isDriver, setIsDriver] = useState(false);
 
   useEffect(() => {
-    loadMyData().then((d) => {
+    loadMyData()
+      .then((d) => {
       setVehicles(d.vehicles);
       setEquipment(d.equipment);
       setIsDriver(d.isDriver);
@@ -33,8 +34,11 @@ export default function StaffAssetsPage() {
         );
       else if (d.errors.length)
         setError(`Couldn't load your ${d.errors.join(", ")}.`);
-      setIsLoading(false);
-    });
+      })
+      .catch((err) =>
+        setError(err instanceof Error ? err.message : "Couldn't load your data.")
+      )
+      .finally(() => setIsLoading(false));
   }, []);
 
   const q = search.trim().toLowerCase();
@@ -77,7 +81,6 @@ export default function StaffAssetsPage() {
   return (
     <StaffPageShell
       title="My Assets"
-      uppercase
       description={
         isDriver
           ? "Vehicles and equipment assigned to you."

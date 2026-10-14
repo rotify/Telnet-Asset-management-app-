@@ -33,15 +33,25 @@ export function proxyHandler(upstreamPath: string, method: ProxyMethod) {
       init.body = JSON.stringify(body);
     }
 
-    const upstream = await fetch(`${API_BASE_URL}${upstreamPath}`, init);
+    try {
+      const upstream = await fetch(`${API_BASE_URL}${upstreamPath}`, {
+        ...init,
+        signal: AbortSignal.timeout(20000),
+      });
 
-    if (upstream.status === 204) {
-      return new NextResponse(null, { status: 204 });
+      if (upstream.status === 204) {
+        return new NextResponse(null, { status: 204 });
+      }
+
+      const data = await upstream.json().catch(() => ({}));
+
+      return NextResponse.json(data, { status: upstream.status });
+    } catch {
+      return NextResponse.json(
+        { message: "Couldn't reach the asset service." },
+        { status: 502 }
+      );
     }
-
-    const data = await upstream.json().catch(() => ({}));
-
-    return NextResponse.json(data, { status: upstream.status });
   };
 }
 

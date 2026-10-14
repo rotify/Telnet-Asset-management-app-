@@ -31,7 +31,9 @@ function MenuIcon() {
 export function SiteHeader() {
   const [username, setUsername] = useState<string | null>(null);
   const pathname = usePathname();
-  const isAdminSection = pathname?.startsWith("/admin") ?? false;
+  const isAdminSection =
+    (pathname?.startsWith("/admin") || pathname?.startsWith("/dashboard")) ??
+    false;
 
   useEffect(() => {
     if (getStoredToken()) {

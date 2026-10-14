@@ -33,7 +33,8 @@ export default function StaffDocumentsPage() {
   const [statusFilter, setStatusFilter] = useState<"All" | DocStatus>("All");
 
   useEffect(() => {
-    loadMyData().then((d) => {
+    loadMyData()
+      .then((d) => {
       setDocs(d.documents);
       if (!d.linked)
         setError(
@@ -41,8 +42,11 @@ export default function StaffDocumentsPage() {
         );
       else if (d.errors.length)
         setError(`Couldn't load your ${d.errors.join(", ")}.`);
-      setIsLoading(false);
-    });
+      })
+      .catch((err) =>
+        setError(err instanceof Error ? err.message : "Couldn't load your data.")
+      )
+      .finally(() => setIsLoading(false));
   }, []);
 
   const filtered = useMemo(() => {
