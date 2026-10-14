@@ -46,7 +46,7 @@ export function DataList<T>({
           viewMode === "table" ? "md:block" : ""
         }`}
       >
-        <table className="w-full min-w-[800px] border-collapse text-left text-sm">
+        <table className="w-full min-w-[720px] border-collapse text-left text-sm">
           <thead>
             <tr className="border-b border-slate-100 bg-blue-50/60 text-xs font-semibold uppercase tracking-wide text-slate-500">
               {columns.map((c) => (

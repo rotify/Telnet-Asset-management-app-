@@ -391,7 +391,7 @@ export default function DocumentsPage() {
     <div className="flex min-h-[calc(100vh-0px)] bg-[#EFF1F6]">
       <AdminSidebar />
 
-      <div className="flex-1 px-4 pt-2 pb-4 sm:px-6 sm:pt-4 sm:pb-8 lg:ml-60">
+      <div className="min-w-0 flex-1 px-4 pt-2 pb-4 sm:px-6 sm:pt-4 sm:pb-8 lg:ml-60">
         <div className="mx-auto max-w-6xl">
          
           <div className="sticky top-12 z-20 bg-[#EFF1F6] pb-2 lg:top-0">
@@ -921,7 +921,7 @@ export default function DocumentsPage() {
                 viewMode === "table" ? "md:block" : ""
               }`}
             >
-              <table className="w-full min-w-[800px] border-collapse text-left text-sm">
+              <table className="w-full min-w-[720px] border-collapse text-left text-sm">
                 <thead>
                   <tr className="border-b border-slate-100 bg-blue-50/60 text-xs font-semibold uppercase tracking-wide text-slate-500">
                     <th className="px-4 py-3">Name</th>

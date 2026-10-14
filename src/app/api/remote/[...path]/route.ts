@@ -14,6 +14,7 @@ const ALLOWED_PREFIXES = [
   "bulk-upload-assets",
   "bulk-upload-equipment",
   "v1/admin/users",
+  "v1/admin/roles",
   "v1/admin/staff",
   "v1/notifications/recipients",
   "v1/settings/password",

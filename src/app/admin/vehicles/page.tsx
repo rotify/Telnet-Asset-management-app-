@@ -182,7 +182,7 @@ export default function VehiclesPage() {
     <div className="flex min-h-[calc(100vh-0px)] bg-[#EFF1F6]">
       <AdminSidebar />
 
-      <div className="flex-1 px-4 pt-2 pb-4 sm:px-6 sm:pt-4 sm:pb-8 lg:ml-60">
+      <div className="min-w-0 flex-1 px-4 pt-2 pb-4 sm:px-6 sm:pt-4 sm:pb-8 lg:ml-60">
         <div className="mx-auto max-w-6xl">
           {/* Sticky so the search/date/profile bar stays put while the
               page content below scrolls, matching the sidebar's fixed
@@ -294,7 +294,7 @@ export default function VehiclesPage() {
               selected; the toggle only takes effect at md and up. */}
           {!isLoading && !error && filtered.length > 0 && viewMode === "table" && (
             <div className="mt-6 hidden overflow-x-auto rounded-xl bg-white shadow-[0_1px_2px_rgba(16,24,64,0.06)] md:block">
-              <table className="w-full min-w-[900px] border-collapse text-left text-sm">
+              <table className="w-full min-w-[780px] border-collapse text-left text-sm">
                 <thead>
                   <tr className="border-b border-slate-100 bg-blue-50/60 text-xs font-semibold uppercase tracking-wide text-slate-500">
                     <th className="px-4 py-3">Vehicle</th>

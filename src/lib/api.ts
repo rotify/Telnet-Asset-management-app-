@@ -11,6 +11,7 @@ import type {
   VehicleMaintenancePayload,
 } from "@/types/workflow";
 import type { AdminRole, AdminUser, Paginated } from "@/types/admin";
+import type { RolePermissions } from "@/types/permissions";
 
 // An expired or invalid token can never recover on its own: drop the stored
 // session and send the user to sign in again.
@@ -728,6 +729,24 @@ export function getEquipmentWorkOrders(): Promise<WorkOrder[]> {
 export function getAdminUsers(pageSize = 100): Promise<Paginated<AdminUser>> {
   return authedFetch<Paginated<AdminUser>>(
     `/api/admin/users?page_size=${pageSize}`
+  );
+}
+
+// Role permission matrix. Proposed backend contract:
+//   GET / PUT /api/v1/admin/roles/{role}/permissions/
+export function getRolePermissions(role: string): Promise<RolePermissions> {
+  return authedFetch<RolePermissions>(
+    `/api/remote/v1/admin/roles/${role}/permissions`
+  );
+}
+export function saveRolePermissions(
+  role: string,
+  payload: RolePermissions
+): Promise<RolePermissions> {
+  return authedMutate<RolePermissions>(
+    `/api/remote/v1/admin/roles/${role}/permissions`,
+    "PUT",
+    payload
   );
 }
 

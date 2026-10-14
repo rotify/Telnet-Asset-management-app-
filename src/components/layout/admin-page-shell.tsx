@@ -12,6 +12,7 @@ export function AdminPageShell({
   title,
   description,
   actions,
+  breadcrumb,
   search,
   onSearchChange,
   searchPlaceholder,
@@ -20,6 +21,7 @@ export function AdminPageShell({
   title: string;
   description: string;
   actions?: React.ReactNode;
+  breadcrumb?: React.ReactNode;
   search?: string;
   onSearchChange?: (v: string) => void;
   searchPlaceholder?: string;
@@ -45,7 +47,7 @@ export function AdminPageShell({
   return (
     <div className="flex min-h-[calc(100vh-0px)] bg-[#EFF1F6]">
       <AdminSidebar />
-      <div className="flex-1 px-4 pt-2 pb-4 sm:px-6 sm:pt-4 sm:pb-8 lg:ml-60">
+      <div className="min-w-0 flex-1 px-4 pt-2 pb-4 sm:px-6 sm:pt-4 sm:pb-8 lg:ml-60">
         <div className="mx-auto max-w-6xl">
           <div className="sticky top-12 z-20 bg-[#EFF1F6] pb-2 lg:top-0">
             <AdminTopBar
@@ -54,6 +56,9 @@ export function AdminPageShell({
               searchPlaceholder={searchPlaceholder}
             />
           </div>
+          {breadcrumb && (
+            <div className="mt-4 text-xs text-slate-400">{breadcrumb}</div>
+          )}
           <header className="mt-6 flex flex-wrap items-center justify-between gap-3">
             <div>
               <h1 className="text-2xl font-bold text-[#121B3B]">{title}</h1>

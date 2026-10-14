@@ -132,7 +132,7 @@ export default function AddStaffPage() {
     <div className="flex min-h-[calc(100vh-0px)] bg-[#EFF1F6]">
       <AdminSidebar />
 
-      <div className="flex-1 px-4 pt-2 pb-4 sm:px-6 sm:pt-4 sm:pb-8 lg:ml-60">
+      <div className="min-w-0 flex-1 px-4 pt-2 pb-4 sm:px-6 sm:pt-4 sm:pb-8 lg:ml-60">
         <div className="mx-auto max-w-6xl">
           <div className="sticky top-12 z-20 bg-[#EFF1F6] pb-2 lg:top-0">
             <AdminTopBar />
