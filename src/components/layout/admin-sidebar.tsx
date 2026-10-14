@@ -10,7 +10,7 @@ import {
   subscribeSidebar,
 } from "@/lib/sidebar-toggle";
 
-interface NavItem {
+export interface NavItem {
   label: string;
   href: string;
   icon: string;
@@ -31,7 +31,7 @@ const NAV_ITEMS: NavItem[] = [
   { label: "Settings", href: "/admin/settings", icon: "settings", live: true },
 ];
 
-function NavIcon({ name }: { name: string }) {
+export function NavIcon({ name }: { name: string }) {
   const common = {
     width: 18,
     height: 18,
@@ -129,7 +129,11 @@ function NavIcon({ name }: { name: string }) {
   }
 }
 
-export function AdminSidebar() {
+export function AdminSidebar({
+  items = NAV_ITEMS,
+}: {
+  items?: NavItem[];
+}) {
   const pathname = usePathname();
   const router = useRouter();
   const isOpen = useSyncExternalStore(
@@ -171,7 +175,7 @@ export function AdminSidebar() {
         </span>
 
         <nav className="flex flex-1 flex-col gap-1">
-          {NAV_ITEMS.map((item) => {
+          {items.map((item) => {
             const isActive = pathname === item.href;
             const baseClasses =
               "flex items-center gap-3 rounded-lg px-3 py-2 text-sm font-medium transition-colors";
