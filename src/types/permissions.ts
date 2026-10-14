@@ -31,7 +31,6 @@ export type ModulePermissions = Record<PermissionAction, boolean>;
 export interface RolePermissions {
   role: string;
   modules: Record<PermissionModuleKey, ModulePermissions>;
-  approvals: { level1: boolean; stage2: boolean };
 }
 
 // Roles shown in the editor. Staff and drivers are the same role.

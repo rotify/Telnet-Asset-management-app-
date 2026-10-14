@@ -19,7 +19,6 @@ export function blankPermissions(role: string, value = false): RolePermissions {
     modules: Object.fromEntries(
       PERMISSION_MODULES.map((m) => [m.key, emptyModule(value)])
     ) as Record<PermissionModuleKey, ModulePermissions>,
-    approvals: { level1: value, stage2: value },
   };
 }
 
@@ -37,7 +36,6 @@ export function defaultPermissions(role: string): RolePermissions {
     set("staff", ["view"]);
     set("requests", ["approve"]);
     set("transfers", ["approve"]);
-    p.approvals.level1 = true;
     return p;
   }
   // staff (incl. drivers)

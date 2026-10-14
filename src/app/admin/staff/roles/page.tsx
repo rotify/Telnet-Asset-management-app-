@@ -14,38 +14,6 @@ import {
   type RolePermissions,
 } from "@/types/permissions";
 
-function Toggle({
-  checked,
-  onChange,
-  disabled,
-  label,
-}: {
-  checked: boolean;
-  onChange: (v: boolean) => void;
-  disabled?: boolean;
-  label: string;
-}) {
-  return (
-    <button
-      type="button"
-      role="switch"
-      aria-checked={checked}
-      aria-label={label}
-      disabled={disabled}
-      onClick={() => onChange(!checked)}
-      className={`relative h-5 w-9 shrink-0 rounded-full transition-colors disabled:opacity-50 ${
-        checked ? "bg-telnet-primary" : "bg-slate-200"
-      }`}
-    >
-      <span
-        className={`absolute top-0.5 h-4 w-4 rounded-full bg-white shadow transition-all ${
-          checked ? "left-[18px]" : "left-0.5"
-        }`}
-      />
-    </button>
-  );
-}
-
 function roleUserKey(role: string): string {
   // Staff and drivers are the same role.
   return role === "driver" ? "staff" : role;
@@ -88,7 +56,6 @@ export default function RolePermissionsPage() {
       const merged: RolePermissions = {
         role: r,
         modules: { ...base.modules, ...(data.modules ?? {}) },
-        approvals: { ...base.approvals, ...(data.approvals ?? {}) },
       };
       setPerms(merged);
       setSaved(JSON.stringify(merged));
@@ -134,7 +101,7 @@ export default function RolePermissionsPage() {
 
   function setAll(v: boolean) {
     setSuccess(false);
-    setPerms((p) => ({ ...blankPermissions(p.role, v), approvals: p.approvals }));
+    setPerms((p) => blankPermissions(p.role, v));
   }
 
   async function save() {
@@ -160,7 +127,7 @@ export default function RolePermissionsPage() {
   return (
     <AdminPageShell
       title="Role Permissions Editor"
-      description="Define granular module access, approval authority, and export privileges across roles."
+      description="Define granular module access and export privileges across roles."
       breadcrumb={
         <>
           <Link href="/admin/dashboard" className="hover:underline">Dashboard</Link>
@@ -221,13 +188,6 @@ export default function RolePermissionsPage() {
               </button>
             ))}
           </div>
-          <div className="mt-4 rounded-lg bg-slate-50 p-3 text-xs text-slate-500">
-            <p className="font-semibold text-[#121B3B]">Two-Level Approval Chain</p>
-            <p className="mt-1">
-              Requests need Level 1 Approver sign-off (direct line manager)
-              before passing to the Main Approver (Super Admin) for dispatch.
-            </p>
-          </div>
         </div>
 
         {/* Editor */}
@@ -274,39 +234,6 @@ export default function RolePermissionsPage() {
               are shown. Review them and press Save.
             </p>
           )}
-
-          <div className="rounded-xl bg-white p-4 shadow-[0_1px_2px_rgba(16,24,64,0.06)]">
-            <p className="text-[11px] font-bold uppercase tracking-wide text-slate-400">
-              Approval workflow authority
-            </p>
-            <div className="mt-3 grid grid-cols-1 gap-3 sm:grid-cols-2">
-              {(
-                [
-                  ["level1", "Level 1 Approver Authority", "Can authorize team asset requests"],
-                  ["stage2", "Main (Stage 2) Approver Authority", "Final administrative release clearance"],
-                ] as const
-              ).map(([key, title, sub]) => (
-                <div
-                  key={key}
-                  className="flex items-center justify-between gap-3 rounded-lg border border-slate-100 px-3 py-2.5"
-                >
-                  <div>
-                    <p className="text-sm font-medium text-[#121B3B]">{title}</p>
-                    <p className="text-xs text-slate-400">{sub}</p>
-                  </div>
-                  <Toggle
-                    label={title}
-                    checked={perms.approvals[key]}
-                    disabled={locked}
-                    onChange={(v) => {
-                      setSuccess(false);
-                      setPerms((p) => ({ ...p, approvals: { ...p.approvals, [key]: v } }));
-                    }}
-                  />
-                </div>
-              ))}
-            </div>
-          </div>
 
           <div className="overflow-x-auto rounded-xl bg-white shadow-[0_1px_2px_rgba(16,24,64,0.06)]">
             {isLoading ? (
