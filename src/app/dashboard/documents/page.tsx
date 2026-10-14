@@ -1,7 +1,8 @@
 "use client";
 
 import { useEffect, useMemo, useState } from "react";
-import { documentFileUrl, getDocuments } from "@/lib/api";
+import { documentFileUrl } from "@/lib/api";
+import { loadMyData } from "@/lib/my-assets";
 import { StaffPageShell } from "@/components/layout/staff-page-shell";
 import { StatusDot } from "@/components/status-dot";
 import { DOC_TONES, docStatus, fmtDate, type DocStatus } from "@/lib/staff-helpers";
@@ -32,12 +33,16 @@ export default function StaffDocumentsPage() {
   const [statusFilter, setStatusFilter] = useState<"All" | DocStatus>("All");
 
   useEffect(() => {
-    getDocuments()
-      .then(setDocs)
-      .catch((err) =>
-        setError(err instanceof Error ? err.message : "Couldn't load your documents.")
-      )
-      .finally(() => setIsLoading(false));
+    loadMyData().then((d) => {
+      setDocs(d.documents);
+      if (!d.linked)
+        setError(
+          "We couldn't match your login to a staff profile, so no documents are shown. Ask an admin to link your account."
+        );
+      else if (d.errors.length)
+        setError(`Couldn't load your ${d.errors.join(", ")}.`);
+      setIsLoading(false);
+    });
   }, []);
 
   const filtered = useMemo(() => {

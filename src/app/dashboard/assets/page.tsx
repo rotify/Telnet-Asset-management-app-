@@ -1,7 +1,7 @@
 "use client";
 
 import { useEffect, useMemo, useState } from "react";
-import { getEquipment, getVehicles } from "@/lib/api";
+import { loadMyData } from "@/lib/my-assets";
 import { StaffPageShell } from "@/components/layout/staff-page-shell";
 import { DataList, EmptyNote } from "@/components/data-list";
 import { StatusDot } from "@/components/status-dot";
@@ -22,15 +22,17 @@ export default function StaffAssetsPage() {
   const [statusFilter, setStatusFilter] = useState("All");
 
   useEffect(() => {
-    Promise.all([getVehicles(), getEquipment()])
-      .then(([v, e]) => {
-        setVehicles(v);
-        setEquipment(e);
-      })
-      .catch((err) =>
-        setError(err instanceof Error ? err.message : "Couldn't load your assets.")
-      )
-      .finally(() => setIsLoading(false));
+    loadMyData().then((d) => {
+      setVehicles(d.vehicles);
+      setEquipment(d.equipment);
+      if (!d.linked)
+        setError(
+          "We couldn't match your login to a staff profile, so no assets are shown. Ask an admin to link your account."
+        );
+      else if (d.errors.length)
+        setError(`Couldn't load your ${d.errors.join(", ")}.`);
+      setIsLoading(false);
+    });
   }, []);
 
   const q = search.trim().toLowerCase();

@@ -2,7 +2,7 @@
 
 import { useEffect, useMemo, useState } from "react";
 import Link from "next/link";
-import { getDocuments, getEquipment, getVehicles } from "@/lib/api";
+import { loadMyData } from "@/lib/my-assets";
 import { StaffPageShell } from "@/components/layout/staff-page-shell";
 import { daysUntil, expiryLabel, prettyStatus } from "@/lib/staff-helpers";
 import type { DocumentRecord } from "@/types/document";
@@ -80,20 +80,17 @@ export default function StaffOverviewPage() {
   const [errors, setErrors] = useState<string[]>([]);
   const [search, setSearch] = useState("");
 
+  const [linked, setLinked] = useState(true);
+
   useEffect(() => {
-    Promise.allSettled([getVehicles(), getEquipment(), getDocuments()]).then(
-      ([v, e, d]) => {
-        const errs: string[] = [];
-        if (v.status === "fulfilled") setVehicles(v.value);
-        else errs.push("vehicles");
-        if (e.status === "fulfilled") setEquipment(e.value);
-        else errs.push("equipment");
-        if (d.status === "fulfilled") setDocuments(d.value);
-        else errs.push("documents");
-        setErrors(errs);
-        setIsLoading(false);
-      }
-    );
+    loadMyData().then((d) => {
+      setVehicles(d.vehicles);
+      setEquipment(d.equipment);
+      setDocuments(d.documents);
+      setErrors(d.errors);
+      setLinked(d.linked);
+      setIsLoading(false);
+    });
   }, []);
 
   const alerts = useMemo<Alert[]>(() => {
@@ -161,6 +158,13 @@ export default function StaffOverviewPage() {
       {errors.length > 0 && (
         <p className="mt-4 rounded-lg border border-red-200 bg-red-50 px-4 py-3 text-sm text-red-700">
           Couldn&apos;t load your {errors.join(", ")}. Try reloading the page.
+        </p>
+      )}
+
+      {!isLoading && !linked && (
+        <p className="mt-4 rounded-lg border border-amber-200 bg-amber-50 px-4 py-3 text-sm text-amber-700">
+          We couldn&apos;t match your login to a staff profile, so no assets
+          are shown. Ask an admin to link your account.
         </p>
       )}
 
