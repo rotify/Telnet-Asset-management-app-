@@ -31,11 +31,13 @@ export default function StaffDocumentsPage() {
   const [error, setError] = useState<string | null>(null);
   const [search, setSearch] = useState("");
   const [statusFilter, setStatusFilter] = useState<"All" | DocStatus>("All");
+  const [available, setAvailable] = useState(true);
 
   useEffect(() => {
     loadMyData()
       .then((d) => {
       setDocs(d.documents);
+      setAvailable(d.documentsAvailable);
       if (!d.linked)
         setError(
           "We couldn't match your login to a staff profile, so no documents are shown. Ask an admin to link your account."
@@ -101,7 +103,12 @@ export default function StaffDocumentsPage() {
         )}
       </div>
 
-      {isLoading ? (
+      {!isLoading && !available ? (
+        <p className="mt-8 text-sm text-slate-400">
+          Documents aren&apos;t available for your account yet. Ask an admin if
+          you need a copy of one.
+        </p>
+      ) : isLoading ? (
         <p className="mt-6 text-sm text-slate-500">Loading documents…</p>
       ) : filtered.length === 0 ? (
         <p className="mt-8 text-sm text-slate-400">No documents match your search.</p>

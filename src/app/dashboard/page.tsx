@@ -82,6 +82,7 @@ export default function StaffOverviewPage() {
 
   const [linked, setLinked] = useState(true);
   const [isDriver, setIsDriver] = useState(false);
+  const [docsAvailable, setDocsAvailable] = useState(true);
 
   useEffect(() => {
     loadMyData()
@@ -92,6 +93,7 @@ export default function StaffOverviewPage() {
       setErrors(d.errors);
       setLinked(d.linked);
       setIsDriver(d.isDriver);
+      setDocsAvailable(d.documentsAvailable);
       })
       .catch(() => setErrors(["data"]))
       .finally(() => setIsLoading(false));
@@ -177,7 +179,11 @@ export default function StaffOverviewPage() {
         <>
           <div
             className={`mt-6 grid grid-cols-2 gap-3 ${
-              isDriver ? "lg:grid-cols-4" : "lg:grid-cols-3"
+              isDriver === docsAvailable
+                ? isDriver
+                  ? "lg:grid-cols-4"
+                  : "lg:grid-cols-3"
+                : "lg:grid-cols-3"
             }`}
           >
             <StatCard
@@ -216,6 +222,7 @@ export default function StaffOverviewPage() {
                 </Icon>
               }
             />
+            {docsAvailable && (
             <StatCard
               label="My Documents"
               value={documents.length}
@@ -226,6 +233,7 @@ export default function StaffOverviewPage() {
                 </Icon>
               }
             />
+            )}
           </div>
 
           <div className="mt-4 rounded-xl bg-white p-4 shadow-[0_1px_2px_rgba(16,24,64,0.06)]">

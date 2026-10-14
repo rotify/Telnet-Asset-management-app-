@@ -18,6 +18,7 @@ export interface MyData {
   equipment: Equipment[];
   documents: DocumentRecord[];
   errors: string[];
+  documentsAvailable: boolean; // false when the backend denies staff access
   isDriver: boolean; // vehicles are only for drivers
   linked: boolean; // false when we couldn't tell who the user is
 }
@@ -95,7 +96,9 @@ export async function loadMyData(): Promise<MyData> {
   const documents = d.status === "fulfilled" ? d.value : [];
   if (v.status === "rejected") errors.push("vehicles");
   if (e.status === "rejected") errors.push("equipment");
-  if (d.status === "rejected") errors.push("documents");
+  // Documents are manager/admin only on the backend, so a denial for a staff
+  // login is expected, not an error.
+  const documentsAvailable = d.status === "fulfilled";
 
   if (!identity || identity.names.size === 0) {
     return {
@@ -103,6 +106,7 @@ export async function loadMyData(): Promise<MyData> {
       equipment: [],
       documents: [],
       errors,
+      documentsAvailable,
       isDriver: false,
       linked: false,
     };
@@ -133,6 +137,7 @@ export async function loadMyData(): Promise<MyData> {
     equipment: myEquipment,
     documents: myDocuments,
     errors,
+    documentsAvailable,
     isDriver,
     linked: true,
   };
