@@ -5,7 +5,6 @@ import Link from "next/link";
 import { loadMyData } from "@/lib/my-assets";
 import { StaffPageShell } from "@/components/layout/staff-page-shell";
 import { daysUntil, expiryLabel, prettyStatus } from "@/lib/staff-helpers";
-import type { DocumentRecord } from "@/types/document";
 import type { Equipment, Vehicle } from "@/types/asset";
 
 const ALERT_STYLES = {
@@ -75,25 +74,21 @@ const VEHICLE_CHECKS: [keyof Vehicle, string][] = [
 export default function StaffOverviewPage() {
   const [vehicles, setVehicles] = useState<Vehicle[]>([]);
   const [equipment, setEquipment] = useState<Equipment[]>([]);
-  const [documents, setDocuments] = useState<DocumentRecord[]>([]);
   const [isLoading, setIsLoading] = useState(true);
   const [errors, setErrors] = useState<string[]>([]);
   const [search, setSearch] = useState("");
 
   const [linked, setLinked] = useState(true);
   const [isDriver, setIsDriver] = useState(false);
-  const [docsAvailable, setDocsAvailable] = useState(true);
 
   useEffect(() => {
     loadMyData()
       .then((d) => {
       setVehicles(d.vehicles);
       setEquipment(d.equipment);
-      setDocuments(d.documents);
       setErrors(d.errors);
       setLinked(d.linked);
       setIsDriver(d.isDriver);
-      setDocsAvailable(d.documentsAvailable);
       })
       .catch(() => setErrors(["data"]))
       .finally(() => setIsLoading(false));
@@ -101,15 +96,6 @@ export default function StaffOverviewPage() {
 
   const alerts = useMemo<Alert[]>(() => {
     const out: Alert[] = [];
-    for (const d of documents) {
-      const days = daysUntil(d.expiry_date);
-      if (days === null || days > 30) continue;
-      out.push({
-        level: days < 0 ? "critical" : "warning",
-        title: days < 0 ? `${d.name} has expired` : `${d.name} expires soon`,
-        sub: `${d.document_type || "Document"} · ${expiryLabel(d.expiry_date)}`,
-      });
-    }
     for (const v of vehicles) {
       for (const [key, label] of VEHICLE_CHECKS) {
         const date = v[key];
@@ -134,7 +120,7 @@ export default function StaffOverviewPage() {
         });
     }
     return out.sort((a) => (a.level === "critical" ? -1 : 1));
-  }, [documents, vehicles, equipment]);
+  }, [vehicles, equipment]);
 
   const q = search.trim().toLowerCase();
   const shownAlerts = alerts.filter(
@@ -155,7 +141,7 @@ export default function StaffOverviewPage() {
   return (
     <StaffPageShell
       title="My Dashboard"
-      description="Monitor the vehicles, equipment and documents assigned to you."
+      description="Monitor the vehicles and equipment assigned to you."
       search={search}
       onSearchChange={setSearch}
       searchPlaceholder="Search alerts..."
@@ -179,11 +165,7 @@ export default function StaffOverviewPage() {
         <>
           <div
             className={`mt-6 grid grid-cols-2 gap-3 ${
-              isDriver === docsAvailable
-                ? isDriver
-                  ? "lg:grid-cols-4"
-                  : "lg:grid-cols-3"
-                : "lg:grid-cols-3"
+              isDriver ? "lg:grid-cols-3" : "lg:grid-cols-2"
             }`}
           >
             <StatCard
@@ -222,18 +204,6 @@ export default function StaffOverviewPage() {
                 </Icon>
               }
             />
-            {docsAvailable && (
-            <StatCard
-              label="My Documents"
-              value={documents.length}
-              hint="Licences, permits and certificates"
-              icon={
-                <Icon>
-                  <path d="M3 8a2 2 0 0 1 2-2h11l5 4v9a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2Z" />
-                </Icon>
-              }
-            />
-            )}
           </div>
 
           <div className="mt-4 rounded-xl bg-white p-4 shadow-[0_1px_2px_rgba(16,24,64,0.06)]">

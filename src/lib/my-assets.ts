@@ -1,13 +1,11 @@
 import {
   getCurrentUser,
-  getDocuments,
   getEquipment,
   getProfileSettings,
   getStaff,
   getVehicles,
 } from "@/lib/api";
 import type { Equipment, Vehicle } from "@/types/asset";
-import type { DocumentRecord } from "@/types/document";
 
 // Staff must only ever see what is assigned to them. The backend should
 // enforce this, but the app also filters client-side so a staff login never
@@ -16,9 +14,7 @@ import type { DocumentRecord } from "@/types/document";
 export interface MyData {
   vehicles: Vehicle[];
   equipment: Equipment[];
-  documents: DocumentRecord[];
   errors: string[];
-  documentsAvailable: boolean; // false when the backend denies staff access
   isDriver: boolean; // vehicles are only for drivers
   linked: boolean; // false when we couldn't tell who the user is
 }
@@ -93,27 +89,20 @@ export async function loadMyData(): Promise<MyData> {
     errors.push("profile");
   }
 
-  const [v, e, d] = await Promise.allSettled([
+  const [v, e] = await Promise.allSettled([
     withTimeout(getVehicles()),
     withTimeout(getEquipment()),
-    withTimeout(getDocuments()),
   ]);
   const vehicles = v.status === "fulfilled" ? v.value : [];
   const equipment = e.status === "fulfilled" ? e.value : [];
-  const documents = d.status === "fulfilled" ? d.value : [];
   if (v.status === "rejected") errors.push("vehicles");
   if (e.status === "rejected") errors.push("equipment");
-  // Documents are manager/admin only on the backend, so a denial for a staff
-  // login is expected, not an error.
-  const documentsAvailable = d.status === "fulfilled";
 
   if (!identity || identity.names.size === 0) {
     return {
       vehicles: [],
       equipment: [],
-      documents: [],
       errors,
-      documentsAvailable,
       isDriver: false,
       linked: false,
     };
@@ -132,22 +121,10 @@ export async function loadMyData(): Promise<MyData> {
   const myEquipment = equipment.filter(
     (x) => isMine(x.assigned_staff) || isMine(x.assigned_user)
   );
-  const vehicleIds = new Set(myVehicles.map((x) => x.id));
-  const equipmentIds = new Set(myEquipment.map((x) => x.id));
-  const myDocuments = documents.filter(
-    (x) =>
-      (staffId !== null && x.responsible_staff === staffId) ||
-      isMine(x.responsible_person) ||
-      (x.related_vehicle !== null && vehicleIds.has(x.related_vehicle)) ||
-      (x.related_equipment !== null && equipmentIds.has(x.related_equipment))
-  );
-
   return {
     vehicles: myVehicles,
     equipment: myEquipment,
-    documents: myDocuments,
     errors,
-    documentsAvailable,
     isDriver,
     linked: true,
   };
