@@ -1,4 +1,4 @@
-import { getStoredToken } from "@/lib/auth";
+import { clearStoredSession, getStoredToken } from "@/lib/auth";
 import type { Equipment, Vehicle } from "@/types/asset";
 import type { Staff } from "@/types/staff";
 import type { DocumentRecord } from "@/types/document";
@@ -11,6 +11,15 @@ import type {
   VehicleMaintenancePayload,
 } from "@/types/workflow";
 import type { AdminRole, AdminUser, Paginated } from "@/types/admin";
+
+// An expired or invalid token can never recover on its own: drop the stored
+// session and send the user to sign in again.
+function handleUnauthorized(status: number) {
+  if (status === 401 && typeof window !== "undefined") {
+    clearStoredSession();
+    window.location.href = "/login";
+  }
+}
 
 function extractErrorMessage(data: unknown, status: number): string {
   if (!data || typeof data !== "object") {
@@ -52,6 +61,7 @@ async function authedFetch<T>(path: string): Promise<T> {
   const data = await res.json().catch(() => null);
 
   if (!res.ok) {
+    handleUnauthorized(res.status);
     throw new Error(extractErrorMessage(data, res.status));
   }
 
@@ -81,6 +91,7 @@ async function authedMutate<T>(
   const data = await res.json().catch(() => null);
 
   if (!res.ok) {
+    handleUnauthorized(res.status);
     throw new Error(extractErrorMessage(data, res.status));
   }
 
@@ -289,6 +300,7 @@ async function authedMutateFormData<T>(
   const data = await res.json().catch(() => null);
 
   if (!res.ok) {
+    handleUnauthorized(res.status);
     throw new Error(extractErrorMessage(data, res.status));
   }
 
