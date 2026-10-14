@@ -20,11 +20,13 @@ export default function StaffAssetsPage() {
   const [error, setError] = useState<string | null>(null);
   const [search, setSearch] = useState("");
   const [statusFilter, setStatusFilter] = useState("All");
+  const [isDriver, setIsDriver] = useState(false);
 
   useEffect(() => {
     loadMyData().then((d) => {
       setVehicles(d.vehicles);
       setEquipment(d.equipment);
+      setIsDriver(d.isDriver);
       if (!d.linked)
         setError(
           "We couldn't match your login to a staff profile, so no assets are shown. Ask an admin to link your account."
@@ -76,7 +78,11 @@ export default function StaffAssetsPage() {
     <StaffPageShell
       title="My Assets"
       uppercase
-      description="Vehicles and equipment assigned to you."
+      description={
+        isDriver
+          ? "Vehicles and equipment assigned to you."
+          : "Equipment assigned to you."
+      }
       search={search}
       onSearchChange={setSearch}
       searchPlaceholder="Search my assets..."
@@ -116,6 +122,8 @@ export default function StaffAssetsPage() {
         <p className="mt-6 text-sm text-slate-500">Loading…</p>
       ) : (
         <>
+          {isDriver && (
+          <>
           <h2 className="mt-6 text-sm font-semibold text-[#121B3B]">
             Vehicles ({vs.length})
           </h2>
@@ -170,6 +178,9 @@ export default function StaffAssetsPage() {
                 </div>
               )}
             />
+          )}
+
+          </>
           )}
 
           <h2 className="mt-8 text-sm font-semibold text-[#121B3B]">

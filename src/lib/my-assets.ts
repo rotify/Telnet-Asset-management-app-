@@ -1,4 +1,5 @@
 import {
+  getCurrentUser,
   getDocuments,
   getEquipment,
   getProfileSettings,
@@ -17,6 +18,7 @@ export interface MyData {
   equipment: Equipment[];
   documents: DocumentRecord[];
   errors: string[];
+  isDriver: boolean; // vehicles are only for drivers
   linked: boolean; // false when we couldn't tell who the user is
 }
 
@@ -35,6 +37,10 @@ async function getIdentity() {
   add(`${profile.last_name} ${profile.first_name}`);
 
   let staffId: number | null = null;
+  let driverStaff = false;
+  const role = await getCurrentUser()
+    .then((u) => (u.role ?? "").toLowerCase())
+    .catch(() => "");
   // The staff directory may be admin-only; ignore failures.
   const staff = await getStaff().catch(() => []);
   const me = staff.find(
@@ -44,10 +50,11 @@ async function getIdentity() {
   );
   if (me) {
     staffId = me.id;
+    driverStaff = Boolean(me.driver_status?.trim());
     add(`${me.first_name} ${me.last_name}`);
     add(`${me.last_name} ${me.first_name}`);
   }
-  return { names, staffId };
+  return { names, staffId, isDriver: role === "driver" || driverStaff };
 }
 
 export async function loadMyData(): Promise<MyData> {
@@ -72,13 +79,23 @@ export async function loadMyData(): Promise<MyData> {
   if (d.status === "rejected") errors.push("documents");
 
   if (!identity || identity.names.size === 0) {
-    return { vehicles: [], equipment: [], documents: [], errors, linked: false };
+    return {
+      vehicles: [],
+      equipment: [],
+      documents: [],
+      errors,
+      isDriver: false,
+      linked: false,
+    };
   }
   const { names, staffId } = identity;
+  // Only drivers see vehicles (also covers anyone who has one assigned).
   const isMine = (assigned: string | null | undefined) =>
     names.has(norm(assigned));
 
-  const myVehicles = vehicles.filter((x) => isMine(x.assigned_staff));
+  const assignedVehicles = vehicles.filter((x) => isMine(x.assigned_staff));
+  const isDriver = identity.isDriver || assignedVehicles.length > 0;
+  const myVehicles = isDriver ? assignedVehicles : [];
   const myEquipment = equipment.filter(
     (x) => isMine(x.assigned_staff) || isMine(x.assigned_user)
   );
@@ -97,6 +114,7 @@ export async function loadMyData(): Promise<MyData> {
     equipment: myEquipment,
     documents: myDocuments,
     errors,
+    isDriver,
     linked: true,
   };
 }

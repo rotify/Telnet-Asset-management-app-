@@ -81,6 +81,7 @@ export default function StaffOverviewPage() {
   const [search, setSearch] = useState("");
 
   const [linked, setLinked] = useState(true);
+  const [isDriver, setIsDriver] = useState(false);
 
   useEffect(() => {
     loadMyData().then((d) => {
@@ -89,6 +90,7 @@ export default function StaffOverviewPage() {
       setDocuments(d.documents);
       setErrors(d.errors);
       setLinked(d.linked);
+      setIsDriver(d.isDriver);
       setIsLoading(false);
     });
   }, []);
@@ -172,7 +174,11 @@ export default function StaffOverviewPage() {
         <p className="mt-6 text-sm text-slate-500">Loading…</p>
       ) : (
         <>
-          <div className="mt-6 grid grid-cols-2 gap-3 lg:grid-cols-4">
+          <div
+            className={`mt-6 grid grid-cols-2 gap-3 ${
+              isDriver ? "lg:grid-cols-4" : "lg:grid-cols-3"
+            }`}
+          >
             <StatCard
               label="Total Assets"
               value={totalAssets}
@@ -184,6 +190,7 @@ export default function StaffOverviewPage() {
                 </Icon>
               }
             />
+            {isDriver && (
             <StatCard
               label="My Vehicles"
               value={vehicles.length}
@@ -196,6 +203,7 @@ export default function StaffOverviewPage() {
                 </Icon>
               }
             />
+            )}
             <StatCard
               label="My Equipment"
               value={equipment.length}
