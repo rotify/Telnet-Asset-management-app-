@@ -3,7 +3,7 @@
 import { useEffect, useState } from "react";
 import { useRouter } from "next/navigation";
 import { getStoredToken, getStoredUsername, isSuperAdmin } from "@/lib/auth";
-import { createStaff } from "@/lib/api";
+import { createAdminStaff } from "@/lib/api";
 import { AdminSidebar } from "@/components/layout/admin-sidebar";
 import { AdminTopBar } from "@/components/layout/admin-topbar";
 
@@ -47,6 +47,7 @@ const EMPTY = {
   emergency_contact_name: "",
   emergency_contact_phone: "",
   notes: "",
+  password: "",
 };
 
 export default function AddStaffPage() {
@@ -80,11 +81,20 @@ export default function AddStaffPage() {
       setError("Full name is required.");
       return;
     }
+    if (!form.staff_id.trim() || !form.email.trim()) {
+      setError("Employee ID and email are required to create a login.");
+      return;
+    }
+    if (form.password.length < 8) {
+      setError("Set an initial password of at least 8 characters.");
+      return;
+    }
     setIsSaving(true);
     try {
       const [first_name, ...rest] = form.full_name.trim().split(/\s+/);
       const last_name = rest.join(" ") || first_name;
-      await createStaff({
+      await createAdminStaff({
+        password: form.password,
         first_name,
         last_name,
         staff_id: form.staff_id || undefined,
@@ -171,6 +181,16 @@ export default function AddStaffPage() {
                   value={form.email}
                   onChange={(e) => update("email", e.target.value)}
                   placeholder="Enter employees email"
+                  className={inputClasses}
+                />
+              </Field>
+              <Field label="Initial Password">
+                <input
+                  type="password"
+                  value={form.password}
+                  onChange={(e) => update("password", e.target.value)}
+                  placeholder="Minimum 8 characters"
+                  autoComplete="new-password"
                   className={inputClasses}
                 />
               </Field>

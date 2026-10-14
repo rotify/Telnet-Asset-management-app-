@@ -9,15 +9,16 @@ const API_BASE_URL =
 
 const ALLOWED_PREFIXES = [
   "me",
-  "equipment-work-orders",
   "vehicle-maintenance",
   "equipment-transfers",
-  "driver-requests",
   "bulk-upload-assets",
   "bulk-upload-equipment",
   "v1/admin/users",
   "v1/admin/staff",
   "v1/notifications/recipients",
+  "v1/settings/password",
+  "maintenance/due",
+  "maintenance/requests",
   "asset",
   "vehicles",
   "equipment",

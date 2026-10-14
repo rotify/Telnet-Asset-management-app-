@@ -3,10 +3,8 @@ import type { Equipment, Vehicle } from "@/types/asset";
 import type { Staff } from "@/types/staff";
 import type { DocumentRecord } from "@/types/document";
 import type { AssetHistoryEntry, MaintenanceRecord } from "@/types/maintenance";
-import type { WorkOrder, WorkOrderPayload } from "@/types/work-order";
+import type { WorkOrder } from "@/types/work-order";
 import type {
-  DriverRequest,
-  DriverRequestPayload,
   EquipmentTransfer,
   EquipmentTransferPayload,
   VehicleMaintenance,
@@ -602,6 +600,89 @@ export function updateProfileSettings(
     payload
   );
 }
+export interface NotificationSettings {
+  id: number;
+  schedule_time: string;
+  alert_days: number;
+  is_enabled: boolean;
+  last_sent: string | null;
+  updated_at: string;
+}
+
+export function getNotificationSettings(): Promise<NotificationSettings> {
+  return authedFetch<NotificationSettings>("/api/v1/settings/notifications");
+}
+
+export function updateNotificationSettings(
+  payload: Partial<Pick<NotificationSettings, "schedule_time" | "alert_days" | "is_enabled">>
+): Promise<NotificationSettings> {
+  return authedMutate<NotificationSettings>(
+    "/api/v1/settings/notifications",
+    "PATCH",
+    payload
+  );
+}
+
+export function changePassword(payload: {
+  current_password: string;
+  new_password: string;
+  password_confirm: string;
+}): Promise<{ detail: string }> {
+  return authedMutate<{ detail: string }>(
+    "/api/remote/v1/settings/password",
+    "POST",
+    payload
+  );
+}
+
+// Maintenance due / emergency requests
+export interface MaintenanceDueItem {
+  [key: string]: unknown;
+}
+export interface MaintenanceRequest {
+  id?: number;
+  asset_description?: string;
+  issue_description?: string;
+  submitted_by?: string | null;
+  created_at?: string | null;
+  photo?: string | null;
+  [key: string]: unknown;
+}
+
+function asList<T>(data: unknown): T[] {
+  if (Array.isArray(data)) return data as T[];
+  const results = (data as { results?: unknown } | null)?.results;
+  return Array.isArray(results) ? (results as T[]) : [];
+}
+
+export async function getMaintenanceDue(): Promise<MaintenanceDueItem[]> {
+  return asList<MaintenanceDueItem>(
+    await authedFetch<unknown>("/api/remote/maintenance/due")
+  );
+}
+
+export async function getMaintenanceRequests(): Promise<MaintenanceRequest[]> {
+  return asList<MaintenanceRequest>(
+    await authedFetch<unknown>("/api/remote/maintenance/requests")
+  );
+}
+
+// Staff / drivers only on the backend; admin tokens are rejected.
+export function submitMaintenanceRequest(
+  payload: { asset_description: string; issue_description: string },
+  photo?: File | null
+): Promise<MaintenanceRequest> {
+  const formData = new FormData();
+  formData.append("asset_description", payload.asset_description);
+  formData.append("issue_description", payload.issue_description);
+  if (photo) formData.append("photo", photo);
+  return authedMutateFormData<MaintenanceRequest>(
+    "/api/remote/maintenance/requests",
+    "POST",
+    formData
+  );
+}
+
 export function getEquipmentWorkOrders(): Promise<WorkOrder[]> {
   return authedFetch<WorkOrder[]>("/api/equipment-work-orders");
 }
@@ -623,33 +704,6 @@ export function getAdminRoles(): Promise<AdminRole[]> {
 
 export function getCurrentUser(): Promise<{ username: string; role: string }> {
   return authedFetch("/api/remote/me");
-}
-
-// Work orders
-export function getEquipmentWorkOrder(id: number): Promise<WorkOrder> {
-  return authedFetch<WorkOrder>(`/api/remote/equipment-work-orders/${id}`);
-}
-export function createEquipmentWorkOrder(
-  payload: WorkOrderPayload
-): Promise<WorkOrder> {
-  return authedMutate<WorkOrder>(
-    "/api/remote/equipment-work-orders",
-    "POST",
-    payload
-  );
-}
-export function updateEquipmentWorkOrder(
-  id: number,
-  payload: Partial<WorkOrderPayload>
-): Promise<WorkOrder> {
-  return authedMutate<WorkOrder>(
-    `/api/remote/equipment-work-orders/${id}`,
-    "PATCH",
-    payload
-  );
-}
-export function deleteEquipmentWorkOrder(id: number): Promise<void> {
-  return authedMutate<void>(`/api/remote/equipment-work-orders/${id}`, "DELETE");
 }
 
 // Vehicle maintenance
@@ -702,29 +756,6 @@ export function createEquipmentTransfer(
   );
 }
 
-// Driver requests
-export function getDriverRequests(): Promise<DriverRequest[]> {
-  return authedFetch<DriverRequest[]>("/api/remote/driver-requests");
-}
-export function getDriverRequest(id: number): Promise<DriverRequest> {
-  return authedFetch<DriverRequest>(`/api/remote/driver-requests/${id}`);
-}
-export function createDriverRequest(
-  payload: DriverRequestPayload
-): Promise<DriverRequest> {
-  return authedMutate<DriverRequest>("/api/remote/driver-requests", "POST", payload);
-}
-export function assignDriverRequest(
-  id: number,
-  payload: { assigned_driver: number; notes?: string }
-): Promise<DriverRequest> {
-  return authedMutate<DriverRequest>(
-    `/api/remote/driver-requests/${id}/assign`,
-    "POST",
-    payload
-  );
-}
-
 // Admin users / staff (create + edit)
 export function getAdminUser(id: number): Promise<AdminUser> {
   return authedFetch<AdminUser>(`/api/remote/v1/admin/users/${id}`);
@@ -735,7 +766,10 @@ export function createAdminUser(payload: Partial<AdminUser> & { password?: strin
 export function updateAdminUser(id: number, payload: Partial<AdminUser>): Promise<AdminUser> {
   return authedMutate<AdminUser>(`/api/remote/v1/admin/users/${id}`, "PATCH", payload);
 }
-export function createAdminStaff(payload: Partial<Staff>): Promise<Staff> {
+// Admin provisioning: creates the staff record AND its login in one call.
+export function createAdminStaff(
+  payload: StaffPayload & { password: string }
+): Promise<Staff> {
   return authedMutate<Staff>("/api/remote/v1/admin/staff", "POST", payload);
 }
 export function updateAdminStaff(id: number, payload: Partial<Staff>): Promise<Staff> {

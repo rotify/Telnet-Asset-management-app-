@@ -13,6 +13,7 @@ import {
 import { AdminSidebar } from "@/components/layout/admin-sidebar";
 import { AdminTopBar } from "@/components/layout/admin-topbar";
 import { WorkOrdersPanel } from "@/components/work-orders-panel";
+import { MaintenanceQueues } from "@/components/maintenance-queues";
 import { StatusDot, type StatusTone } from "@/components/status-dot";
 import { ThreeDotMenu, MenuItem } from "@/components/three-dot-menu";
 import { ViewToggleButton } from "@/components/view-toggle";
@@ -386,6 +387,8 @@ export default function MaintenancePage() {
               </button>
             </div>
           </header>
+
+          <MaintenanceQueues />
 
           <WorkOrdersPanel />
 

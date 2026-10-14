@@ -10,13 +10,3 @@ export interface WorkOrder {
   due_date: string | null;
   notes: string | null;
 }
-
-export interface WorkOrderPayload {
-  equipment: number;
-  work_type: string;
-  title: string;
-  description?: string;
-  priority: string;
-  due_date?: string;
-  status?: string;
-}

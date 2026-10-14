@@ -34,20 +34,3 @@ export interface EquipmentTransferPayload {
   department?: string;
   reason?: string;
 }
-
-export interface DriverRequest {
-  id: number;
-  details?: string | null;
-  description?: string | null;
-  preferred_date: string | null;
-  status: string;
-  assigned_driver: number | null;
-  requested_by?: string | number | null;
-  created_at?: string | null;
-  [key: string]: unknown;
-}
-
-export interface DriverRequestPayload {
-  details: string;
-  preferred_date?: string;
-}
