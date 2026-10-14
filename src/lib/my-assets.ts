@@ -46,9 +46,7 @@ function withTimeout<T>(p: Promise<T>, ms = 15000): Promise<T> {
 async function getIdentity() {
   const [profile, role, staff] = await Promise.all([
     withTimeout(getProfileSettings()),
-    withTimeout(getCurrentUser())
-      .then((u) => (u.role ?? "").toLowerCase())
-      .catch(() => ""),
+    withTimeout(getCurrentUser()).catch(() => null),
     // The staff directory is admin-only; ignore failures for staff logins.
     withTimeout(getStaff()).catch(() => []),
   ]);
@@ -74,7 +72,16 @@ async function getIdentity() {
     add(`${me.first_name} ${me.last_name}`);
     add(`${me.last_name} ${me.first_name}`);
   }
-  return { names, staffId, isDriver: role === "driver" || driverStaff };
+  // Staff logins can't read the staff directory, so use the id /me/ reports
+  // if the backend provides one.
+  if (staffId === null && typeof role?.staff_id === "number") {
+    staffId = role.staff_id;
+  }
+  return {
+    names,
+    staffId,
+    isDriver: (role?.role ?? "").toLowerCase() === "driver" || driverStaff,
+  };
 }
 
 export async function loadMyData(): Promise<MyData> {
@@ -113,8 +120,11 @@ export async function loadMyData(): Promise<MyData> {
   }
   const { names, staffId } = identity;
   // Only drivers see vehicles (also covers anyone who has one assigned).
-  const isMine = (assigned: string | null | undefined) =>
-    names.has(norm(assigned));
+  // assigned_staff may come back as a name or as a raw staff id.
+  const isMine = (assigned: string | number | null | undefined) =>
+    names.has(norm(String(assigned ?? ""))) ||
+    (staffId !== null && assigned !== null && assigned !== undefined &&
+      String(assigned) === String(staffId));
 
   const assignedVehicles = vehicles.filter((x) => isMine(x.assigned_staff));
   const isDriver = identity.isDriver || assignedVehicles.length > 0;

@@ -739,7 +739,12 @@ export function getAdminRoles(): Promise<AdminRole[]> {
 // Newer backend endpoints (proxied through /api/remote/*)
 // ---------------------------------------------------------------------
 
-export function getCurrentUser(): Promise<{ username: string; role: string }> {
+export function getCurrentUser(): Promise<{
+  id?: number;
+  username: string;
+  role: string;
+  staff_id?: number | null;
+}> {
   return authedFetch("/api/remote/me");
 }
 
