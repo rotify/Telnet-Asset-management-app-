@@ -1,5 +1,6 @@
 import {
   getCurrentUser,
+  getMyStaffId,
   getEquipment,
   getProfileSettings,
   getStaff,
@@ -70,6 +71,10 @@ async function getIdentity() {
   // if the backend provides one.
   if (staffId === null && typeof role?.staff_id === "number") {
     staffId = role.staff_id;
+  }
+  // Otherwise ask the server (it can read the directory on our behalf).
+  if (staffId === null) {
+    staffId = await withTimeout(getMyStaffId()).catch(() => null);
   }
   return {
     names,

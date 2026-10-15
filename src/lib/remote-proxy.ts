@@ -8,7 +8,7 @@ export const REMOTE_API_URL =
   process.env.WORK_ORDERS_API_URL ??
   "http://207.180.246.69:8038/api";
 
-async function fetchRemote(url: string, token: string) {
+export async function fetchRemote(url: string, token: string) {
   return fetch(url, {
     headers: { Authorization: `Token ${token}`, Accept: "application/json" },
     cache: "no-store",
@@ -18,7 +18,7 @@ async function fetchRemote(url: string, token: string) {
 // The remote server issues its own tokens. If the signed-in user's token
 // isn't accepted there, optionally fall back to a service account kept in
 // server-side env vars (never sent to the browser).
-async function getServiceToken(): Promise<string | null> {
+export async function getServiceToken(): Promise<string | null> {
   const username =
     process.env.REMOTE_API_USERNAME ?? process.env.WORK_ORDERS_USERNAME;
   const password =

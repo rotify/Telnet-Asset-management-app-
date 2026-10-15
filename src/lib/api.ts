@@ -798,6 +798,13 @@ export function getAdminRoles(): Promise<AdminRole[]> {
 // Newer backend endpoints (proxied through /api/remote/*)
 // ---------------------------------------------------------------------
 
+// The signed-in user's own staff record id (null if unknown).
+export function getMyStaffId(): Promise<number | null> {
+  return authedFetch<{ staff_id: number | null }>("/api/staff-link")
+    .then((r) => (typeof r.staff_id === "number" ? r.staff_id : null))
+    .catch(() => null);
+}
+
 export function getCurrentUser(): Promise<{
   id?: number;
   username: string;
