@@ -6,11 +6,13 @@ import {
   getStaff,
   getAdminRoles,
   getAdminUsers,
+  updateAdminStaff,
   updateAdminUser,
 } from "@/lib/api";
 import { ThreeDotMenu, MenuItem } from "@/components/three-dot-menu";
 import { StatusDot, type StatusTone } from "@/components/status-dot";
 import type { AdminRole, AdminUser } from "@/types/admin";
+import type { Staff } from "@/types/staff";
 
 const ROLE_TONES: Record<string, StatusTone> = {
   admin: "red",
@@ -73,6 +75,110 @@ export function AdminUsersSection({ search }: { search: string }) {
   }, [users, search, roleFilter, statusFilter, roleLabel]);
 
   const [actionError, setActionError] = useState<string | null>(null);
+  const [editing, setEditing] = useState<AdminUser | null>(null);
+  const [editStaff, setEditStaff] = useState<Staff | null>(null);
+  const [form, setForm] = useState({
+    first_name: "",
+    last_name: "",
+    email: "",
+    staff_id: "",
+    department: "",
+    branch: "",
+    role: "staff",
+  });
+  const [editLoading, setEditLoading] = useState(false);
+  const [editSaving, setEditSaving] = useState(false);
+  const [editError, setEditError] = useState<string | null>(null);
+
+  async function openEdit(u: AdminUser) {
+    setEditing(u);
+    setEditStaff(null);
+    setEditError(null);
+    setForm({
+      first_name: u.first_name,
+      last_name: u.last_name,
+      email: u.email ?? "",
+      staff_id: "",
+      department: u.department ?? "",
+      branch: "",
+      role: u.role,
+    });
+    setEditLoading(true);
+    try {
+      const rec = (await getStaff()).find((x) => x.user === u.id) ?? null;
+      setEditStaff(rec);
+      if (rec) {
+        setForm((f) => ({
+          ...f,
+          first_name: rec.first_name,
+          last_name: rec.last_name,
+          email: rec.email ?? "",
+          staff_id: rec.staff_id,
+          department: rec.department ?? "",
+          branch: rec.branch ?? "",
+        }));
+      }
+    } catch {
+      // fall back to the user's own fields
+    } finally {
+      setEditLoading(false);
+    }
+  }
+
+  async function saveEdit() {
+    if (!editing) return;
+    setEditSaving(true);
+    setEditError(null);
+    try {
+      let updatedStaff: Staff | null = null;
+      if (editStaff) {
+        updatedStaff = await updateAdminStaff(editStaff.id, {
+          first_name: form.first_name.trim(),
+          last_name: form.last_name.trim(),
+          email: form.email.trim() || null,
+          staff_id: form.staff_id.trim(),
+          department: form.department.trim() || null,
+          branch: form.branch.trim() || null,
+        });
+      }
+      const userPatch: Partial<AdminUser> = {};
+      if (form.role !== editing.role) userPatch.role = form.role;
+      if (!editStaff) {
+        userPatch.first_name = form.first_name.trim();
+        userPatch.last_name = form.last_name.trim();
+        userPatch.email = form.email.trim() || null;
+        userPatch.department = form.department.trim() || null;
+      }
+      let updatedUser: Partial<AdminUser> = {};
+      if (Object.keys(userPatch).length) {
+        updatedUser = await updateAdminUser(editing.id, userPatch);
+      }
+      setUsers((list) =>
+        list.map((x) =>
+          x.id === editing.id
+            ? {
+                ...x,
+                ...(updatedStaff
+                  ? {
+                      first_name: updatedStaff.first_name,
+                      last_name: updatedStaff.last_name,
+                      email: updatedStaff.email,
+                      department: updatedStaff.department,
+                    }
+                  : {}),
+                ...userPatch,
+                ...updatedUser,
+              }
+            : x
+        )
+      );
+      setEditing(null);
+    } catch (err) {
+      setEditError(err instanceof Error ? err.message : "Couldn't save changes.");
+    } finally {
+      setEditSaving(false);
+    }
+  }
 
   async function applyUpdate(u: AdminUser, patch: Partial<AdminUser>) {
     setActionError(null);
@@ -132,6 +238,14 @@ export function AdminUsersSection({ search }: { search: string }) {
       <ThreeDotMenu>
         {(close) => (
           <div>
+            <MenuItem
+              onClick={() => {
+                close();
+                openEdit(u);
+              }}
+            >
+              Edit
+            </MenuItem>
             <p className="px-3 pb-1 pt-2 text-xs font-semibold uppercase text-slate-400">
               Change role
             </p>
@@ -323,6 +437,98 @@ export function AdminUsersSection({ search }: { search: string }) {
             </table>
           </div>
         </>
+      )}
+
+      {editing && (
+        <div className="fixed inset-0 z-50 flex items-center justify-center bg-black/40 p-4">
+          <div className="max-h-[90vh] w-full max-w-lg overflow-y-auto rounded-xl bg-white p-6 shadow-xl">
+            <h3 className="text-lg font-bold text-[#121B3B]">
+              Edit {fullName(editing)}
+            </h3>
+            {editLoading ? (
+              <p className="mt-4 text-sm text-slate-500">Loading record…</p>
+            ) : (
+              <div className="mt-4 grid grid-cols-1 gap-3 sm:grid-cols-2">
+                {(
+                  [
+                    ["first_name", "First name"],
+                    ["last_name", "Last name"],
+                    ["email", "Email"],
+                    ["staff_id", "Employee ID"],
+                    ["department", "Department"],
+                    ["branch", "Branch"],
+                  ] as const
+                ).map(([key, label]) =>
+                  key === "staff_id" || key === "branch" ? (
+                    editStaff ? (
+                      <label key={key} className="text-sm">
+                        <span className="mb-1 block font-medium text-[#121B3B]">
+                          {label}
+                        </span>
+                        <input
+                          value={form[key]}
+                          onChange={(e) =>
+                            setForm((f) => ({ ...f, [key]: e.target.value }))
+                          }
+                          className="w-full rounded-lg border border-slate-200 px-3 py-2 text-sm focus:border-telnet-primary focus:outline-none"
+                        />
+                      </label>
+                    ) : null
+                  ) : (
+                    <label key={key} className="text-sm">
+                      <span className="mb-1 block font-medium text-[#121B3B]">
+                        {label}
+                      </span>
+                      <input
+                        value={form[key]}
+                        onChange={(e) =>
+                          setForm((f) => ({ ...f, [key]: e.target.value }))
+                        }
+                        className="w-full rounded-lg border border-slate-200 px-3 py-2 text-sm focus:border-telnet-primary focus:outline-none"
+                      />
+                    </label>
+                  )
+                )}
+                <label className="text-sm">
+                  <span className="mb-1 block font-medium text-[#121B3B]">Role</span>
+                  <select
+                    value={form.role}
+                    onChange={(e) => setForm((f) => ({ ...f, role: e.target.value }))}
+                    className="w-full rounded-lg border border-slate-200 bg-white px-3 py-2 text-sm focus:border-telnet-primary focus:outline-none"
+                  >
+                    {roles.map((r) => (
+                      <option key={r.value} value={r.value}>
+                        {r.label}
+                      </option>
+                    ))}
+                  </select>
+                </label>
+              </div>
+            )}
+            {editError && (
+              <p className="mt-3 rounded-lg bg-red-50 px-3 py-2 text-sm text-red-700">
+                {editError}
+              </p>
+            )}
+            <div className="mt-5 flex justify-end gap-2">
+              <button
+                type="button"
+                onClick={() => setEditing(null)}
+                className="rounded-lg border border-slate-200 px-4 py-2 text-sm font-semibold text-slate-600 hover:bg-slate-50"
+              >
+                Cancel
+              </button>
+              <button
+                type="button"
+                onClick={saveEdit}
+                disabled={editSaving || editLoading}
+                className="rounded-lg bg-telnet-primary px-4 py-2 text-sm font-semibold text-white disabled:opacity-60"
+              >
+                {editSaving ? "Saving…" : "Save changes"}
+              </button>
+            </div>
+          </div>
+        </div>
       )}
     </section>
   );
