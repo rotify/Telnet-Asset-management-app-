@@ -7,6 +7,7 @@ import {
   createStaff,
   deleteStaff,
   getAdminUsers,
+  getRolePermissions,
   getStaff,
   updateStaff,
 } from "@/lib/api";
@@ -16,6 +17,12 @@ import { AdminUsersSection } from "@/components/admin-users-section";
 import { StatusDot } from "@/components/status-dot";
 import type { Staff } from "@/types/staff";
 import type { AdminUser } from "@/types/admin";
+import { defaultPermissions } from "@/lib/permission-defaults";
+import {
+  PERMISSION_ACTIONS,
+  PERMISSION_MODULES,
+  type RolePermissions,
+} from "@/types/permissions";
 
 interface EditableFields {
   first_name: string;
@@ -88,8 +95,26 @@ const ROLE_MATCH: Record<string, (u: AdminUser) => boolean> = {
   Staff: (u) => u.role === "staff",
 };
 
-function userLabel(u: AdminUser): string {
-  return `${u.first_name} ${u.last_name}`.trim() || u.username;
+// Which permission set (editor role) backs each card.
+const CARD_ROLE: Record<string, string> = {
+  "Super Admin": "admin",
+  Admin: "manager",
+  Driver: "staff",
+  Staff: "staff",
+};
+
+function permissionLines(p: RolePermissions | undefined): string[] {
+  if (!p) return [];
+  return PERMISSION_MODULES.flatMap((m) => {
+    const row = p.modules[m.key];
+    const granted = PERMISSION_ACTIONS.filter((a) => row?.[a]);
+    if (granted.length === 0) return [];
+    const actions =
+      granted.length === PERMISSION_ACTIONS.length
+        ? "Full access"
+        : granted.map((a) => a[0].toUpperCase() + a.slice(1)).join(", ");
+    return [`${m.label}: ${actions}`];
+  });
 }
 
 export default function StaffPage() {
@@ -97,6 +122,7 @@ export default function StaffPage() {
   const [gateChecked, setGateChecked] = useState(false);
   const [staff, setStaff] = useState<Staff[]>([]);
   const [users, setUsers] = useState<AdminUser[]>([]);
+  const [rolePerms, setRolePerms] = useState<Record<string, RolePermissions>>({});
   const [isLoading, setIsLoading] = useState(true);
   const [error, setError] = useState<string | null>(null);
   const [search, setSearch] = useState("");
@@ -131,6 +157,12 @@ export default function StaffPage() {
     getAdminUsers(200)
       .then((page) => setUsers(page.results))
       .catch(() => setUsers([]));
+
+    (["admin", "manager", "staff"] as const).forEach((r) => {
+      getRolePermissions(r)
+        .catch(() => defaultPermissions(r))
+        .then((p) => setRolePerms((prev) => ({ ...prev, [r]: p })));
+    });
   }, [gateChecked]);
 
   async function loadStaff() {
@@ -363,70 +395,44 @@ export default function StaffPage() {
                 <p className="mt-1 text-xs text-slate-500">
                   {role.description}
                 </p>
-                <ul className="mt-3 space-y-1.5 border-t border-slate-100 pt-3">
-                  {Array.from({ length: role.visiblePermissions }).map(
-                    (_, i) => (
-                      <li
-                        key={i}
-                        className="flex items-center gap-2 text-xs text-slate-600"
-                      >
-                        <svg
-                          width="14"
-                          height="14"
-                          viewBox="0 0 24 24"
-                          fill="none"
-                          stroke="#2DB130"
-                          strokeWidth={2.5}
-                          strokeLinecap="round"
-                          strokeLinejoin="round"
-                        >
-                          <path d="M20 6 9 17l-5-5" />
-                        </svg>
-                        View assets
-                      </li>
-                    )
-                  )}
-                </ul>
-                {role.morePermissions > 0 && (
-                  <p className="mt-2 text-xs text-slate-400">
-                    +{role.morePermissions} more permissions
-                  </p>
-                )}
                 <details className="group mt-3 border-t border-slate-100 pt-3">
                   <summary className="flex cursor-pointer list-none items-center justify-between text-xs font-semibold text-[#121B3B]">
-                    Users with this role
+                    Permissions
                     <span className="text-slate-400 transition-transform group-open:rotate-180">
                       ▾
                     </span>
                   </summary>
-                  {members.length === 0 ? (
-                    <p className="mt-2 text-xs text-slate-400">
-                      No users have this role yet.
-                    </p>
-                  ) : (
-                    <ul className="mt-2 space-y-1.5">
-                      {members.map((u) => (
-                        <li
-                          key={u.id}
-                          className="flex items-center justify-between gap-2 text-xs"
-                        >
-                          <span className="truncate font-medium text-slate-700">
-                            {userLabel(u)}
-                            <span className="ml-1 font-normal text-slate-400">
-                              @{u.username}
-                            </span>
-                          </span>
-                          <span
-                            className={
-                              u.is_active ? "text-green-600" : "text-red-500"
-                            }
+                  {(() => {
+                    const lines = permissionLines(rolePerms[CARD_ROLE[role.name]]);
+                    return lines.length === 0 ? (
+                      <p className="mt-2 text-xs text-slate-400">
+                        No permissions granted.
+                      </p>
+                    ) : (
+                      <ul className="mt-2 space-y-1.5">
+                        {lines.map((line) => (
+                          <li
+                            key={line}
+                            className="flex items-center gap-2 text-xs text-slate-600"
                           >
-                            {u.is_active ? "Active" : "Suspended"}
-                          </span>
-                        </li>
-                      ))}
-                    </ul>
-                  )}
+                            <svg
+                              width="14"
+                              height="14"
+                              viewBox="0 0 24 24"
+                              fill="none"
+                              stroke="#2DB130"
+                              strokeWidth={2.5}
+                              strokeLinecap="round"
+                              strokeLinejoin="round"
+                            >
+                              <path d="M20 6 9 17l-5-5" />
+                            </svg>
+                            {line}
+                          </li>
+                        ))}
+                      </ul>
+                    );
+                  })()}
                 </details>
               </div>
               );
