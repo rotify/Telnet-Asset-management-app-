@@ -12,9 +12,6 @@ const ROLE_TONES: Record<string, StatusTone> = {
   staff: "navy",
 };
 
-// Staff and drivers are the same role in the UI.
-const normRole = (role: string) => (role === "driver" ? "staff" : role);
-
 function fullName(u: AdminUser): string {
   const name = `${u.first_name} ${u.last_name}`.trim();
   return name || u.username;
@@ -36,7 +33,7 @@ export function AdminUsersSection({ search }: { search: string }) {
     Promise.all([getAdminUsers(), getAdminRoles().catch(() => [] as AdminRole[])])
       .then(([u, r]) => {
         setUsers(u.results);
-        setRoles(r.filter((x) => x.value !== "driver"));
+        setRoles(r);
       })
       .catch((err) =>
         setError(err instanceof Error ? err.message : "Couldn't load users.")
@@ -54,13 +51,13 @@ export function AdminUsersSection({ search }: { search: string }) {
   const filtered = useMemo(() => {
     const q = search.trim().toLowerCase();
     return users.filter((u) => {
-      const matchesRole = roleFilter === "All" || normRole(u.role) === roleFilter;
+      const matchesRole = roleFilter === "All" || u.role === roleFilter;
       const matchesStatus =
         statusFilter === "All" ||
         (statusFilter === "Active" ? u.is_active : !u.is_active);
       const matchesSearch =
         !q ||
-        `${u.username} ${fullName(u)} ${u.email ?? ""} ${u.department ?? ""} ${labelFor(normRole(u.role))}`
+        `${u.username} ${fullName(u)} ${u.email ?? ""} ${u.department ?? ""} ${labelFor(u.role)}`
           .toLowerCase()
           .includes(q);
       return matchesRole && matchesStatus && matchesSearch;
@@ -71,8 +68,13 @@ export function AdminUsersSection({ search }: { search: string }) {
   const filtersActive = roleFilter !== "All" || statusFilter !== "All";
 
   return (
-    <section>
-      <div className="mt-6 flex flex-wrap items-center gap-3">
+    <section className="mt-8">
+      <h2 className="text-lg font-bold text-[#121B3B]">System Users</h2>
+      <p className="mt-1 text-sm text-slate-500">
+        Accounts that can sign in, with their assigned role.
+      </p>
+
+      <div className="mt-4 flex flex-wrap items-center gap-3">
         <select
           value={roleFilter}
           onChange={(e) => setRoleFilter(e.target.value)}
@@ -146,7 +148,7 @@ export function AdminUsersSection({ search }: { search: string }) {
                 <div className="mt-2 grid grid-cols-2 gap-x-2 gap-y-1.5 text-xs">
                   <div>
                     <p className="text-slate-400">Role</p>
-                    <p className="text-slate-700">{labelFor(normRole(u.role))}</p>
+                    <p className="text-slate-700">{labelFor(u.role)}</p>
                   </div>
                   <div>
                     <p className="text-slate-400">Department</p>
@@ -186,8 +188,8 @@ export function AdminUsersSection({ search }: { search: string }) {
                     </td>
                     <td className="px-4 py-3">
                       <StatusDot
-                        label={labelFor(normRole(u.role))}
-                        tone={ROLE_TONES[normRole(u.role)] ?? "slate"}
+                        label={labelFor(u.role)}
+                        tone={ROLE_TONES[u.role] ?? "slate"}
                       />
                     </td>
                     <td className="px-4 py-3 text-slate-500">
