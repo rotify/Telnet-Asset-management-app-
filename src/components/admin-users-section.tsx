@@ -2,7 +2,8 @@
 
 import { useEffect, useMemo, useState } from "react";
 import {
-  deleteAdminUser,
+  deleteAdminStaff,
+  getStaff,
   getAdminRoles,
   getAdminUsers,
   updateAdminUser,
@@ -85,12 +86,39 @@ export function AdminUsersSection({ search }: { search: string }) {
     }
   }
 
+  // The backend doesn't allow deleting login accounts, so "Delete" suspends
+  // the login (so they can't sign in) and removes the linked staff record.
   async function removeUser(u: AdminUser) {
-    if (!window.confirm(`Delete ${fullName(u)}? This can't be undone.`)) return;
+    if (
+      !window.confirm(
+        `Delete ${fullName(u)}? Their login will be suspended and their staff record removed.`
+      )
+    )
+      return;
     setActionError(null);
     try {
-      await deleteAdminUser(u.id);
-      setUsers((list) => list.filter((x) => x.id !== u.id));
+      await updateAdminUser(u.id, { is_active: false });
+      let removed = false;
+      try {
+        const staff = await getStaff();
+        const rec = staff.find((s) => s.user === u.id);
+        if (rec) {
+          await deleteAdminStaff(rec.id);
+          removed = true;
+        }
+      } catch {
+        // staff record couldn't be removed; the login stays suspended
+      }
+      if (removed) {
+        setUsers((list) => list.filter((x) => x.id !== u.id));
+      } else {
+        setUsers((list) =>
+          list.map((x) => (x.id === u.id ? { ...x, is_active: false } : x))
+        );
+        setActionError(
+          `${fullName(u)} was suspended and can no longer sign in, but the backend wouldn't remove the record.`
+        );
+      }
     } catch (err) {
       setActionError(err instanceof Error ? err.message : "Delete failed.");
     }
