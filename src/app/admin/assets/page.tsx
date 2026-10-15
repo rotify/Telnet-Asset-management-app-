@@ -381,6 +381,7 @@ export default function AssetsPage() {
                     <div className="mt-2 flex justify-end border-t border-slate-100 pt-2">
                       <AssetActions
                         assetId={r.asset}
+                        equipmentId={r.kind === "equipment" ? r.id : undefined}
                         staffOptions={
                           r.kind === "vehicle" ? driverStaffOptions : staffOptions
                         }
@@ -446,6 +447,9 @@ export default function AssetsPage() {
                         <td className="px-4 py-3">
                           <AssetActions
                             assetId={r.asset}
+                            equipmentId={
+                              r.kind === "equipment" ? r.id : undefined
+                            }
                             staffOptions={
                               r.kind === "vehicle"
                                 ? driverStaffOptions

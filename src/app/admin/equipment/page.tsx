@@ -361,6 +361,7 @@ export default function EquipmentPage() {
                     <div className="mt-2 flex justify-end border-t border-slate-100 pt-2">
                       <AssetActions
                         assetId={e.asset}
+                        equipmentId={e.id}
                         staffOptions={staffOptions}
                         onChanged={() => setRefreshKey((k) => k + 1)}
                         onEdit={() => router.push(`/admin/equipment/${e.id}/edit`)}
@@ -443,6 +444,7 @@ export default function EquipmentPage() {
                           <td className="px-4 py-3">
                             <AssetActions
                               assetId={e.asset}
+                              equipmentId={e.id}
                               staffOptions={staffOptions}
                               onChanged={() => setRefreshKey((k) => k + 1)}
                               onEdit={() =>

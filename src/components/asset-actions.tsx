@@ -1,7 +1,12 @@
 "use client";
 
 import { useState } from "react";
-import { assignAsset, getAssetHistory, releaseAsset } from "@/lib/api";
+import {
+  assignAsset,
+  assignEquipmentToStaff,
+  getAssetHistory,
+  releaseAsset,
+} from "@/lib/api";
 import type { AssetHistoryEntry } from "@/types/maintenance";
 import { ThreeDotMenu, MenuItem } from "@/components/three-dot-menu";
 
@@ -11,7 +16,9 @@ interface StaffOption {
 }
 
 interface AssetActionsProps {
-  assetId: number;
+  assetId?: number | null;
+  // When set, assign/release go straight to the equipment record.
+  equipmentId?: number;
   staffOptions: StaffOption[];
   onChanged?: () => void;
   onEdit?: () => void;
@@ -28,6 +35,7 @@ function formatTimestamp(value: unknown): string {
 
 export function AssetActions({
   assetId,
+  equipmentId,
   staffOptions,
   onChanged,
   onEdit,
@@ -52,7 +60,13 @@ export function AssetActions({
     setBusy(true);
     setError(null);
     try {
-      await assignAsset(assetId, Number(selectedStaff));
+      if (equipmentId !== undefined) {
+        await assignEquipmentToStaff(equipmentId, Number(selectedStaff));
+      } else if (assetId != null) {
+        await assignAsset(assetId, Number(selectedStaff));
+      } else {
+        throw new Error("This record has no linked asset to assign.");
+      }
       setSelectedStaff("");
       setMode("menu");
       close();
@@ -71,7 +85,13 @@ export function AssetActions({
     setBusy(true);
     setError(null);
     try {
-      await releaseAsset(assetId);
+      if (equipmentId !== undefined) {
+        await assignEquipmentToStaff(equipmentId, null);
+      } else if (assetId != null) {
+        await releaseAsset(assetId);
+      } else {
+        throw new Error("This record has no linked asset to release.");
+      }
       close();
       onChanged?.();
     } catch (err) {
@@ -104,12 +124,13 @@ export function AssetActions({
   }
 
   async function handleShowHistory() {
+    if (assetId == null) return;
     setMode("history");
     if (history) return;
     setHistoryLoading(true);
     setHistoryError(null);
     try {
-      const data = await getAssetHistory(assetId);
+      const data = await getAssetHistory(assetId as number);
       setHistory(data);
     } catch (err) {
       setHistoryError(
@@ -243,7 +264,9 @@ export function AssetActions({
             <MenuItem onClick={() => handleRelease(close)} tone="danger">
               {busy ? "Releasing…" : "Release"}
             </MenuItem>
-            <MenuItem onClick={handleShowHistory}>View History</MenuItem>
+            {assetId != null && (
+              <MenuItem onClick={handleShowHistory}>View History</MenuItem>
+            )}
             {onDelete && (
               <MenuItem onClick={() => handleDelete(close)} tone="danger">
                 {deleting ? "Deleting…" : "Delete"}

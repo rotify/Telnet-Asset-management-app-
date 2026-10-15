@@ -437,6 +437,17 @@ export function assignAsset(
   });
 }
 
+// Assign (or, with null, unassign) equipment directly:
+// PATCH /api/equipment/{id}/ { "assigned_staff": <staff id> }
+export function assignEquipmentToStaff(
+  equipmentId: number,
+  staffId: number | null
+): Promise<Equipment> {
+  return authedMutate<Equipment>(`/api/equipment/${equipmentId}`, "PATCH", {
+    assigned_staff: staffId,
+  });
+}
+
 export function releaseAsset(assetId: number): Promise<unknown> {
   return authedMutate(`/api/asset/${assetId}/release`, "POST", {});
 }
