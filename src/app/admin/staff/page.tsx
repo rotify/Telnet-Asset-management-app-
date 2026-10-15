@@ -3,12 +3,19 @@
 import { useEffect, useMemo, useState } from "react";
 import { useRouter } from "next/navigation";
 import { getStoredToken, getStoredUsername, isSuperAdmin } from "@/lib/auth";
-import { createStaff, deleteStaff, getStaff, updateStaff } from "@/lib/api";
+import {
+  createStaff,
+  deleteStaff,
+  getAdminUsers,
+  getStaff,
+  updateStaff,
+} from "@/lib/api";
 import { AdminSidebar } from "@/components/layout/admin-sidebar";
 import { AdminTopBar } from "@/components/layout/admin-topbar";
 import { AdminUsersSection } from "@/components/admin-users-section";
 import { StatusDot } from "@/components/status-dot";
 import type { Staff } from "@/types/staff";
+import type { AdminUser } from "@/types/admin";
 
 interface EditableFields {
   first_name: string;
@@ -73,10 +80,23 @@ const ROLE_CARDS = [
   },
 ] as const;
 
+// Which system users belong under each role card.
+const ROLE_MATCH: Record<string, (u: AdminUser) => boolean> = {
+  "Super Admin": (u) => u.is_superuser,
+  Admin: (u) => u.role === "admin" && !u.is_superuser,
+  Driver: (u) => u.role === "driver",
+  Staff: (u) => u.role === "staff",
+};
+
+function userLabel(u: AdminUser): string {
+  return `${u.first_name} ${u.last_name}`.trim() || u.username;
+}
+
 export default function StaffPage() {
   const router = useRouter();
   const [gateChecked, setGateChecked] = useState(false);
   const [staff, setStaff] = useState<Staff[]>([]);
+  const [users, setUsers] = useState<AdminUser[]>([]);
   const [isLoading, setIsLoading] = useState(true);
   const [error, setError] = useState<string | null>(null);
   const [search, setSearch] = useState("");
@@ -105,6 +125,13 @@ export default function StaffPage() {
     }
     setGateChecked(true);
   }, [router]);
+
+  useEffect(() => {
+    if (!gateChecked) return;
+    getAdminUsers(200)
+      .then((page) => setUsers(page.results))
+      .catch(() => setUsers([]));
+  }, [gateChecked]);
 
   async function loadStaff() {
     setIsLoading(true);
@@ -320,7 +347,9 @@ export default function StaffPage() {
           <AdminUsersSection search={search} />
 
           <div className="mt-8 grid grid-cols-1 gap-4 sm:grid-cols-2">
-            {ROLE_CARDS.map((role) => (
+            {ROLE_CARDS.map((role) => {
+              const members = users.filter(ROLE_MATCH[role.name] ?? (() => false));
+              return (
               <div
                 key={role.name}
                 className="rounded-xl bg-white p-4 shadow-[0_1px_2px_rgba(16,24,64,0.06)]"
@@ -328,7 +357,7 @@ export default function StaffPage() {
                 <div className="flex items-center justify-between">
                   <p className="font-semibold text-[#121B3B]">{role.name}</p>
                   <span className="text-xs text-slate-400">
-                    {role.members} member(s)
+                    {members.length} member(s)
                   </span>
                 </div>
                 <p className="mt-1 text-xs text-slate-500">
@@ -363,8 +392,45 @@ export default function StaffPage() {
                     +{role.morePermissions} more permissions
                   </p>
                 )}
+                <details className="group mt-3 border-t border-slate-100 pt-3">
+                  <summary className="flex cursor-pointer list-none items-center justify-between text-xs font-semibold text-[#121B3B]">
+                    Users with this role
+                    <span className="text-slate-400 transition-transform group-open:rotate-180">
+                      ▾
+                    </span>
+                  </summary>
+                  {members.length === 0 ? (
+                    <p className="mt-2 text-xs text-slate-400">
+                      No users have this role yet.
+                    </p>
+                  ) : (
+                    <ul className="mt-2 space-y-1.5">
+                      {members.map((u) => (
+                        <li
+                          key={u.id}
+                          className="flex items-center justify-between gap-2 text-xs"
+                        >
+                          <span className="truncate font-medium text-slate-700">
+                            {userLabel(u)}
+                            <span className="ml-1 font-normal text-slate-400">
+                              @{u.username}
+                            </span>
+                          </span>
+                          <span
+                            className={
+                              u.is_active ? "text-green-600" : "text-red-500"
+                            }
+                          >
+                            {u.is_active ? "Active" : "Suspended"}
+                          </span>
+                        </li>
+                      ))}
+                    </ul>
+                  )}
+                </details>
               </div>
-            ))}
+              );
+            })}
           </div>
         </div>
       </div>
