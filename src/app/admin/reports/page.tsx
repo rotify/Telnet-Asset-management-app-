@@ -10,6 +10,7 @@ import {
   getEquipmentReport,
   getMaintenanceReport,
   getReportOverview,
+  getStaff,
   getTransfersReport,
   getVehiclesReport,
   type MaintenanceReport,
@@ -114,6 +115,7 @@ export default function ReportsPage() {
   const [transfers, setTransfers] = useState<ReportListResponse | null>(null);
   const [audit, setAudit] = useState<ReportListResponse | null>(null);
   const [workOrders, setWorkOrders] = useState<WorkOrder[]>([]);
+  const [staffCount, setStaffCount] = useState<number | null>(null);
 
   const [isLoading, setIsLoading] = useState(true);
   const [error, setError] = useState<string | null>(null);
@@ -145,8 +147,9 @@ export default function ReportsPage() {
       getTransfersReport(),
       getAuditReport(),
       getEquipmentWorkOrders().catch(() => [] as WorkOrder[]),
+      getStaff().catch(() => null),
     ])
-      .then(([o, v, e, d, m, t, a, w]) => {
+      .then(([o, v, e, d, m, t, a, w, st]) => {
         setOverview(o);
         setVehicles(v);
         setEquipment(e);
@@ -155,6 +158,7 @@ export default function ReportsPage() {
         setTransfers(t);
         setAudit(a);
         setWorkOrders(w);
+        setStaffCount(st ? st.length : null);
       })
       .catch((err) => {
         setError(err instanceof Error ? err.message : "Couldn't load reports.");
@@ -227,6 +231,9 @@ export default function ReportsPage() {
                     <StatCard label="Unassigned" value={overview.assets.unassigned} />
                     <StatCard label="Vehicles" value={overview.vehicles} />
                     <StatCard label="Equipment" value={overview.equipment} />
+                    {staffCount !== null && (
+                      <StatCard label="Total Staff" value={staffCount} />
+                    )}
                     <StatCard label="Documents" value={overview.documents.total} />
                     <StatCard
                       label="Documents Expired"
