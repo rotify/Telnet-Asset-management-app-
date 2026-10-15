@@ -874,6 +874,9 @@ export function createAdminUser(payload: Partial<AdminUser> & { password?: strin
 export function updateAdminUser(id: number, payload: Partial<AdminUser>): Promise<AdminUser> {
   return authedMutate<AdminUser>(`/api/remote/v1/admin/users/${id}`, "PATCH", payload);
 }
+export function deleteAdminUser(id: number): Promise<void> {
+  return authedMutate<void>(`/api/remote/v1/admin/users/${id}`, "DELETE");
+}
 // Admin provisioning: creates the staff record AND its login in one call.
 export function createAdminStaff(
   payload: StaffPayload

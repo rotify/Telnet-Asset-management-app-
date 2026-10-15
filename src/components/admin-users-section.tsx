@@ -1,7 +1,13 @@
 "use client";
 
 import { useEffect, useMemo, useState } from "react";
-import { getAdminRoles, getAdminUsers } from "@/lib/api";
+import {
+  deleteAdminUser,
+  getAdminRoles,
+  getAdminUsers,
+  updateAdminUser,
+} from "@/lib/api";
+import { ThreeDotMenu, MenuItem } from "@/components/three-dot-menu";
 import { StatusDot, type StatusTone } from "@/components/status-dot";
 import type { AdminRole, AdminUser } from "@/types/admin";
 
@@ -65,6 +71,78 @@ export function AdminUsersSection({ search }: { search: string }) {
     // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [users, search, roleFilter, statusFilter, roleLabel]);
 
+  const [actionError, setActionError] = useState<string | null>(null);
+
+  async function applyUpdate(u: AdminUser, patch: Partial<AdminUser>) {
+    setActionError(null);
+    try {
+      const updated = await updateAdminUser(u.id, patch);
+      setUsers((list) =>
+        list.map((x) => (x.id === u.id ? { ...x, ...patch, ...updated } : x))
+      );
+    } catch (err) {
+      setActionError(err instanceof Error ? err.message : "Update failed.");
+    }
+  }
+
+  async function removeUser(u: AdminUser) {
+    if (!window.confirm(`Delete ${fullName(u)}? This can't be undone.`)) return;
+    setActionError(null);
+    try {
+      await deleteAdminUser(u.id);
+      setUsers((list) => list.filter((x) => x.id !== u.id));
+    } catch (err) {
+      setActionError(err instanceof Error ? err.message : "Delete failed.");
+    }
+  }
+
+  function renderActions(u: AdminUser) {
+    if (u.is_superuser) {
+      return <span className="text-xs text-slate-400">—</span>;
+    }
+    return (
+      <ThreeDotMenu>
+        {(close) => (
+          <div>
+            <p className="px-3 pb-1 pt-2 text-xs font-semibold uppercase text-slate-400">
+              Change role
+            </p>
+            {roles
+              .filter((r) => r.value !== u.role)
+              .map((r) => (
+                <MenuItem
+                  key={r.value}
+                  onClick={() => {
+                    close();
+                    applyUpdate(u, { role: r.value });
+                  }}
+                >
+                  Make {r.label}
+                </MenuItem>
+              ))}
+            <MenuItem
+              onClick={() => {
+                close();
+                applyUpdate(u, { is_active: !u.is_active });
+              }}
+            >
+              {u.is_active ? "Suspend" : "Activate"}
+            </MenuItem>
+            <MenuItem
+              tone="danger"
+              onClick={() => {
+                close();
+                removeUser(u);
+              }}
+            >
+              Delete
+            </MenuItem>
+          </div>
+        )}
+      </ThreeDotMenu>
+    );
+  }
+
   const filtersActive = roleFilter !== "All" || statusFilter !== "All";
 
   return (
@@ -112,6 +190,12 @@ export function AdminUsersSection({ search }: { search: string }) {
         )}
       </div>
 
+      {actionError && (
+        <div className="mt-4 rounded-lg border border-red-200 bg-red-50 px-4 py-3 text-sm text-red-700">
+          {actionError}
+        </div>
+      )}
+
       {isLoading && <p className="mt-4 text-sm text-slate-500">Loading users…</p>}
 
       {error && (
@@ -139,11 +223,13 @@ export function AdminUsersSection({ search }: { search: string }) {
                     <p className="text-xs text-slate-400">@{u.username}</p>
                     <p className="font-semibold text-slate-800">{fullName(u)}</p>
                   </div>
-                  <StatusDot
-                    label={u.is_active ? "Active" : "Suspended"}
-                    tone={u.is_active ? "navy" : "red"}
-                    className="shrink-0"
-                  />
+                  <div className="flex shrink-0 items-center gap-1">
+                    <StatusDot
+                      label={u.is_active ? "Active" : "Suspended"}
+                      tone={u.is_active ? "navy" : "red"}
+                    />
+                    {renderActions(u)}
+                  </div>
                 </div>
                 <div className="mt-2 grid grid-cols-2 gap-x-2 gap-y-1.5 text-xs">
                   <div>
@@ -172,6 +258,7 @@ export function AdminUsersSection({ search }: { search: string }) {
                   <th className="px-4 py-3">Role</th>
                   <th className="px-4 py-3">Department</th>
                   <th className="px-4 py-3">Status</th>
+                  <th className="px-4 py-3 text-right">Actions</th>
                 </tr>
               </thead>
               <tbody>
@@ -201,6 +288,7 @@ export function AdminUsersSection({ search }: { search: string }) {
                         tone={u.is_active ? "navy" : "red"}
                       />
                     </td>
+                    <td className="px-4 py-3 text-right">{renderActions(u)}</td>
                   </tr>
                 ))}
               </tbody>
