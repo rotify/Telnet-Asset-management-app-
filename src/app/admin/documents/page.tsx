@@ -15,6 +15,7 @@ import { AdminSidebar } from "@/components/layout/admin-sidebar";
 import { AdminTopBar } from "@/components/layout/admin-topbar";
 import { StatusDot, type StatusTone } from "@/components/status-dot";
 import { ViewToggleButton } from "@/components/view-toggle";
+import { ThreeDotMenu, MenuItem } from "@/components/three-dot-menu";
 import type { DocumentRecord } from "@/types/document";
 
 type DocStatus = "Valid" | "Expiring" | "Expired" | "Unknown";
@@ -956,42 +957,49 @@ export default function DocumentsPage() {
                           {doc.responsible_person || "—"}
                         </td>
                         <td className="px-4 py-3">
-                          <div className="flex items-center gap-3">
-                            <button
-                              type="button"
-                              onClick={() => {
-                                setViewMode("card");
-                                startEdit(doc);
-                              }}
-                              className="text-sm font-medium text-telnet-primary hover:underline"
-                            >
-                              Edit
-                            </button>
-                            {doc.document_file ? (
-                              <a
-                                href={documentFileUrl(doc.document_file)}
-                                target="_blank"
-                                rel="noopener noreferrer"
-                                className="text-sm font-medium text-[#121B3B] hover:text-telnet-primary hover:underline"
-                              >
-                                View File
-                              </a>
-                            ) : (
-                              <span className="text-sm font-medium text-slate-300">
-                                No File
-                              </span>
+                          <ThreeDotMenu>
+                            {(close) => (
+                              <div>
+                                <MenuItem
+                                  onClick={() => {
+                                    setViewMode("card");
+                                    startEdit(doc);
+                                    close();
+                                  }}
+                                >
+                                  Edit
+                                </MenuItem>
+                                {doc.document_file ? (
+                                  <MenuItem
+                                    onClick={() => {
+                                      window.open(
+                                        documentFileUrl(doc.document_file as string),
+                                        "_blank",
+                                        "noopener,noreferrer"
+                                      );
+                                      close();
+                                    }}
+                                  >
+                                    View File
+                                  </MenuItem>
+                                ) : (
+                                  <MenuItem tone="muted" disabled>
+                                    No File
+                                  </MenuItem>
+                                )}
+                                <MenuItem
+                                  tone="danger"
+                                  disabled={deletingId === doc.id}
+                                  onClick={() => {
+                                    close();
+                                    handleDeleteDocument(doc.id, doc.name);
+                                  }}
+                                >
+                                  {deletingId === doc.id ? "Deleting…" : "Delete"}
+                                </MenuItem>
+                              </div>
                             )}
-                            <button
-                              type="button"
-                              onClick={() =>
-                                handleDeleteDocument(doc.id, doc.name)
-                              }
-                              disabled={deletingId === doc.id}
-                              className="text-sm font-medium text-red-600 hover:text-red-700 disabled:opacity-60"
-                            >
-                              {deletingId === doc.id ? "…" : "Delete"}
-                            </button>
-                          </div>
+                          </ThreeDotMenu>
                         </td>
                       </tr>
                     );
