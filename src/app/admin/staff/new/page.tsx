@@ -3,7 +3,7 @@
 import { useEffect, useState } from "react";
 import { useRouter } from "next/navigation";
 import { getStoredToken, getStoredUsername, isSuperAdmin } from "@/lib/auth";
-import { createAdminStaff } from "@/lib/api";
+import { createAdminStaff, updateAdminUser } from "@/lib/api";
 import { AdminSidebar } from "@/components/layout/admin-sidebar";
 import { AdminTopBar } from "@/components/layout/admin-topbar";
 
@@ -56,7 +56,6 @@ const EMPTY = {
   emergency_contact_name: "",
   emergency_contact_phone: "",
   notes: "",
-  password: "",
 };
 
 export default function AddStaffPage() {
@@ -94,16 +93,11 @@ export default function AddStaffPage() {
       setError("Employee ID and email are required to create a login.");
       return;
     }
-    if (form.password.length < 8) {
-      setError("Set an initial password of at least 8 characters.");
-      return;
-    }
     setIsSaving(true);
     try {
       const [first_name, ...rest] = form.full_name.trim().split(/\s+/);
       const last_name = rest.join(" ") || first_name;
-      await createAdminStaff({
-        password: form.password,
+      const created = await createAdminStaff({
         first_name,
         last_name,
         staff_id: form.staff_id || undefined,
@@ -128,6 +122,20 @@ export default function AddStaffPage() {
         emergency_contact_phone: form.emergency_contact_phone || undefined,
         notes: form.notes || undefined,
       });
+      // The backend creates the login and emails a temporary password.
+      // Roles are set separately on the linked user.
+      const role = ROLE_VALUES[form.system_role];
+      if (role && typeof created?.user === "number") {
+        try {
+          await updateAdminUser(created.user, { role });
+        } catch {
+          setError(
+            "Employee added and login emailed, but the role couldn't be set. Set it from Users & Roles."
+          );
+          setIsSaving(false);
+          return;
+        }
+      }
       router.push("/admin/staff");
     } catch (err) {
       setError(err instanceof Error ? err.message : "Couldn't add employee.");
@@ -194,16 +202,10 @@ export default function AddStaffPage() {
                   className={inputClasses}
                 />
               </Field>
-              <Field label="Initial Password">
-                <input
-                  type="password"
-                  value={form.password}
-                  onChange={(e) => update("password", e.target.value)}
-                  placeholder="Minimum 8 characters"
-                  autoComplete="new-password"
-                  className={inputClasses}
-                />
-              </Field>
+              <p className="text-xs text-slate-500 sm:col-span-2">
+                A login is created automatically and the temporary password is
+                emailed to this address.
+              </p>
               <Field label="Phone Number">
                 <input
                   type="text"

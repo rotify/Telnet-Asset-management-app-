@@ -876,7 +876,7 @@ export function updateAdminUser(id: number, payload: Partial<AdminUser>): Promis
 }
 // Admin provisioning: creates the staff record AND its login in one call.
 export function createAdminStaff(
-  payload: StaffPayload & { password: string }
+  payload: StaffPayload
 ): Promise<Staff> {
   return authedMutate<Staff>("/api/remote/v1/admin/staff", "POST", payload);
 }
