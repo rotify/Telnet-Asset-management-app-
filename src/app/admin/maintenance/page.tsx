@@ -383,19 +383,15 @@ export default function MaintenancePage() {
                 }}
                 className="rounded-lg bg-[#0F172A] px-4 py-2 text-sm font-semibold text-white hover:bg-[#1e293b]"
               >
-                {showAddForm ? "Cancel" : "+ Upload"}
+                {showAddForm ? "Cancel" : "+ Log Maintenance"}
               </button>
             </div>
           </header>
 
-          <MaintenanceQueues />
-
-          <WorkOrdersPanel />
-
           {showAddForm && (
             <div className="mt-4 rounded-xl bg-white p-4 shadow-[0_1px_2px_rgba(16,24,64,0.06)]">
               <p className="text-sm font-semibold text-[#121B3B]">
-                New maintenance record
+                Log maintenance record
               </p>
               <div className="mt-3 grid grid-cols-1 gap-3 sm:grid-cols-3">
                 <select
@@ -457,10 +453,14 @@ export default function MaintenancePage() {
                 disabled={isAdding}
                 className="mt-3 rounded-lg bg-telnet-primary px-4 py-2 text-sm font-semibold text-white hover:bg-telnet-primaryHover disabled:opacity-60"
               >
-                {isAdding ? "Saving…" : "Save record"}
+                {isAdding ? "Saving…" : "Log record"}
               </button>
             </div>
           )}
+
+          <MaintenanceQueues />
+
+          <WorkOrdersPanel />
 
           {error && (
             <div className="mt-6 flex items-center justify-between rounded-lg border border-red-200 bg-red-50 px-4 py-3 text-sm text-red-700">
