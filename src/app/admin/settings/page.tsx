@@ -2,6 +2,8 @@
 
 import { useEffect, useState } from "react";
 import Link from "next/link";
+import { PasswordStrength } from "@/components/password-strength";
+import { isStrongPassword } from "@/lib/password";
 import { useRouter } from "next/navigation";
 import { getStoredToken, getStoredUsername, isSuperAdmin } from "@/lib/auth";
 import {
@@ -145,6 +147,14 @@ export default function SettingsPage() {
     }
     if (pw.next !== pw.confirm) {
       setPwError("New password and confirmation don't match.");
+      return;
+    }
+    if (pw.next === pw.current) {
+      setPwError("Your new password must be different from the current one.");
+      return;
+    }
+    if (!isStrongPassword(pw.next, { username: profile?.username, email: profileForm.email })) {
+      setPwError("Choose a stronger password that meets every requirement below.");
       return;
     }
     setIsSavingPw(true);
@@ -411,6 +421,9 @@ export default function SettingsPage() {
                 </div>
               ))}
             </div>
+            {pw.next && (
+              <PasswordStrength password={pw.next} username={profile?.username} email={profileForm.email} />
+            )}
             {pwError && <p className="mt-2 text-sm text-red-600">{pwError}</p>}
             {pwSaved && (
               <p className="mt-2 text-sm text-green-600">Password changed.</p>

@@ -6,6 +6,8 @@ import {
   getProfileSettings,
   updateProfileSettings,
 } from "@/lib/api";
+import { PasswordStrength } from "@/components/password-strength";
+import { isStrongPassword } from "@/lib/password";
 import { StaffPageShell } from "@/components/layout/staff-page-shell";
 
 const inputClasses =
@@ -70,6 +72,14 @@ export default function StaffProfilePage() {
     }
     if (pw.next !== pw.confirm) {
       setPwError("New password and confirmation don't match.");
+      return;
+    }
+    if (pw.next === pw.current) {
+      setPwError("Your new password must be different from the current one.");
+      return;
+    }
+    if (!isStrongPassword(pw.next, { username: username, email: form.email })) {
+      setPwError("Choose a stronger password that meets every requirement below.");
       return;
     }
     setIsSavingPw(true);
@@ -162,6 +172,9 @@ export default function StaffProfilePage() {
             </div>
           ))}
         </div>
+        {pw.next && (
+          <PasswordStrength password={pw.next} username={username} email={form.email} />
+        )}
         {pwError && <p className="mt-2 text-sm text-red-600">{pwError}</p>}
         {pwSaved && <p className="mt-2 text-sm text-green-600">Password changed.</p>}
         <button type="button" onClick={savePassword} disabled={isSavingPw} className={buttonClasses}>
