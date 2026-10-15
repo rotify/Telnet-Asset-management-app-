@@ -26,6 +26,7 @@ const NAV_ITEMS: NavItem[] = [
   { label: "Maintenance", href: "/admin/maintenance", icon: "gauge", live: true },
   { label: "Transfers", href: "/admin/transfers", icon: "box", live: true },
   { label: "Reports", href: "/admin/reports", icon: "chart", live: true },
+  { label: "Import Data", href: "/admin/import", icon: "doc", live: true },
   { label: "Users & Roles", href: "/admin/staff", icon: "users", live: true },
   { label: "Notifications", href: "/admin/notifications", icon: "bell", live: true },
   { label: "Settings", href: "/admin/settings", icon: "settings", live: true },
