@@ -7,6 +7,8 @@ import { getStaff, getVehicles, updateVehicle } from "@/lib/api";
 import { AdminSidebar } from "@/components/layout/admin-sidebar";
 import { AdminTopBar } from "@/components/layout/admin-topbar";
 import type { Staff } from "@/types/staff";
+import { isDriverStaff, useDriverUserIds } from "@/lib/drivers";
+
 
 function Field({
   label,
@@ -106,6 +108,8 @@ export default function EditVehiclePage() {
       })
       .finally(() => setIsLoading(false));
   }, [gateChecked, vehicleId]);
+
+  const driverIds = useDriverUserIds(gateChecked);
 
   function update<K extends keyof typeof EMPTY>(key: K, value: string) {
     setForm((f) => ({ ...f, [key]: value }));
@@ -261,7 +265,7 @@ export default function EditVehiclePage() {
                       {staff
                         .filter(
                           (s) =>
-                            Boolean(s.driver_status?.trim()) ||
+                            (driverIds !== null && isDriverStaff(s, driverIds)) ||
                             String(s.id) === form.assigned_staff
                         )
                         .map((s) => (

@@ -216,6 +216,7 @@ export interface StaffPayload {
   home_address?: string;
   job_title?: string;
   system_role?: string;
+  role?: string; // backend role value: admin | manager | driver | staff
   employment_type?: string;
   date_joined?: string;
   status?: string;

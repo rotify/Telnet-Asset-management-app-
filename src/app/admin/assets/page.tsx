@@ -17,6 +17,8 @@ import { StatusDot, type StatusTone } from "@/components/status-dot";
 import { ViewToggleButton } from "@/components/view-toggle";
 import type { Equipment, Vehicle } from "@/types/asset";
 import type { Staff } from "@/types/staff";
+import { isDriverStaff, useDriverUserIds } from "@/lib/drivers";
+
 
 interface AssetRow {
   key: string;
@@ -133,12 +135,13 @@ export default function AssetsPage() {
   }
 
   // Vehicles can only be assigned to staff registered as drivers.
+  const driverIds = useDriverUserIds(gateChecked);
   const driverStaffOptions = useMemo(
     () =>
       staff
-        .filter((s) => Boolean(s.driver_status?.trim()))
+        .filter((s) => driverIds !== null && isDriverStaff(s, driverIds))
         .map((s) => ({ id: s.id, name: `${s.first_name} ${s.last_name}` })),
-    [staff]
+    [staff, driverIds]
   );
 
   

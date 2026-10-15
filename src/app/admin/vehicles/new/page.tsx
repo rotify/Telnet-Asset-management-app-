@@ -7,6 +7,8 @@ import { createVehicle, getStaff } from "@/lib/api";
 import { AdminSidebar } from "@/components/layout/admin-sidebar";
 import { AdminTopBar } from "@/components/layout/admin-topbar";
 import type { Staff } from "@/types/staff";
+import { isDriverStaff, useDriverUserIds } from "@/lib/drivers";
+
 
 function Field({
   label,
@@ -73,6 +75,8 @@ export default function AddVehiclePage() {
       .then(setStaff)
       .catch(() => setStaff([]));
   }, [gateChecked]);
+
+  const driverIds = useDriverUserIds(gateChecked);
 
   function update<K extends keyof typeof EMPTY>(key: K, value: string) {
     setForm((f) => ({ ...f, [key]: value }));
@@ -219,7 +223,7 @@ export default function AddVehiclePage() {
                 >
                   <option value="">Unassigned</option>
                   {staff
-                    .filter((s) => Boolean(s.driver_status?.trim()))
+                    .filter((s) => driverIds !== null && isDriverStaff(s, driverIds))
                     .map((s) => (
                       <option key={s.id} value={s.id}>
                         {s.first_name} {s.last_name}

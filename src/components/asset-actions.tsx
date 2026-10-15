@@ -135,7 +135,7 @@ export function AssetActions({
                 className="w-full rounded border border-slate-200 px-2 py-1.5 text-sm focus:border-telnet-primary focus:outline-none"
               >
                 <option value="">
-                  {staffOptions.length === 0 ? "No staff found" : "Select staff…"}
+                  {staffOptions.length === 0 ? "No eligible staff found" : "Select staff…"}
                 </option>
                 {staffOptions.map((s) => (
                   <option key={s.id} value={s.id}>

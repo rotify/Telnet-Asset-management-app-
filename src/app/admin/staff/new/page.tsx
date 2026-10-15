@@ -27,6 +27,15 @@ function Field({
 const inputClasses =
   "w-full rounded-lg border border-slate-200 bg-white px-3 py-2 text-sm text-slate-700 placeholder:text-slate-400 focus:border-telnet-primary focus:outline-none";
 
+// Backend role values for the System Role choices.
+const ROLE_VALUES: Record<string, string> = {
+  "Super Admin": "admin",
+  Admin: "admin",
+  Manager: "manager",
+  Driver: "driver",
+  Staff: "staff",
+};
+
 const EMPTY = {
   full_name: "",
   staff_id: "",
@@ -107,6 +116,7 @@ export default function AddStaffPage() {
         home_address: form.home_address || undefined,
         job_title: form.job_title || undefined,
         system_role: form.system_role || undefined,
+        role: ROLE_VALUES[form.system_role] || undefined,
         employment_type: form.employment_type || undefined,
         date_joined: form.date_joined || undefined,
         status: form.status || undefined,
@@ -260,6 +270,7 @@ export default function AddStaffPage() {
                   
                   <option value="Super Admin">Super Admin</option>
                   <option value="Admin">Admin</option>
+                  <option value="Manager">Manager</option>
                   <option value="Driver">Driver</option>
                   <option value="Staff">Staff</option>
                 </select>

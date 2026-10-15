@@ -16,6 +16,8 @@ import { StatusDot, type StatusTone } from "@/components/status-dot";
 import { ViewToggleButton } from "@/components/view-toggle";
 import type { Vehicle } from "@/types/asset";
 import type { Staff } from "@/types/staff";
+import { isDriverStaff, useDriverUserIds } from "@/lib/drivers";
+
 
 const STATUS_TONES: Record<string, StatusTone> = {
   active: "green",
@@ -106,12 +108,14 @@ export default function VehiclesPage() {
     };
   }, [gateChecked, refreshKey]);
 
+  // Vehicles can only be assigned to staff registered as drivers.
+  const driverIds = useDriverUserIds(gateChecked);
   const staffOptions = useMemo(
     () =>
       staff
-        .filter((s) => Boolean(s.driver_status?.trim()))
+        .filter((s) => driverIds !== null && isDriverStaff(s, driverIds))
         .map((s) => ({ id: s.id, name: `${s.first_name} ${s.last_name}` })),
-    [staff]
+    [staff, driverIds]
   );
 
   // assigned_staff comes back from the API as a raw staff id — resolve it
