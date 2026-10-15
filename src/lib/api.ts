@@ -734,20 +734,48 @@ export function getAdminUsers(pageSize = 100): Promise<Paginated<AdminUser>> {
 
 // Role permission matrix. Proposed backend contract:
 //   GET / PUT /api/v1/admin/roles/{role}/permissions/
-export function getRolePermissions(role: string): Promise<RolePermissions> {
-  return authedFetch<RolePermissions>(
-    `/api/remote/v1/admin/roles/${role}/permissions`
-  );
+// Until the backend stores permissions, saved selections are kept in this
+// browser so the rest of the app (e.g. the role cards) can use them.
+const PERMS_KEY = (role: string) => `telnet_role_permissions_${role}`;
+
+function readLocalPermissions(role: string): RolePermissions | null {
+  if (typeof window === "undefined") return null;
+  try {
+    const raw = window.localStorage.getItem(PERMS_KEY(role));
+    return raw ? (JSON.parse(raw) as RolePermissions) : null;
+  } catch {
+    return null;
+  }
 }
-export function saveRolePermissions(
+
+export async function getRolePermissions(role: string): Promise<RolePermissions> {
+  try {
+    return await authedFetch<RolePermissions>(
+      `/api/remote/v1/admin/roles/${role}/permissions`
+    );
+  } catch (err) {
+    const local = readLocalPermissions(role);
+    if (local) return local;
+    throw err;
+  }
+}
+
+// Resolves with localOnly=true when the backend had no endpoint to save to.
+export async function saveRolePermissions(
   role: string,
   payload: RolePermissions
-): Promise<RolePermissions> {
-  return authedMutate<RolePermissions>(
-    `/api/remote/v1/admin/roles/${role}/permissions`,
-    "PUT",
-    payload
-  );
+): Promise<{ localOnly: boolean }> {
+  try {
+    await authedMutate<RolePermissions>(
+      `/api/remote/v1/admin/roles/${role}/permissions`,
+      "PUT",
+      payload
+    );
+    return { localOnly: false };
+  } catch {
+    window.localStorage.setItem(PERMS_KEY(role), JSON.stringify(payload));
+    return { localOnly: true };
+  }
 }
 
 export function getAdminRoles(): Promise<AdminRole[]> {

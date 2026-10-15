@@ -56,7 +56,6 @@ async function getIdentity() {
   add(`${profile.last_name} ${profile.first_name}`);
 
   let staffId: number | null = null;
-  let driverStaff = false;
   const me = staff.find(
     (s) =>
       s.user === profile.id ||
@@ -64,7 +63,6 @@ async function getIdentity() {
   );
   if (me) {
     staffId = me.id;
-    driverStaff = Boolean(me.driver_status?.trim());
     add(`${me.first_name} ${me.last_name}`);
     add(`${me.last_name} ${me.first_name}`);
   }
@@ -76,7 +74,7 @@ async function getIdentity() {
   return {
     names,
     staffId,
-    isDriver: (role?.role ?? "").toLowerCase() === "driver" || driverStaff,
+    isDriver: (role?.role ?? "").toLowerCase() === "driver",
   };
 }
 

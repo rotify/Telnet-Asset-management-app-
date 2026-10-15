@@ -28,6 +28,7 @@ export default function RolePermissionsPage() {
   const [isSaving, setIsSaving] = useState(false);
   const [error, setError] = useState<string | null>(null);
   const [success, setSuccess] = useState(false);
+  const [localOnly, setLocalOnly] = useState(false);
   const [counts, setCounts] = useState<Record<string, number>>({});
 
   const current = EDITOR_ROLES.find((r) => r.value === role)!;
@@ -109,9 +110,10 @@ export default function RolePermissionsPage() {
     setSuccess(false);
     setIsSaving(true);
     try {
-      await saveRolePermissions(role, perms);
+      const res = await saveRolePermissions(role, perms);
       setSaved(JSON.stringify(perms));
       setUsingDefaults(false);
+      setLocalOnly(res.localOnly);
       setSuccess(true);
     } catch (err) {
       setError(
@@ -295,7 +297,11 @@ export default function RolePermissionsPage() {
             </p>
           )}
           {success && (
-            <p className="text-sm text-green-600">Permissions saved.</p>
+            <p className="text-sm text-green-600">
+              {localOnly
+                ? "Permissions saved on this device. The backend doesn't store role permissions yet, so they aren't enforced server-side."
+                : "Permissions saved."}
+            </p>
           )}
           <div className="flex items-center gap-3">
             <button
