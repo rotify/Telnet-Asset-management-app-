@@ -428,11 +428,18 @@ export function exportEquipmentCsv(): Promise<string> {
 // Asset assign / release / history
 
 
+// The backend answers 200 (applied) or 202 with a request_id when the
+// assignment has been queued for approval instead.
+export interface AssignResult {
+  detail?: string;
+  request_id?: number;
+}
+
 export function assignAsset(
   assetId: number,
   staffId: number
-): Promise<unknown> {
-  return authedMutate(`/api/asset/${assetId}/assign`, "POST", {
+): Promise<AssignResult> {
+  return authedMutate<AssignResult>(`/api/asset/${assetId}/assign`, "POST", {
     staff_id: staffId,
   });
 }
@@ -448,8 +455,8 @@ export function assignEquipmentToStaff(
   });
 }
 
-export function releaseAsset(assetId: number): Promise<unknown> {
-  return authedMutate(`/api/asset/${assetId}/release`, "POST", {});
+export function releaseAsset(assetId: number): Promise<AssignResult> {
+  return authedMutate<AssignResult>(`/api/asset/${assetId}/release`, "POST", {});
 }
 
 export function getAssetHistory(

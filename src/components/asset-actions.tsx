@@ -46,6 +46,7 @@ export function AssetActions({
   const [selectedStaff, setSelectedStaff] = useState("");
   const [busy, setBusy] = useState(false);
   const [error, setError] = useState<string | null>(null);
+  const [notice, setNotice] = useState<string | null>(null);
   const [deleting, setDeleting] = useState(false);
 
   const [history, setHistory] = useState<AssetHistoryEntry[] | null>(null);
@@ -59,16 +60,24 @@ export function AssetActions({
     }
     setBusy(true);
     setError(null);
+    setNotice(null);
     try {
+      let pending = false;
       if (equipmentId !== undefined) {
         await assignEquipmentToStaff(equipmentId, Number(selectedStaff));
       } else if (assetId != null) {
-        await assignAsset(assetId, Number(selectedStaff));
+        const res = await assignAsset(assetId, Number(selectedStaff));
+        pending = typeof res?.request_id === "number";
       } else {
         throw new Error("This record has no linked asset to assign.");
       }
       setSelectedStaff("");
       setMode("menu");
+      if (pending) {
+        // Queued for approval: nothing has changed yet, so say so.
+        setNotice("Assignment submitted for approval.");
+        return;
+      }
       close();
       onChanged?.();
     } catch (err) {
@@ -84,13 +93,20 @@ export function AssetActions({
     }
     setBusy(true);
     setError(null);
+    setNotice(null);
     try {
+      let pending = false;
       if (equipmentId !== undefined) {
         await assignEquipmentToStaff(equipmentId, null);
       } else if (assetId != null) {
-        await releaseAsset(assetId);
+        const res = await releaseAsset(assetId);
+        pending = typeof res?.request_id === "number";
       } else {
         throw new Error("This record has no linked asset to release.");
+      }
+      if (pending) {
+        setNotice("Release submitted for approval.");
+        return;
       }
       close();
       onChanged?.();
@@ -274,6 +290,9 @@ export function AssetActions({
             )}
             {error && (
               <p className="mt-1 px-3 text-xs text-red-600">{error}</p>
+            )}
+            {notice && (
+              <p className="mt-1 px-3 text-xs text-green-600">{notice}</p>
             )}
           </div>
         );
