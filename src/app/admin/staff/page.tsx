@@ -1,5 +1,6 @@
 "use client";
 
+import { ExcelImport } from "@/components/excel-import";
 import { useEffect, useMemo, useState } from "react";
 import { useRouter } from "next/navigation";
 import { getStoredToken, getStoredUsername, isSuperAdmin } from "@/lib/auth";
@@ -118,6 +119,7 @@ function permissionLines(p: RolePermissions | undefined): string[] {
 }
 
 export default function StaffPage() {
+  const [importKey, setImportKey] = useState(0);
   const router = useRouter();
   const [gateChecked, setGateChecked] = useState(false);
   const [staff, setStaff] = useState<Staff[]>([]);
@@ -299,6 +301,11 @@ export default function StaffPage() {
             >
               Role Permissions
             </button>
+            <ExcelImport
+              kinds={["Staff"]}
+              onImported={() => setImportKey((k) => k + 1)}
+              className="rounded-lg border border-slate-200 bg-white px-4 py-2 text-sm font-semibold text-[#121B3B] hover:bg-slate-50"
+            />
             <button
               type="button"
               onClick={() => router.push("/admin/staff/new")}
@@ -376,7 +383,7 @@ export default function StaffPage() {
             </div>
           )}
 
-          <AdminUsersSection search={search} />
+          <AdminUsersSection key={importKey} search={search} />
 
           <div className="mt-8 grid grid-cols-1 items-start gap-4 sm:grid-cols-2">
             {ROLE_CARDS.map((role) => {

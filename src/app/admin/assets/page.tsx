@@ -1,5 +1,6 @@
 "use client";
 
+import { ExcelImport } from "@/components/excel-import";
 import { useEffect, useMemo, useState } from "react";
 import { useRouter } from "next/navigation";
 import { getStoredToken, getStoredUsername, isSuperAdmin } from "@/lib/auth";
@@ -274,6 +275,7 @@ export default function AssetsPage() {
                   setViewMode((m) => (m === "table" ? "card" : "table"))
                 }
               />
+              <ExcelImport kinds={["Vehicles", "Equipment"]} onImported={() => setRefreshKey((k) => k + 1)} />
               <button
                 type="button"
                 onClick={handleExport}
