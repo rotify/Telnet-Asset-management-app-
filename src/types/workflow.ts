@@ -34,3 +34,45 @@ export interface EquipmentTransferPayload {
   department?: string;
   reason?: string;
 }
+
+export interface DriverRequest {
+  id: number;
+  requested_by?: number | null;
+  requested_by_name?: string | null;
+  requester_user?: number | null;
+  details?: string | null;
+  preferred_date?: string | null;
+  requested_start?: string | null;
+  requested_end?: string | null;
+  // requested -> approved (or rejected) -> assigned
+  status: string;
+  approval_approver?: number | null;
+  approved_by?: number | null;
+  approved_at?: string | null;
+  requires_superadmin_approval?: boolean;
+  rejected_by?: number | null;
+  rejected_at?: string | null;
+  rejection_note?: string | null;
+  assigned_driver?: number | null;
+  assigned_driver_name?: string | null;
+  assigned_vehicle?: number | null;
+  assigned_by?: number | null;
+  assigned_at?: string | null;
+  notes?: string | null;
+  created_at?: string | null;
+}
+
+export interface DriverRequestPayload {
+  details: string;
+  preferred_date?: string;
+  requested_start?: string;
+  requested_end?: string;
+}
+
+export interface AvailableVehicle {
+  id: number;
+  name?: string | null;
+  license_plate?: string | null;
+  make?: string | null;
+  model?: string | null;
+}

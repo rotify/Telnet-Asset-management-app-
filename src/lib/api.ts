@@ -5,6 +5,9 @@ import type { DocumentRecord } from "@/types/document";
 import type { AssetHistoryEntry, MaintenanceRecord } from "@/types/maintenance";
 import type { WorkOrder } from "@/types/work-order";
 import type {
+  AvailableVehicle,
+  DriverRequest,
+  DriverRequestPayload,
   EquipmentTransfer,
   EquipmentTransferPayload,
   VehicleMaintenance,
@@ -871,6 +874,44 @@ export function createEquipmentTransfer(
     "/api/remote/equipment-transfers",
     "POST",
     payload
+  );
+}
+
+// Driver requests: requested -> approved/rejected -> assigned
+export async function getDriverRequests(): Promise<DriverRequest[]> {
+  return asList<DriverRequest>(await authedFetch("/api/remote/driver-requests"));
+}
+export function createDriverRequest(
+  payload: DriverRequestPayload
+): Promise<DriverRequest> {
+  return authedMutate<DriverRequest>("/api/remote/driver-requests", "POST", payload);
+}
+export function reviewDriverRequest(
+  id: number,
+  action: "approve" | "reject",
+  note?: string
+): Promise<DriverRequest> {
+  return authedMutate<DriverRequest>(
+    `/api/remote/driver-requests/${id}/review`,
+    "POST",
+    action === "reject" && note
+      ? { action, note, rejection_note: note }
+      : { action }
+  );
+}
+export function assignDriverRequest(
+  id: number,
+  payload: { assigned_driver: number; assigned_vehicle: number; notes?: string }
+): Promise<DriverRequest> {
+  return authedMutate<DriverRequest>(
+    `/api/remote/driver-requests/${id}/assign`,
+    "POST",
+    payload
+  );
+}
+export async function getAvailableVehicles(): Promise<AvailableVehicle[]> {
+  return asList<AvailableVehicle>(
+    await authedFetch("/api/remote/driver-requests/available-vehicles")
   );
 }
 
