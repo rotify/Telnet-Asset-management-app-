@@ -3,7 +3,8 @@
 import { useEffect, useState } from "react";
 import { useRouter } from "next/navigation";
 import { getStoredToken, getStoredUsername, isSuperAdmin } from "@/lib/auth";
-import { createAdminStaff, updateAdminUser } from "@/lib/api";
+import { createAdminStaff, getStaff, updateAdminUser } from "@/lib/api";
+import type { Staff } from "@/types/staff";
 import { AdminSidebar } from "@/components/layout/admin-sidebar";
 import { AdminTopBar } from "@/components/layout/admin-topbar";
 
@@ -50,6 +51,7 @@ const EMPTY = {
   date_joined: "",
   status: "",
   reporting_manager: "",
+  supervisor: "",
   work_location: "",
   drivers_licence_number: "",
   licence_expiry: "",
@@ -64,6 +66,7 @@ export default function AddStaffPage() {
   const [form, setForm] = useState(EMPTY);
   const [isSaving, setIsSaving] = useState(false);
   const [error, setError] = useState<string | null>(null);
+  const [people, setPeople] = useState<Staff[]>([]);
 
   useEffect(() => {
     const token = getStoredToken();
@@ -77,6 +80,9 @@ export default function AddStaffPage() {
       return;
     }
     setGateChecked(true);
+    getStaff()
+      .then(setPeople)
+      .catch(() => setPeople([]));
   }, [router]);
 
   function update<K extends keyof typeof EMPTY>(key: K, value: string) {
@@ -114,7 +120,8 @@ export default function AddStaffPage() {
         employment_type: form.employment_type || undefined,
         date_joined: form.date_joined || undefined,
         status: form.status || undefined,
-        reporting_manager: form.reporting_manager || undefined,
+        reporting_manager: form.reporting_manager ? Number(form.reporting_manager) : undefined,
+        supervisor: form.supervisor ? Number(form.supervisor) : undefined,
         work_location: form.work_location || undefined,
         drivers_licence_number: form.drivers_licence_number || undefined,
         licence_expiry: form.licence_expiry || undefined,
@@ -309,15 +316,36 @@ export default function AddStaffPage() {
                 </select>
               </Field>
               <Field label="Reporting Manager">
-                <input
-                  type="text"
+                <select
                   value={form.reporting_manager}
-                  onChange={(e) =>
-                    update("reporting_manager", e.target.value)
-                  }
-                  placeholder="Enter full name"
+                  onChange={(e) => update("reporting_manager", e.target.value)}
                   className={inputClasses}
-                />
+                >
+                  <option value="">
+                    {people.length ? "Select from staff" : "No staff available yet"}
+                  </option>
+                  {people.map((p) => (
+                    <option key={p.id} value={p.id}>
+                      {p.first_name} {p.last_name} ({p.staff_id})
+                    </option>
+                  ))}
+                </select>
+              </Field>
+              <Field label="Supervisor">
+                <select
+                  value={form.supervisor}
+                  onChange={(e) => update("supervisor", e.target.value)}
+                  className={inputClasses}
+                >
+                  <option value="">
+                    {people.length ? "Select from staff" : "No staff available yet"}
+                  </option>
+                  {people.map((p) => (
+                    <option key={p.id} value={p.id}>
+                      {p.first_name} {p.last_name} ({p.staff_id})
+                    </option>
+                  ))}
+                </select>
               </Field>
               <Field label="Branch">
                 <select

@@ -220,7 +220,10 @@ export interface StaffPayload {
   employment_type?: string;
   date_joined?: string;
   status?: string;
-  reporting_manager?: string;
+  // Staff record ids (the backend's staff create/update examples send
+  // these as nullable references).
+  reporting_manager?: number | string | null;
+  supervisor?: number | string | null;
   work_location?: string;
   drivers_licence_number?: string;
   licence_expiry?: string;
