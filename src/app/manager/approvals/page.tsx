@@ -12,7 +12,7 @@ export default function ManagerApprovalsPage() {
       title="Approvals"
       description={
         type === "vehicles"
-          ? "Requests waiting for your approval, and approved driver requests ready to dispatch."
+          ? "Requests waiting for your approval, and approved driver requests ready for a driver."
           : "Requests waiting for your approval."
       }
     >

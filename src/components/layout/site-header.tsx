@@ -32,7 +32,9 @@ export function SiteHeader() {
   const [username, setUsername] = useState<string | null>(null);
   const pathname = usePathname();
   const isAdminSection =
-    (pathname?.startsWith("/admin") || pathname?.startsWith("/dashboard")) ??
+    (pathname?.startsWith("/admin") ||
+      pathname?.startsWith("/dashboard") ||
+      pathname?.startsWith("/manager")) ??
     false;
 
   useEffect(() => {

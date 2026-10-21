@@ -3,7 +3,6 @@
 import { useEffect, useMemo, useState } from "react";
 import {
   assignDriverRequest,
-  getAvailableVehicles,
   getDriverRequests,
   getStaff,
   reviewDriverRequest,
@@ -16,7 +15,7 @@ import { ViewToggleButton } from "@/components/view-toggle";
 import { isDriverStaff, useDriverUserIds } from "@/lib/drivers";
 import { DR_TONE, drLabel, fmtWhen, requestWindow } from "@/lib/driver-requests";
 import type { Staff } from "@/types/staff";
-import type { AvailableVehicle, DriverRequest } from "@/types/workflow";
+import type { DriverRequest } from "@/types/workflow";
 
 const STATUSES = ["All", "requested", "approved", "assigned", "rejected"];
 
@@ -31,9 +30,7 @@ export default function DriverRequestsPage() {
   const driverIds = useDriverUserIds();
 
   const [assigning, setAssigning] = useState<DriverRequest | null>(null);
-  const [vehicles, setVehicles] = useState<AvailableVehicle[]>([]);
   const [driverId, setDriverId] = useState("");
-  const [vehicleId, setVehicleId] = useState("");
   const [notes, setNotes] = useState("");
   const [assignError, setAssignError] = useState<string | null>(null);
   const [saving, setSaving] = useState(false);
@@ -92,21 +89,14 @@ export default function DriverRequestsPage() {
   async function openAssign(r: DriverRequest) {
     setAssigning(r);
     setDriverId("");
-    setVehicleId("");
     setNotes("");
     setAssignError(null);
-    try {
-      setVehicles(await getAvailableVehicles());
-    } catch (err) {
-      setVehicles([]);
-      setAssignError(err instanceof Error ? err.message : "Couldn't load vehicles.");
-    }
   }
 
   async function confirmAssign() {
     if (!assigning) return;
-    if (!driverId || !vehicleId) {
-      setAssignError("Choose a driver and a vehicle.");
+    if (!driverId) {
+      setAssignError("Choose a driver.");
       return;
     }
     setSaving(true);
@@ -115,7 +105,6 @@ export default function DriverRequestsPage() {
       patch(
         await assignDriverRequest(assigning.id, {
           assigned_driver: Number(driverId),
-          assigned_vehicle: Number(vehicleId),
           notes: notes.trim() || undefined,
         })
       );
@@ -144,7 +133,7 @@ export default function DriverRequestsPage() {
               </>
             )}
             {canAssign && (
-              <MenuItem onClick={() => { close(); openAssign(r); }}>Assign driver & vehicle</MenuItem>
+              <MenuItem onClick={() => { close(); openAssign(r); }}>Assign driver</MenuItem>
             )}
           </div>
         )}
@@ -158,7 +147,7 @@ export default function DriverRequestsPage() {
   return (
     <AdminPageShell
       title="Driver Requests"
-      description="Requests for a driver and vehicle: review, approve, then assign."
+      description="Requests for a driver: review, approve, then assign a driver."
       search={search}
       onSearchChange={setSearch}
       searchPlaceholder="Search requests…"
@@ -255,7 +244,7 @@ export default function DriverRequestsPage() {
       {assigning && (
         <div className="fixed inset-0 z-50 flex items-center justify-center bg-black/40 p-4">
           <div className="w-full max-w-md rounded-xl bg-white p-6 shadow-xl">
-            <h3 className="text-lg font-bold text-[#121B3B]">Assign driver & vehicle</h3>
+            <h3 className="text-lg font-bold text-[#121B3B]">Assign driver</h3>
             <p className="mt-1 text-sm text-slate-500">
               {assigning.requested_by_name}: {requestWindow(assigning)}
             </p>
@@ -267,17 +256,6 @@ export default function DriverRequestsPage() {
                 {drivers.map((d) => (
                   <option key={d.id} value={d.id}>
                     {d.first_name} {d.last_name} ({d.staff_id})
-                  </option>
-                ))}
-              </select>
-              <select value={vehicleId} onChange={(e) => setVehicleId(e.target.value)} className={select}>
-                <option value="">
-                  {vehicles.length ? "Select an available vehicle" : "No vehicles available"}
-                </option>
-                {vehicles.map((v) => (
-                  <option key={v.id} value={v.id}>
-                    {v.name || `${v.make ?? ""} ${v.model ?? ""}`.trim() || `Vehicle ${v.id}`}
-                    {v.license_plate ? ` (${v.license_plate})` : ""}
                   </option>
                 ))}
               </select>

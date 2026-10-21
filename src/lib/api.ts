@@ -907,7 +907,7 @@ export function reviewDriverRequest(
 }
 export function assignDriverRequest(
   id: number,
-  payload: { assigned_driver: number; assigned_vehicle: number; notes?: string }
+  payload: { assigned_driver: number; assigned_vehicle?: number; notes?: string }
 ): Promise<DriverRequest> {
   return authedMutate<DriverRequest>(
     `/api/remote/driver-requests/${id}/assign`,
