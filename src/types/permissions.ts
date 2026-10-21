@@ -31,11 +31,16 @@ export type ModulePermissions = Record<PermissionAction, boolean>;
 export interface RolePermissions {
   role: string;
   modules: Record<PermissionModuleKey, ModulePermissions>;
+  // Kept as the backend sent it so a save doesn't change it.
+  approval_authority?: Record<string, boolean>;
 }
 
-// Roles shown in the editor. Staff and drivers are the same role.
+// The six roles the backend manages.
 export const EDITOR_ROLES = [
   { value: "admin", label: "Administrator", sub: "Super Admin (Root)", locked: true },
-  { value: "manager", label: "Managers", sub: "Equipment, Vehicle & Document managers", locked: false },
-  { value: "staff", label: "Staff", sub: "Standard Employee Access (includes drivers)", locked: false },
+  { value: "equipment_manager", label: "Equipment Manager", sub: "Equipment, maintenance and transfers", locked: false },
+  { value: "vehicle_manager", label: "Vehicle Manager", sub: "Vehicles, maintenance and driver dispatch", locked: false },
+  { value: "document_manager", label: "Document Manager", sub: "Company documents and expiries", locked: false },
+  { value: "driver", label: "Driver", sub: "Assigned vehicles and driver requests", locked: false },
+  { value: "staff", label: "Staff", sub: "Standard employee access", locked: false },
 ] as const;

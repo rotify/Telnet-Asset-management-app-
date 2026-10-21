@@ -1,12 +1,10 @@
 import { NextResponse } from "next/server";
+import { API_BASE_URL } from "@/lib/config";
 
 // Base URL of the newer backend that hosts the work-orders and
 // admin (users/roles/staff) endpoints. Plain http, so it is only ever
 // called server-side from these proxy routes.
-export const REMOTE_API_URL =
-  process.env.REMOTE_API_URL ?? process.env.API_BASE_URL ??
-  process.env.WORK_ORDERS_API_URL ??
-  "http://207.180.246.69:8038/api";
+export const REMOTE_API_URL = API_BASE_URL;
 
 export async function fetchRemote(url: string, token: string) {
   return fetch(url, {

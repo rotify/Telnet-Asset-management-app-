@@ -359,7 +359,8 @@ export function updateDocumentWithFile(
 }
 
 // The backend returns document_file as a relative /media/... path.
-const DOCUMENT_MEDIA_ORIGIN = "http://207.180.246.69:7038";
+// Set NEXT_PUBLIC_MEDIA_ORIGIN in the environment (see .env.example).
+const DOCUMENT_MEDIA_ORIGIN = (process.env.NEXT_PUBLIC_MEDIA_ORIGIN ?? "").replace(/\/+$/, "");
 
 export function documentFileUrl(path: string): string {
   if (/^https?:\/\//.test(path)) return path;
@@ -759,10 +760,11 @@ export function getAdminUsers(pageSize = 100): Promise<Paginated<AdminUser>> {
   );
 }
 
-// Role permission matrix. Proposed backend contract:
-//   GET / PUT /api/v1/admin/roles/{role}/permissions/
-// Until the backend stores permissions, saved selections are kept in this
-// browser so the rest of the app (e.g. the role cards) can use them.
+// Role permission matrix:
+//   GET   /api/v1/admin/roles/permissions/?role=<role>  (no role = all roles)
+//   PATCH /api/v1/admin/roles/permissions/  { role, modules, approval_authority }
+// If the server can't be reached for these, selections are kept in this
+// browser so the rest of the app (e.g. the role cards) can still use them.
 const PERMS_KEY = (role: string) => `telnet_role_permissions_${role}`;
 
 function readLocalPermissions(role: string): RolePermissions | null {
@@ -775,11 +777,39 @@ function readLocalPermissions(role: string): RolePermissions | null {
   }
 }
 
+type RawMatrix = {
+  value?: string;
+  role?: string;
+  modules?: Record<string, Record<string, unknown>>;
+  approval_authority?: Record<string, boolean>;
+};
+
+// Keeps only the true/false actions (drops "label" and the "all" summary).
+function toRolePermissions(role: string, raw: RawMatrix): RolePermissions {
+  const modules: Record<string, Record<string, boolean>> = {};
+  for (const [key, row] of Object.entries(raw.modules ?? {})) {
+    modules[key] = {};
+    for (const action of ["view", "create", "edit", "delete", "approve", "export"]) {
+      modules[key][action] = row?.[action] === true;
+    }
+  }
+  return {
+    role,
+    modules: modules as unknown as RolePermissions["modules"],
+    approval_authority: raw.approval_authority,
+  };
+}
+
 export async function getRolePermissions(role: string): Promise<RolePermissions> {
   try {
-    return await authedFetch<RolePermissions>(
-      `/api/remote/v1/admin/roles/${role}/permissions`
+    const data = await authedFetch<RawMatrix | RawMatrix[]>(
+      `/api/remote/v1/admin/roles/permissions?role=${encodeURIComponent(role)}`
     );
+    const one = Array.isArray(data)
+      ? data.find((r) => (r.value ?? r.role) === role)
+      : data;
+    if (!one) throw new Error("Role not found.");
+    return toRolePermissions(role, one);
   } catch (err) {
     const local = readLocalPermissions(role);
     if (local) return local;
@@ -787,17 +817,20 @@ export async function getRolePermissions(role: string): Promise<RolePermissions>
   }
 }
 
-// Resolves with localOnly=true when the backend had no endpoint to save to.
+// Resolves with localOnly=true when the server couldn't save it.
 export async function saveRolePermissions(
   role: string,
   payload: RolePermissions
 ): Promise<{ localOnly: boolean }> {
   try {
-    await authedMutate<RolePermissions>(
-      `/api/remote/v1/admin/roles/${role}/permissions`,
-      "PUT",
-      payload
-    );
+    await authedMutate<RawMatrix>("/api/remote/v1/admin/roles/permissions", "PATCH", {
+      role,
+      modules: payload.modules,
+      ...(payload.approval_authority
+        ? { approval_authority: payload.approval_authority }
+        : {}),
+    });
+    window.localStorage.removeItem(PERMS_KEY(role));
     return { localOnly: false };
   } catch {
     window.localStorage.setItem(PERMS_KEY(role), JSON.stringify(payload));
@@ -935,6 +968,25 @@ export function rejectApproval(id: number, note: string): Promise<ApprovalRecord
 }
 export function getDriverRequest(id: number): Promise<DriverRequest> {
   return authedFetch<DriverRequest>(`/api/remote/driver-requests/${id}`);
+}
+export async function getPendingAssetAssignments(): Promise<AssetAssignmentRequest[]> {
+  return asList<AssetAssignmentRequest>(
+    await authedFetch("/api/remote/asset-assignment-requests/pending")
+  );
+}
+export function approveAssetAssignment(id: number): Promise<AssetAssignmentRequest> {
+  return authedMutate<AssetAssignmentRequest>(
+    `/api/remote/asset-assignment-requests/${id}/approve`,
+    "POST",
+    {}
+  );
+}
+export function rejectAssetAssignment(id: number, note: string): Promise<AssetAssignmentRequest> {
+  return authedMutate<AssetAssignmentRequest>(
+    `/api/remote/asset-assignment-requests/${id}/reject`,
+    "POST",
+    { rejection_note: note }
+  );
 }
 export function getAssetAssignmentRequest(id: number): Promise<AssetAssignmentRequest> {
   return authedFetch<AssetAssignmentRequest>(`/api/remote/asset-assignment-requests/${id}`);

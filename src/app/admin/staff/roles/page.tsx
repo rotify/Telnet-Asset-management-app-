@@ -14,11 +14,6 @@ import {
   type RolePermissions,
 } from "@/types/permissions";
 
-function roleUserKey(role: string): string {
-  // Staff and drivers are the same role.
-  return role === "driver" ? "staff" : role;
-}
-
 export default function RolePermissionsPage() {
   const [role, setRole] = useState<string>("staff");
   const [perms, setPerms] = useState<RolePermissions>(() => defaultPermissions("staff"));
@@ -39,8 +34,7 @@ export default function RolePermissionsPage() {
       .then((page) => {
         const c: Record<string, number> = {};
         page.results.forEach((u) => {
-          const k = roleUserKey(u.role);
-          c[k] = (c[k] ?? 0) + 1;
+          c[u.role] = (c[u.role] ?? 0) + 1;
         });
         setCounts(c);
       })
@@ -57,6 +51,7 @@ export default function RolePermissionsPage() {
       const merged: RolePermissions = {
         role: r,
         modules: { ...base.modules, ...(data.modules ?? {}) },
+        approval_authority: data.approval_authority,
       };
       setPerms(merged);
       setSaved(JSON.stringify(merged));
@@ -118,7 +113,7 @@ export default function RolePermissionsPage() {
     } catch (err) {
       setError(
         err instanceof Error
-          ? `${err.message} Saving permissions needs backend support (PUT /api/v1/admin/roles/${role}/permissions/).`
+          ? `${err.message} `
           : "Couldn't save permissions."
       );
     } finally {
@@ -205,9 +200,9 @@ export default function RolePermissionsPage() {
               <p className="mt-1 text-xs text-slate-400">
                 {locked
                   ? "Administrator access is fixed and can't be edited."
-                  : role === "staff"
-                  ? "Applies to all staff, including drivers: personal equipment custody, requests and verifications."
-                  : "Oversight and approval access for managers."}
+                  : role === "staff" || role === "driver"
+                  ? "Personal equipment custody, requests and verifications."
+                  : "Oversight and approval access for this manager role."}
               </p>
             </div>
             <div className="flex gap-2">

@@ -1,9 +1,7 @@
 import { NextResponse } from "next/server";
 import type { LoginPayload } from "@/types/auth";
+import { API_BASE_URL } from "@/lib/config";
 
-const API_BASE_URL =
-  process.env.API_BASE_URL ??
-  "http://207.180.246.69:8038/api";
 
 export async function POST(request: Request) {
   const body = (await request.json()) as LoginPayload;

@@ -1,8 +1,6 @@
 import { NextResponse } from "next/server";
+import { API_BASE_URL } from "@/lib/config";
 
-const API_BASE_URL =
-  process.env.API_BASE_URL ??
-  "http://207.180.246.69:8038/api";
 
 export async function GET(request: Request) {
   const authHeader = request.headers.get("authorization");

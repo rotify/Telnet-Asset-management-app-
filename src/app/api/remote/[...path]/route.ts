@@ -1,11 +1,10 @@
 import { NextResponse } from "next/server";
+import { API_BASE_URL } from "@/lib/config";
 
 // Generic server-side proxy for the newer backend endpoints. The browser
 // calls /api/remote/<path>; this forwards to <API_BASE_URL>/<path>/ with
 // the user's token. The backend is plain http, so it can't be called
 // straight from the https site. Only the prefixes below are allowed.
-const API_BASE_URL =
-  process.env.API_BASE_URL ?? "http://207.180.246.69:8038/api";
 
 const ALLOWED_PREFIXES = [
   "me",

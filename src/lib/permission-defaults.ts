@@ -29,7 +29,7 @@ export function defaultPermissions(role: string): RolePermissions {
   const set = (m: PermissionModuleKey, actions: PermissionAction[]) => {
     actions.forEach((a) => (p.modules[m][a] = true));
   };
-  if (role === "manager") {
+  if (role === "manager" || role.endsWith("_manager")) {
     (
       ["vehicles", "equipment", "documents", "maintenance", "work_orders", "transfers", "requests", "audits", "reports", "notifications"] as PermissionModuleKey[]
     ).forEach((m) => set(m, ["view", "create", "edit", "export"]));

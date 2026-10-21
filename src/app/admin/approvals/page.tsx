@@ -1,6 +1,7 @@
 "use client";
 
 import { ApprovalsInbox } from "@/components/approvals-inbox";
+import { PendingAssetAssignments } from "@/components/pending-asset-assignments";
 import { AdminPageShell } from "@/components/layout/admin-page-shell";
 
 export default function AdminApprovalsPage() {
@@ -10,6 +11,7 @@ export default function AdminApprovalsPage() {
       description="Requests waiting for you, including admin fallbacks when a person has no supervisor or reporting manager."
     >
       <ApprovalsInbox />
+      <PendingAssetAssignments />
     </AdminPageShell>
   );
 }
