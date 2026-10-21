@@ -36,6 +36,6 @@ export interface RolePermissions {
 // Roles shown in the editor. Staff and drivers are the same role.
 export const EDITOR_ROLES = [
   { value: "admin", label: "Administrator", sub: "Super Admin (Root)", locked: true },
-  { value: "manager", label: "Manager", sub: "Dept Oversight & Approvals", locked: false },
+  { value: "manager", label: "Managers", sub: "Equipment, Vehicle & Document managers", locked: false },
   { value: "staff", label: "Staff", sub: "Standard Employee Access (includes drivers)", locked: false },
 ] as const;

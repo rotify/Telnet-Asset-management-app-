@@ -19,7 +19,14 @@ const EQUIPMENT_TYPES = [
   "office_supplies", "other",
 ];
 const DOC_TYPES = ["insurance", "license", "warranty", "receipt"];
-const ROLES = ["staff", "driver", "manager", "admin"];
+const ROLES = [
+  "staff",
+  "driver",
+  "equipment_manager",
+  "vehicle_manager",
+  "document_manager",
+  "admin",
+];
 
 export const SPECS: Record<ImportKind, ColumnSpec[]> = {
   Staff: [

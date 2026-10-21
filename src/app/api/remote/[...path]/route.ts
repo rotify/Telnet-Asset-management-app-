@@ -12,6 +12,8 @@ const ALLOWED_PREFIXES = [
   "vehicle-maintenance",
   "equipment-transfers",
   "driver-requests",
+  "approvals",
+  "asset-assignment-requests",
   "bulk-upload-assets",
   "bulk-upload-equipment",
   "v1/admin/users",

@@ -16,13 +16,25 @@ export function managerLabel(type: ManagerType | null): string {
   return MANAGER_TYPES.find((t) => t.value === type)?.label ?? "Manager";
 }
 
-// The backend has one "manager" role. The manager type comes from the
-// user's manager_type field; until the backend stores that, fall back to
-// the department name (e.g. "Vehicles" / "Fleet", "Equipment", "Documents").
+// The backend has three manager roles, one per asset area.
+export const MANAGER_ROLE_TYPE: Record<string, ManagerType> = {
+  equipment_manager: "equipment",
+  vehicle_manager: "vehicles",
+  document_manager: "documents",
+};
+
+export function isManagerRole(role: string | null | undefined): boolean {
+  return !!role && (role === "manager" || role in MANAGER_ROLE_TYPE);
+}
+
+// The role says which assets a manager looks after. An older generic
+// "manager" role falls back to a manager_type field, then the department.
 export function resolveManagerType(u: {
+  role?: string | null;
   manager_type?: string | null;
   department?: string | null;
 }): ManagerType | null {
+  if (u.role && MANAGER_ROLE_TYPE[u.role]) return MANAGER_ROLE_TYPE[u.role];
   const direct = (u.manager_type ?? "").toLowerCase().trim();
   const hit = MANAGER_TYPES.find(
     (t) => t.value === direct || t.value.replace(/s$/, "") === direct
@@ -63,7 +75,7 @@ export function useManagerContext(): ManagerContext {
         const next: ManagerContext = {
           loading: false,
           role: me.role ?? null,
-          type: me.role === "manager" ? resolveManagerType(me) : null,
+          type: isManagerRole(me.role) ? resolveManagerType(me) : null,
           name: `${me.first_name ?? ""} ${me.last_name ?? ""}`.trim() || me.username,
           userId: me.id ?? null,
         };
@@ -90,7 +102,7 @@ export async function fetchRole(): Promise<string | null> {
       ctx: {
         loading: false,
         role: me.role ?? null,
-        type: me.role === "manager" ? resolveManagerType(me) : null,
+        type: isManagerRole(me.role) ? resolveManagerType(me) : null,
         name: `${me.first_name ?? ""} ${me.last_name ?? ""}`.trim() || me.username,
         userId: me.id ?? null,
       },

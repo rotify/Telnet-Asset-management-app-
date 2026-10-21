@@ -5,7 +5,6 @@ import { useRouter } from "next/navigation";
 import { getStoredToken, getStoredUsername, isSuperAdmin } from "@/lib/auth";
 import { createAdminStaff, getStaff, updateAdminUser } from "@/lib/api";
 import type { Staff } from "@/types/staff";
-import { MANAGER_TYPES } from "@/lib/manager";
 import { AdminSidebar } from "@/components/layout/admin-sidebar";
 import { AdminTopBar } from "@/components/layout/admin-topbar";
 
@@ -33,7 +32,9 @@ const inputClasses =
 const ROLE_VALUES: Record<string, string> = {
   "Super Admin": "admin",
   Admin: "admin",
-  Manager: "manager",
+  "Equipment Manager": "equipment_manager",
+  "Vehicle Manager": "vehicle_manager",
+  "Document Manager": "document_manager",
   Driver: "driver",
   Staff: "staff",
 };
@@ -48,7 +49,6 @@ const EMPTY = {
   department: "",
   job_title: "",
   system_role: "",
-  manager_type: "",
   employment_type: "",
   date_joined: "",
   status: "",
@@ -101,10 +101,6 @@ export default function AddStaffPage() {
       setError("Employee ID and email are required to create a login.");
       return;
     }
-    if (form.system_role === "Manager" && !form.manager_type) {
-      setError("Choose which assets this manager looks after.");
-      return;
-    }
     setIsSaving(true);
     try {
       const [first_name, ...rest] = form.full_name.trim().split(/\s+/);
@@ -114,11 +110,7 @@ export default function AddStaffPage() {
         last_name,
         staff_id: form.staff_id || undefined,
         email: form.email || undefined,
-        department:
-          form.department ||
-          (form.system_role === "Manager"
-            ? MANAGER_TYPES.find((t) => t.value === form.manager_type)?.label.replace(" Manager", "")
-            : undefined),
+        department: form.department || undefined,
         branch: form.work_location || undefined,
         is_active: true,
         phone_number: form.phone_number || undefined,
@@ -127,7 +119,6 @@ export default function AddStaffPage() {
         job_title: form.job_title || undefined,
         system_role: form.system_role || undefined,
         role: ROLE_VALUES[form.system_role] || undefined,
-        manager_type: form.system_role === "Manager" ? form.manager_type : undefined,
         employment_type: form.employment_type || undefined,
         date_joined: form.date_joined || undefined,
         status: form.status || undefined,
@@ -145,12 +136,7 @@ export default function AddStaffPage() {
       const role = ROLE_VALUES[form.system_role];
       if (role && typeof created?.user === "number") {
         try {
-          await updateAdminUser(created.user, {
-            role,
-            ...(role === "manager" && form.manager_type
-              ? { manager_type: form.manager_type }
-              : {}),
-          });
+          await updateAdminUser(created.user, { role });
         } catch {
           setError(
             "Employee added and login emailed, but the role couldn't be set. Set it from Users & Roles."
@@ -295,27 +281,13 @@ export default function AddStaffPage() {
                   
                   <option value="Super Admin">Super Admin</option>
                   <option value="Admin">Admin</option>
-                  <option value="Manager">Manager</option>
+                  <option value="Equipment Manager">Equipment Manager</option>
+                  <option value="Vehicle Manager">Vehicle Manager</option>
+                  <option value="Document Manager">Document Manager</option>
                   <option value="Driver">Driver</option>
                   <option value="Staff">Staff</option>
                 </select>
               </Field>
-              {form.system_role === "Manager" && (
-                <Field label="Manager Type">
-                  <select
-                    value={form.manager_type}
-                    onChange={(e) => update("manager_type", e.target.value)}
-                    className={inputClasses}
-                  >
-                    <option value="">Select what they manage</option>
-                    {MANAGER_TYPES.map((t) => (
-                      <option key={t.value} value={t.value}>
-                        {t.label}
-                      </option>
-                    ))}
-                  </select>
-                </Field>
-              )}
               <Field label="Employment Type">
                 <select
                   value={form.employment_type}

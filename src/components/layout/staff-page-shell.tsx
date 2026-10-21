@@ -4,13 +4,14 @@ import { useEffect, useState } from "react";
 import { useRouter } from "next/navigation";
 import { getStoredToken, getStoredUsername, isSuperAdmin } from "@/lib/auth";
 import { AdminSidebar, type NavItem } from "@/components/layout/admin-sidebar";
-import { fetchRole } from "@/lib/manager";
+import { fetchRole, isManagerRole } from "@/lib/manager";
 import { AdminTopBar } from "@/components/layout/admin-topbar";
 
 const STAFF_NAV: NavItem[] = [
   { label: "Overview", href: "/dashboard", icon: "grid", live: true },
   { label: "My Assets", href: "/dashboard/assets", icon: "box", live: true },
   { label: "Request a Driver", href: "/dashboard/driver-requests", icon: "truck", live: true },
+  { label: "Approvals", href: "/dashboard/approvals", icon: "bell", live: true },
   { label: "Report an Issue", href: "/dashboard/report-issue", icon: "wrench", live: true },
   { label: "My Profile", href: "/dashboard/profile", icon: "settings", live: true },
 ];
@@ -48,7 +49,7 @@ export function StaffPageShell({
     }
     // Managers have their own area.
     fetchRole().then((role) => {
-      if (role === "manager") router.replace("/manager");
+      if (isManagerRole(role)) router.replace("/manager");
       else setReady(true);
     });
   }, [router]);

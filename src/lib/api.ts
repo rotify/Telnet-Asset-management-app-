@@ -5,6 +5,8 @@ import type { DocumentRecord } from "@/types/document";
 import type { AssetHistoryEntry, MaintenanceRecord } from "@/types/maintenance";
 import type { WorkOrder } from "@/types/work-order";
 import type {
+  ApprovalRecord,
+  AssetAssignmentRequest,
   AvailableVehicle,
   DriverRequest,
   DriverRequestPayload,
@@ -220,7 +222,6 @@ export interface StaffPayload {
   job_title?: string;
   system_role?: string;
   role?: string; // backend role value: admin | manager | driver | staff
-  manager_type?: string; // for managers: equipment | vehicles | documents
   employment_type?: string;
   date_joined?: string;
   status?: string;
@@ -827,8 +828,7 @@ export function getCurrentUser(): Promise<{
   first_name?: string;
   last_name?: string;
   department?: string | null;
-  // Which assets a manager looks after: equipment | vehicles | documents.
-  manager_type?: string | null;
+  manager_type?: string | null; // legacy generic-manager fallback
 }> {
   return authedFetch("/api/remote/me");
 }
@@ -919,6 +919,25 @@ export async function getAvailableVehicles(): Promise<AvailableVehicle[]> {
   return asList<AvailableVehicle>(
     await authedFetch("/api/remote/driver-requests/available-vehicles")
   );
+}
+
+// Approvals inbox: records waiting on the signed-in approver.
+export async function getPendingApprovals(): Promise<ApprovalRecord[]> {
+  return asList<ApprovalRecord>(await authedFetch("/api/remote/approvals?status=pending"));
+}
+export function approveApproval(id: number): Promise<ApprovalRecord> {
+  return authedMutate<ApprovalRecord>(`/api/remote/approvals/${id}/approve`, "POST", {});
+}
+export function rejectApproval(id: number, note: string): Promise<ApprovalRecord> {
+  return authedMutate<ApprovalRecord>(`/api/remote/approvals/${id}/reject`, "POST", {
+    rejection_note: note,
+  });
+}
+export function getDriverRequest(id: number): Promise<DriverRequest> {
+  return authedFetch<DriverRequest>(`/api/remote/driver-requests/${id}`);
+}
+export function getAssetAssignmentRequest(id: number): Promise<AssetAssignmentRequest> {
+  return authedFetch<AssetAssignmentRequest>(`/api/remote/asset-assignment-requests/${id}`);
 }
 
 // Admin users / staff (create + edit)

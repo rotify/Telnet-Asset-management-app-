@@ -5,7 +5,7 @@ import { useRouter } from "next/navigation";
 import { getStoredToken } from "@/lib/auth";
 import { AdminSidebar, type NavItem } from "@/components/layout/admin-sidebar";
 import { AdminTopBar } from "@/components/layout/admin-topbar";
-import { managerLabel, useManagerContext, type ManagerType } from "@/lib/manager";
+import { isManagerRole, managerLabel, useManagerContext, type ManagerType } from "@/lib/manager";
 
 function navFor(type: ManagerType | null): NavItem[] {
   const items: NavItem[] = [
@@ -19,8 +19,7 @@ function navFor(type: ManagerType | null): NavItem[] {
     items.push({ label: "Documents", href: "/manager/assets", icon: "doc", live: true });
   if (type === "equipment" || type === "vehicles")
     items.push({ label: "Maintenance", href: "/manager/maintenance", icon: "gauge", live: true });
-  if (type === "equipment" || type === "vehicles")
-    items.push({ label: "Approvals", href: "/manager/approvals", icon: "bell", live: true });
+  items.push({ label: "Approvals", href: "/manager/approvals", icon: "bell", live: true });
   items.push(
     { label: "My Profile", href: "/manager/profile", icon: "users", live: true },
     { label: "Settings", href: "/manager/settings", icon: "settings", live: true }
@@ -57,10 +56,10 @@ export function ManagerPageShell({
     }
     if (ctx.loading) return;
     if (ctx.role === "admin") router.replace("/admin/dashboard");
-    else if (ctx.role && ctx.role !== "manager") router.replace("/dashboard");
+    else if (ctx.role && !isManagerRole(ctx.role)) router.replace("/dashboard");
   }, [ctx.loading, ctx.role, router]);
 
-  if (ctx.loading || ctx.role !== "manager") return null;
+  if (ctx.loading || !isManagerRole(ctx.role)) return null;
 
   return (
     <div className="flex min-h-[calc(100vh-0px)] bg-[#EFF1F6]">

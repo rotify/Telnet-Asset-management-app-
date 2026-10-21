@@ -76,3 +76,30 @@ export interface AvailableVehicle {
   make?: string | null;
   model?: string | null;
 }
+
+// One approval step assigned to a person (supervisor, reporting manager or
+// the admin fallback). The request advances once all its records approve.
+export interface ApprovalRecord {
+  id: number;
+  target_type: string; // driver_request | asset_assignment_request
+  target_id: number;
+  asset_assignment_request: number | null;
+  driver_request: number | null;
+  approver: number | null;
+  approver_type: string; // supervisor | reporting_manager | admin ...
+  status: string; // pending | approved | rejected | cancelled
+  acted_by: number | null;
+  acted_at: string | null;
+  rejection_note?: string | null;
+  created_at?: string | null;
+}
+
+export interface AssetAssignmentRequest {
+  id: number;
+  asset: number;
+  previous_staff: number | null;
+  requested_staff: number | null;
+  requested_by: number | null;
+  status?: string;
+  [key: string]: unknown;
+}

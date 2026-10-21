@@ -65,10 +65,23 @@ const ROLE_CARDS = [
     morePermissions: 6,
   },
   {
-    name: "Admin",
-    members: 1,
-    description:
-      "Manage assets, assignments, maintenance and reporting for their department.",
+    name: "Equipment Manager",
+    members: 0,
+    description: "Manages equipment, its maintenance and assignment approvals.",
+    visiblePermissions: 1,
+    morePermissions: 2,
+  },
+  {
+    name: "Vehicle Manager",
+    members: 0,
+    description: "Manages vehicles, their maintenance and driver dispatch.",
+    visiblePermissions: 1,
+    morePermissions: 2,
+  },
+  {
+    name: "Document Manager",
+    members: 0,
+    description: "Manages company documents and their expiry tracking.",
     visiblePermissions: 1,
     morePermissions: 2,
   },
@@ -91,7 +104,9 @@ const ROLE_CARDS = [
 // Which system users belong under each role card.
 const ROLE_MATCH: Record<string, (u: AdminUser) => boolean> = {
   "Super Admin": (u) => u.is_superuser,
-  Admin: (u) => u.role === "admin" && !u.is_superuser,
+  "Equipment Manager": (u) => u.role === "equipment_manager",
+  "Vehicle Manager": (u) => u.role === "vehicle_manager",
+  "Document Manager": (u) => u.role === "document_manager",
   Driver: (u) => u.role === "driver",
   Staff: (u) => u.role === "staff",
 };
@@ -99,7 +114,9 @@ const ROLE_MATCH: Record<string, (u: AdminUser) => boolean> = {
 // Which permission set (editor role) backs each card.
 const CARD_ROLE: Record<string, string> = {
   "Super Admin": "admin",
-  Admin: "manager",
+  "Equipment Manager": "manager",
+  "Vehicle Manager": "manager",
+  "Document Manager": "manager",
   Driver: "staff",
   Staff: "staff",
 };

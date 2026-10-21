@@ -8,7 +8,6 @@ export interface AdminUser {
   is_superuser: boolean;
   role: string; // admin | manager | driver | staff
   department: string | null;
-  manager_type?: string | null;
 }
 
 export interface AdminRole {

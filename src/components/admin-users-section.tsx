@@ -13,11 +13,13 @@ import { ThreeDotMenu, MenuItem } from "@/components/three-dot-menu";
 import { StatusDot, type StatusTone } from "@/components/status-dot";
 import type { AdminRole, AdminUser } from "@/types/admin";
 import type { Staff } from "@/types/staff";
-import { MANAGER_TYPES, resolveManagerType } from "@/lib/manager";
 
 const ROLE_TONES: Record<string, StatusTone> = {
   admin: "red",
   manager: "orange",
+  equipment_manager: "orange",
+  vehicle_manager: "orange",
+  document_manager: "orange",
   driver: "slate",
   staff: "navy",
 };
@@ -86,7 +88,6 @@ export function AdminUsersSection({ search }: { search: string }) {
     department: "",
     branch: "",
     role: "staff",
-    manager_type: "",
   });
   const [editLoading, setEditLoading] = useState(false);
   const [editSaving, setEditSaving] = useState(false);
@@ -104,7 +105,6 @@ export function AdminUsersSection({ search }: { search: string }) {
       department: u.department ?? "",
       branch: "",
       role: u.role,
-      manager_type: resolveManagerType(u) ?? "",
     });
     setEditLoading(true);
     try {
@@ -146,8 +146,6 @@ export function AdminUsersSection({ search }: { search: string }) {
       }
       const userPatch: Partial<AdminUser> = {};
       if (form.role !== editing.role) userPatch.role = form.role;
-      if (form.role === "manager" && form.manager_type)
-        userPatch.manager_type = form.manager_type;
       if (!editStaff) {
         userPatch.first_name = form.first_name.trim();
         userPatch.last_name = form.last_name.trim();
@@ -508,23 +506,6 @@ export function AdminUsersSection({ search }: { search: string }) {
                     ))}
                   </select>
                 </label>
-                {form.role === "manager" && (
-                  <label className="text-sm">
-                    <span className="mb-1 block font-medium text-[#121B3B]">Manager type</span>
-                    <select
-                      value={form.manager_type}
-                      onChange={(e) => setForm((f) => ({ ...f, manager_type: e.target.value }))}
-                      className="w-full rounded-lg border border-slate-200 bg-white px-3 py-2 text-sm focus:border-telnet-primary focus:outline-none"
-                    >
-                      <option value="">Select what they manage</option>
-                      {MANAGER_TYPES.map((t) => (
-                        <option key={t.value} value={t.value}>
-                          {t.label}
-                        </option>
-                      ))}
-                    </select>
-                  </label>
-                )}
               </div>
             )}
             {editError && (

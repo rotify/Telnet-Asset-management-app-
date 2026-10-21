@@ -1,4 +1,4 @@
-export type UserRole = "admin" | "manager" | "driver" | "staff";
+export type UserRole = "admin" | "manager" | "equipment_manager" | "vehicle_manager" | "document_manager" | "driver" | "staff";
 
 export interface LoginPayload {
   username: string;
