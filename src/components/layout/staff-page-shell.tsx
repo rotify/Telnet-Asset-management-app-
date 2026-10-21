@@ -4,14 +4,21 @@ import { useEffect, useState } from "react";
 import { useRouter } from "next/navigation";
 import { getStoredToken, getStoredUsername, isSuperAdmin } from "@/lib/auth";
 import { AdminSidebar, type NavItem } from "@/components/layout/admin-sidebar";
+import { getPendingApprovals } from "@/lib/api";
 import { fetchRole, isManagerRole } from "@/lib/manager";
 import { AdminTopBar } from "@/components/layout/admin-topbar";
+
+const APPROVALS_ITEM: NavItem = {
+  label: "Approvals",
+  href: "/dashboard/approvals",
+  icon: "bell",
+  live: true,
+};
 
 const STAFF_NAV: NavItem[] = [
   { label: "Overview", href: "/dashboard", icon: "grid", live: true },
   { label: "My Assets", href: "/dashboard/assets", icon: "box", live: true },
   { label: "Request a Driver", href: "/dashboard/driver-requests", icon: "truck", live: true },
-  { label: "Approvals", href: "/dashboard/approvals", icon: "bell", live: true },
   { label: "Report an Issue", href: "/dashboard/report-issue", icon: "wrench", live: true },
   { label: "My Profile", href: "/dashboard/profile", icon: "settings", live: true },
 ];
@@ -37,6 +44,7 @@ export function StaffPageShell({
 }) {
   const router = useRouter();
   const [ready, setReady] = useState(false);
+  const [isApprover, setIsApprover] = useState(false);
 
   useEffect(() => {
     if (!getStoredToken()) {
@@ -50,7 +58,14 @@ export function StaffPageShell({
     // Managers have their own area.
     fetchRole().then((role) => {
       if (isManagerRole(role)) router.replace("/manager");
-      else setReady(true);
+      else {
+        setReady(true);
+        // Only people who are someone's supervisor / reporting manager get
+        // approval records, so only they see the Approvals link.
+        getPendingApprovals()
+          .then((a) => setIsApprover(a.length > 0))
+          .catch(() => setIsApprover(false));
+      }
     });
   }, [router]);
 
@@ -58,7 +73,13 @@ export function StaffPageShell({
 
   return (
     <div className="flex min-h-[calc(100vh-0px)] bg-[#EFF1F6]">
-      <AdminSidebar items={STAFF_NAV} />
+      <AdminSidebar
+        items={
+          isApprover
+            ? [...STAFF_NAV.slice(0, -2), APPROVALS_ITEM, ...STAFF_NAV.slice(-2)]
+            : STAFF_NAV
+        }
+      />
       <div className="min-w-0 flex-1 px-4 pt-2 pb-4 sm:px-6 sm:pt-4 sm:pb-8 lg:ml-60">
         <div className="mx-auto max-w-6xl">
           <div className="sticky top-12 z-20 bg-[#EFF1F6] pb-2 lg:top-0">
