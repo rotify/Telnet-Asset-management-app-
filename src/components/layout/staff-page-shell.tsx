@@ -4,6 +4,7 @@ import { useEffect, useState } from "react";
 import { useRouter } from "next/navigation";
 import { getStoredToken, getStoredUsername, isSuperAdmin } from "@/lib/auth";
 import { AdminSidebar, type NavItem } from "@/components/layout/admin-sidebar";
+import { fetchRole } from "@/lib/manager";
 import { AdminTopBar } from "@/components/layout/admin-topbar";
 
 const STAFF_NAV: NavItem[] = [
@@ -45,7 +46,11 @@ export function StaffPageShell({
       router.replace("/admin/dashboard");
       return;
     }
-    setReady(true);
+    // Managers have their own area.
+    fetchRole().then((role) => {
+      if (role === "manager") router.replace("/manager");
+      else setReady(true);
+    });
   }, [router]);
 
   if (!ready) return null;

@@ -220,6 +220,7 @@ export interface StaffPayload {
   job_title?: string;
   system_role?: string;
   role?: string; // backend role value: admin | manager | driver | staff
+  manager_type?: string; // for managers: equipment | vehicles | documents
   employment_type?: string;
   date_joined?: string;
   status?: string;
@@ -823,6 +824,11 @@ export function getCurrentUser(): Promise<{
   username: string;
   role: string;
   staff_id?: number | null;
+  first_name?: string;
+  last_name?: string;
+  department?: string | null;
+  // Which assets a manager looks after: equipment | vehicles | documents.
+  manager_type?: string | null;
 }> {
   return authedFetch("/api/remote/me");
 }
