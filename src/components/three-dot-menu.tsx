@@ -13,8 +13,7 @@ function DotsIcon() {
   );
 }
 
-// Figma-matched actions trigger: a small "⋮" icon button that reveals a
-// dropdown panel, instead of inline text links in the table cell.
+
 const MENU_WIDTH = 224; // w-56
 const MENU_MARGIN = 4;
 
@@ -35,13 +34,7 @@ export function ThreeDotMenu({
   const buttonRef = useRef<HTMLButtonElement>(null);
   const menuRef = useRef<HTMLDivElement>(null);
 
-  // Table wrappers use overflow-x-auto, which clips any absolutely
-  // positioned dropdown that lives inside them — so a menu opened near the
-  // bottom (or edge) of the table looked cut off and forced a scroll to see
-  // the rest of it. Rendering the menu in a portal with viewport-relative
-  // "fixed" positioning (computed from the trigger button's own position)
-  // escapes that clipping everywhere ThreeDotMenu is used, and flips the
-  // menu above the button when there isn't room below.
+ 
   function computePosition() {
     const btn = buttonRef.current;
     if (!btn) return;

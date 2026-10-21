@@ -16,7 +16,7 @@ export function LoginForm() {
 
   function validate(): boolean {
     const next: LoginFormErrors = {};
-    if (!username) next.username = "Enter your username.";
+    if (!username) next.username = "Enter your staff ID.";
     if (!password) next.password = "Enter your password.";
     setErrors(next);
     return Object.keys(next).length === 0;
@@ -56,7 +56,7 @@ export function LoginForm() {
 
       <div>
         <label htmlFor="username" className="block text-sm font-semibold text-[#1c2333]">
-          Username
+          Staff ID
         </label>
         <input
           id="username"
@@ -65,7 +65,7 @@ export function LoginForm() {
           autoComplete="username"
           value={username}
           onChange={(e) => setUsername(e.target.value)}
-          placeholder="e.g. ewallace"
+          placeholder="e.g. 12345"
           aria-invalid={Boolean(errors.username)}
           aria-describedby={errors.username ? "username-error" : undefined}
           className="mt-2 block w-full rounded-lg border border-slate-200 bg-white px-4 py-3 text-sm text-slate-900 placeholder:text-slate-400 focus:border-slate-400 focus:outline-none"

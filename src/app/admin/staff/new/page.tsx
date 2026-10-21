@@ -416,7 +416,7 @@ export default function AddStaffPage() {
                 />
               </Field>
               <div className="sm:col-span-2">
-                <Field label="Emergency Contact Name">
+                <Field label="Additional Notes">
                   <textarea
                     value={form.notes}
                     onChange={(e) => update("notes", e.target.value)}

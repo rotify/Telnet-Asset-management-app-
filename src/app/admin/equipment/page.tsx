@@ -64,8 +64,6 @@ export default function EquipmentPage() {
   const [statusFilter, setStatusFilter] = useState("All");
   const [refreshKey, setRefreshKey] = useState(0);
   const [isExporting, setIsExporting] = useState(false);
-  // Table is the default; mobile always shows cards regardless (see the
-  // render blocks below) — the toggle only takes effect at md and up.
   const [viewMode, setViewMode] = useState<"table" | "card">("table");
   const [exportError, setExportError] = useState<string | null>(null);
 
@@ -121,8 +119,7 @@ export default function EquipmentPage() {
     [staff]
   );
 
-  // assigned_staff comes back from the API as a raw staff id — resolve it
-  // to a display name here instead of showing the id in the table.
+  
   const staffNameById = useMemo(() => {
     const map = new Map<string, string>();
     staff.forEach((s) => map.set(String(s.id), `${s.first_name} ${s.last_name}`));

@@ -200,9 +200,6 @@ export default function SettingsPage() {
 
       <div className="min-w-0 flex-1 px-4 pt-2 pb-4 sm:px-6 sm:pt-4 sm:pb-8 lg:ml-60">
         <div className="mx-auto max-w-6xl">
-          {/* Sticky so the search/date/profile bar stays put while the
-              page content below scrolls, matching the sidebar's fixed
-              positioning instead of scrolling away with the page. */}
           <div className="sticky top-12 z-20 bg-[#EFF1F6] pb-2 lg:top-0">
             <AdminTopBar />
           </div>
@@ -214,7 +211,7 @@ export default function SettingsPage() {
             </p>
           </header>
 
-          {/* Organization */}
+      
           <div className="mt-6 rounded-xl bg-white p-4 shadow-[0_1px_2px_rgba(16,24,64,0.06)]">
             <h2 className="border-b border-slate-100 pb-3 text-sm font-semibold text-[#121B3B]">
               Organization
@@ -244,8 +241,7 @@ export default function SettingsPage() {
               </div>
             ) : null}
           </div>
-
-          {/* Profile */}
+          
           <div className="mt-6 rounded-xl bg-white p-4 shadow-[0_1px_2px_rgba(16,24,64,0.06)]">
             <h2 className="border-b border-slate-100 pb-3 text-sm font-semibold text-[#121B3B]">
               Your Profile
@@ -327,7 +323,7 @@ export default function SettingsPage() {
             )}
           </div>
 
-          {/* Alert schedule */}
+      
           <div className="mt-6 rounded-xl bg-white p-4 shadow-[0_1px_2px_rgba(16,24,64,0.06)]">
             <h2 className="border-b border-slate-100 pb-3 text-sm font-semibold text-[#121B3B]">
               Alert Schedule
@@ -392,7 +388,7 @@ export default function SettingsPage() {
             </button>
           </div>
 
-          {/* Change password */}
+          
           <div className="mt-6 rounded-xl bg-white p-4 shadow-[0_1px_2px_rgba(16,24,64,0.06)]">
             <h2 className="border-b border-slate-100 pb-3 text-sm font-semibold text-[#121B3B]">
               Change Password
@@ -438,7 +434,7 @@ export default function SettingsPage() {
             </button>
           </div>
 
-          {/* Link out to notification settings */}
+        
           <div className="mt-6 flex items-center justify-between rounded-xl bg-white p-4 shadow-[0_1px_2px_rgba(16,24,64,0.06)]">
             <div>
               <h2 className="text-sm font-semibold text-[#121B3B]">

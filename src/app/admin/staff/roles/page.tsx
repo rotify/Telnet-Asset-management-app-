@@ -57,8 +57,6 @@ export default function RolePermissionsPage() {
       setSaved(JSON.stringify(merged));
       setUsingDefaults(false);
     } catch {
-      // Backend has no saved permissions (or no endpoint yet): start from
-      // sensible defaults so the matrix is still usable.
       const d = defaultPermissions(r);
       setPerms(d);
       setSaved(JSON.stringify(d));

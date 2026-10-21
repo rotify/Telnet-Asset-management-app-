@@ -229,9 +229,7 @@ export default function NotificationsPage() {
 
       <div className="min-w-0 flex-1 px-4 pt-2 pb-4 sm:px-6 sm:pt-4 sm:pb-8 lg:ml-60">
         <div className="mx-auto max-w-6xl">
-          {/* Sticky so the search/date/profile bar stays put while the
-              page content below scrolls, matching the sidebar's fixed
-              positioning instead of scrolling away with the page. */}
+      
           <div className="sticky top-12 z-20 bg-[#EFF1F6] pb-2 lg:top-0">
             <AdminTopBar />
           </div>

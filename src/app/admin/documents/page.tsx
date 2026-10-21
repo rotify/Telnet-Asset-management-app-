@@ -196,8 +196,6 @@ export default function DocumentsPage() {
   const [search, setSearch] = useState("");
   const [statusFilter, setStatusFilter] = useState<"All" | DocStatus>("All");
   const [expandedId, setExpandedId] = useState<number | null>(null);
-  // Table is the default; mobile always shows cards regardless (see the
-  // render blocks below) — the toggle only takes effect at md and up.
   const [viewMode, setViewMode] = useState<"table" | "card">("table");
 
   const [showAddForm, setShowAddForm] = useState(false);

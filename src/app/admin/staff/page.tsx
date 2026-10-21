@@ -200,7 +200,6 @@ export default function StaffPage() {
   useEffect(() => {
     if (!gateChecked) return;
     loadStaff();
-    // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [gateChecked]);
 
   const filtered = useMemo(() => {

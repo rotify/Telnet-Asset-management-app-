@@ -47,10 +47,7 @@ function prettifyKey(key: string): string {
     .replace(/\b\w/g, (c) => c.toUpperCase());
 }
 
-// Renders whatever rows a report endpoint returns without assuming a
-// fixed schema — columns are the union of keys seen across rows. The
-// exact shape of these report rows isn't confirmed against live data
-// yet, so this stays generic rather than guessing field names.
+
 function DynamicTable({ rows }: { rows: Record<string, unknown>[] }) {
   if (rows.length === 0) {
     return <p className="py-6 text-sm text-slate-400">No records yet.</p>;
@@ -76,10 +73,7 @@ function DynamicTable({ rows }: { rows: Record<string, unknown>[] }) {
                   key={col}
                   className="whitespace-nowrap py-2 pr-4 text-slate-700"
                 >
-                  {/* The ID column shows each record's real database id,
-                      which isn't sequential once rows are sorted newest
-                      first — display the row's position instead so it
-                      always reads 1, 2, 3. */}
+              
                   {col === "id" ? i + 1 : formatValue(row[col])}
                 </td>
               ))}
@@ -174,9 +168,7 @@ export default function ReportsPage() {
 
       <div className="min-w-0 flex-1 px-4 pt-2 pb-4 sm:px-6 sm:pt-4 sm:pb-8 lg:ml-60">
         <div className="mx-auto max-w-6xl">
-          {/* Sticky so the search/date/profile bar stays put while the
-              page content below scrolls, matching the sidebar's fixed
-              positioning instead of scrolling away with the page. */}
+    
           <div className="sticky top-12 z-20 bg-[#EFF1F6] pb-2 lg:top-0">
             <AdminTopBar />
           </div>

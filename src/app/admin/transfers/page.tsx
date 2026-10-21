@@ -61,7 +61,6 @@ export default function TransfersPage() {
           .includes(q)
       );
     });
-    // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [transfers, search, equipmentFilter, nameById]);
 
   async function handleCreate() {

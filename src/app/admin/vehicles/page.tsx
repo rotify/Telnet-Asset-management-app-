@@ -58,8 +58,6 @@ export default function VehiclesPage() {
   const [refreshKey, setRefreshKey] = useState(0);
   const [isExporting, setIsExporting] = useState(false);
   const [exportError, setExportError] = useState<string | null>(null);
-  // Table is the default: with 50+ vehicles the card grid gets huge fast,
-  // so a dense table is the sane default and cards are the opt-in view.
   const [viewMode, setViewMode] = useState<"table" | "card">("table");
 
   useEffect(() => {
@@ -109,7 +107,7 @@ export default function VehiclesPage() {
     };
   }, [gateChecked, refreshKey]);
 
-  // Vehicles can only be assigned to staff registered as drivers.
+  
   const driverIds = useDriverUserIds(gateChecked);
   const staffOptions = useMemo(
     () =>
@@ -119,10 +117,6 @@ export default function VehiclesPage() {
     [staff, driverIds]
   );
 
-  // assigned_staff comes back from the API as a raw staff id — resolve it
-  // to a display name here instead of showing the id in the table. Uses
-  // the full staff list (not just drivers) so a staff member who was
-  // assigned before losing driver status still resolves to a name.
   const staffNameById = useMemo(() => {
     const map = new Map<string, string>();
     staff.forEach((s) => map.set(String(s.id), `${s.first_name} ${s.last_name}`));
@@ -189,9 +183,6 @@ export default function VehiclesPage() {
 
       <div className="min-w-0 flex-1 px-4 pt-2 pb-4 sm:px-6 sm:pt-4 sm:pb-8 lg:ml-60">
         <div className="mx-auto max-w-6xl">
-          {/* Sticky so the search/date/profile bar stays put while the
-              page content below scrolls, matching the sidebar's fixed
-              positioning instead of scrolling away with the page. */}
           <div className="sticky top-12 z-20 bg-[#EFF1F6] pb-2 lg:top-0">
             <AdminTopBar
               search={search}
@@ -294,10 +285,6 @@ export default function VehiclesPage() {
             </p>
           )}
 
-          {/* Table view is desktop/tablet only — an 8-column table on a
-              phone means constant horizontal scrolling, so mobile always
-              gets the card layout below regardless of which view is
-              selected; the toggle only takes effect at md and up. */}
           {!isLoading && !error && filtered.length > 0 && viewMode === "table" && (
             <div className="mt-6 hidden overflow-x-auto rounded-xl bg-white shadow-[0_1px_2px_rgba(16,24,64,0.06)] md:block">
               <table className="w-full min-w-[780px] border-collapse text-left text-sm">

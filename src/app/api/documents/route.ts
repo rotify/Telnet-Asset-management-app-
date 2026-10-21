@@ -35,8 +35,6 @@ export async function POST(request: Request) {
 
   const contentType = request.headers.get("content-type") ?? "";
 
-  // File uploads arrive as multipart/form-data — forward the form data
-  // through untouched (including the file) instead of JSON-encoding it.
   if (contentType.includes("multipart/form-data")) {
     const formData = await request.formData();
 

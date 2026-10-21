@@ -30,8 +30,7 @@ function Field({
 const inputClasses =
   "w-full rounded-lg border border-slate-200 bg-white px-3 py-2 text-sm text-slate-700 placeholder:text-slate-400 focus:border-telnet-primary focus:outline-none";
 
-// Only fields the backend's Vehicle serializer actually accepts, confirmed
-// against the live DRF API (http://207.180.246.69:7038/api/vehicles/).
+
 const EMPTY = {
   license_plate: "",
   asset_type: "",
